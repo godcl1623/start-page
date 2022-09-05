@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  sameple:
+    container_name: next-dockerized
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ".:/app"
+      - "/app/node_modules"
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=development
