@@ -1,41 +1,12 @@
 import React from 'react';
+import { extractTargetValues, openSearchResult } from './utils/helpers';
 import SelectBox from './SelectBox';
-import { useRouter } from 'next/router';
 
 export default function Search() {
-  const router = useRouter();
-
   function submitHandler(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const searchEngineSelectBox = event.currentTarget[0];
-    const searchInput = event.currentTarget[1];
-    let selectedSearchEngine = '';
-    let inputValue = '';
-    if (searchEngineSelectBox instanceof HTMLSelectElement) selectedSearchEngine = searchEngineSelectBox.value;
-    if (searchInput instanceof HTMLInputElement) inputValue = searchInput.value;
-    switch (selectedSearchEngine) {
-      case 'Google':
-        window.open(`https://www.google.com/search?q=${inputValue}`, '_newtab');
-        break;
-      case 'Naver':
-        window.open(`https://search.naver.com/search.naver?query=${inputValue}`, '_newtab');
-        break;
-      case 'Daum':
-        window.open(`https://search.daum.net/search?q=${inputValue}`, '_newtab');
-        break;
-      case 'MDN':
-        window.open(`https://developer.mozilla.org/ko/search?q=${inputValue}`, '_newtab');
-        break;
-      case 'CanIUse':
-        window.open(`https://caniuse.com/?search=${inputValue}`, '_newtab');
-        break;
-        case 'GitHub':
-        window.open(`https://github.com/search?q=${inputValue}`, '_newtab');
-        break;
-      default:
-        window.open(`https://www.google.com/search?q=${inputValue}`, '_newtab');
-        break;
-    }
+    const { selectedSearchEngine, inputValue } = extractTargetValues(event);
+    openSearchResult(selectedSearchEngine, inputValue);
   }
 
   return (
