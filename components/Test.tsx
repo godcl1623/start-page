@@ -1,5 +1,5 @@
 export default function Test() {
   return (
-    <h1>Index Page Test</h1>
+    <h1 className="text-red-500">Index Page Test</h1>
   )
 }
