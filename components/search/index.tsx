@@ -13,7 +13,29 @@ export default function Search() {
     let inputValue = '';
     if (searchEngineSelectBox instanceof HTMLSelectElement) selectedSearchEngine = searchEngineSelectBox.value;
     if (searchInput instanceof HTMLInputElement) inputValue = searchInput.value;
-    window.open(`https://www.google.com/search?q=${inputValue}`, '_newtab');
+    switch (selectedSearchEngine) {
+      case 'Google':
+        window.open(`https://www.google.com/search?q=${inputValue}`, '_newtab');
+        break;
+      case 'Naver':
+        window.open(`https://search.naver.com/search.naver?query=${inputValue}`, '_newtab');
+        break;
+      case 'Daum':
+        window.open(`https://search.daum.net/search?q=${inputValue}`, '_newtab');
+        break;
+      case 'MDN':
+        window.open(`https://developer.mozilla.org/ko/search?q=${inputValue}`, '_newtab');
+        break;
+      case 'CanIUse':
+        window.open(`https://caniuse.com/?search=${inputValue}`, '_newtab');
+        break;
+        case 'GitHub':
+        window.open(`https://github.com/search?q=${inputValue}`, '_newtab');
+        break;
+      default:
+        window.open(`https://www.google.com/search?q=${inputValue}`, '_newtab');
+        break;
+    }
   }
 
   return (
