@@ -17,7 +17,7 @@ export const openSearchResult = (selectedSearchEngine: string, inputValue: strin
   const searchEngineIndex = Object.keys(SEARCH_ADDRESSES).indexOf(selectedSearchEngine);
   const searchAddress = Object.values(SEARCH_ADDRESSES)[searchEngineIndex];
   if (searchAddress) {
-    window.open(`${searchAddress}${inputValue}`, '_newtab');
+    window.location.assign(`${searchAddress}${inputValue}`);
   } else {
     throw new Error('Search address is not available');
   }
