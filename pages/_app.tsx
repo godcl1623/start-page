@@ -1,10 +1,12 @@
 import React from 'react';
 import type { AppProps } from 'next/app';
-import "tailwindcss/tailwind.css";
+import Seo from 'components/Seo';
+import 'tailwindcss/tailwind.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <React.Fragment>
+      <Seo title='Start Page' />
       <Component {...pageProps} />
       <style jsx global>{`
         @tailwind base;
@@ -17,13 +19,20 @@ function MyApp({ Component, pageProps }: AppProps) {
             font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu,
               Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
           }
-  
+
+          html,
+          body,
+          div#__next {
+            width: 100%;
+            height: 100%;
+          }
+
           * {
             padding: 0;
             margin: 0;
             box-sizing: border-box;
           }
-  
+
           a {
             color: inherit;
             text-decoration: none;
@@ -37,6 +46,14 @@ function MyApp({ Component, pageProps }: AppProps) {
               color: white;
               background: black;
             }
+          }
+        }
+
+        @layer utilities {
+          .flex-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
           }
         }
       `}</style>
