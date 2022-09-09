@@ -1,16 +1,16 @@
 import React from 'react';
-import { extractTargetValues, openSearchResult } from './utils/helpers';
+import { extractFormValues, openSearchResult } from './utils/helpers';
 import SelectBox from './SelectBox';
 
 export default function Search() {
-  function submitHandler(event: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const { selectedSearchEngine, inputValue } = extractTargetValues(event);
+    const { selectedSearchEngine, inputValue } = extractFormValues(event);
     openSearchResult(selectedSearchEngine, inputValue);
   }
 
   return (
-    <form className='flex-center w-full h-12 shadow-lg dark:shadow-zinc-600' onSubmit={submitHandler}>
+    <form className='flex-center w-full h-12 shadow-lg dark:shadow-zinc-600' onSubmit={handleSubmit}>
       <SelectBox />
       <input
         name='searchInput'

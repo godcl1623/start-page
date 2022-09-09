@@ -4,7 +4,7 @@ type AddressValues = {
   [key in AddressKeys]: string;
 }
 
-export const SEARCH_ADDRESSES: AddressValues = {
+export const SEARCH_ADDRESS_BY_ENGINE: AddressValues = {
   'Google': 'https://www.google.com/search?q=',
   'Naver': 'https://search.naver.com/search.naver?query=',
   'Daum': 'https://search.daum.net/search?q=',

@@ -1,7 +1,7 @@
 import React from 'react';
-import { SEARCH_ADDRESSES } from './constants';
+import { SEARCH_ADDRESS_BY_ENGINE } from './constants';
 
-export const extractTargetValues = (event: React.FormEvent<HTMLFormElement>) => {
+export const extractFormValues = (event: React.FormEvent<HTMLFormElement>) => {
   const searchEngineSelectBox = event.currentTarget[0];
   const searchInput = event.currentTarget[1];
   let selectedSearchEngine = '';
@@ -14,8 +14,8 @@ export const extractTargetValues = (event: React.FormEvent<HTMLFormElement>) => 
 };
 
 export const openSearchResult = (selectedSearchEngine: string, inputValue: string) => {
-  const searchEngineIndex = Object.keys(SEARCH_ADDRESSES).indexOf(selectedSearchEngine);
-  const searchAddress = Object.values(SEARCH_ADDRESSES)[searchEngineIndex];
+  const searchEngineIndex = Object.keys(SEARCH_ADDRESS_BY_ENGINE).indexOf(selectedSearchEngine);
+  const searchAddress = Object.values(SEARCH_ADDRESS_BY_ENGINE)[searchEngineIndex];
   if (searchAddress) {
     window.location.assign(`${searchAddress}${inputValue}`);
   } else {
