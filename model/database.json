@@ -1,0 +1,14 @@
+{
+  "feeds": [
+    {
+      "id": 0,
+      "title": "test",
+      "description": "lorem ipsum dolor",
+      "link": "http://www.google.com",
+      "pubDate": "2022-09-10",
+      "origin": "foo",
+      "isRead": false,
+      "isFavorite": false
+    }
+  ]
+}

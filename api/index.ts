@@ -13,35 +13,35 @@ export class HttpRequest {
   }
 
   async get(endpointString?: string) {
-    const endpoint = endpointString ? `${endpointString}` : '';
+    const endpoint = endpointString ? endpointString : '';
     const response = await this.axios.get(endpoint);
 
     return response;
   }
 
-  async post(data: unknown, url = this.baseURL) {
-    const requestUrl = url !== this.baseURL ? url : this.baseURL;
-    const response = await this.axios.post(requestUrl, data);
+  async post(data: unknown, endpointString?: string) {
+    const endpoint = endpointString ? endpointString : '';
+    const response = await this.axios.post(endpoint, data);
 
     return response;
   }
 
-  async put(data: unknown, url = this.baseURL) {
-    const requestUrl = url !== this.baseURL ? url : this.baseURL;
-    const response = await this.axios.put(requestUrl, data);
+  async put(data: unknown, endpointString?: string) {
+    const endpoint = endpointString ? endpointString : '';
+    const response = await this.axios.put(endpoint, data);
 
     return response;
   }
 
-  async patch(data: unknown, url = this.baseURL) {
-    const requestUrl = url !== this.baseURL ? url : this.baseURL;
-    const response = await this.axios.patch(requestUrl, data);
+  async patch(data: unknown, endpointString?: string) {
+    const endpoint = endpointString ? endpointString : '';
+    const response = await this.axios.patch(endpoint, data);
 
     return response;
   }
 
-  async delete(url: string) {
-    const response = await this.axios.delete(url);
+  async delete(endpoint: string) {
+    const response = await this.axios.delete(endpoint);
 
     return response;
   }
