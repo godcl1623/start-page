@@ -7,6 +7,10 @@ const nextConfig = {
       {
         source: '/rss',
         destination: 'https://fe-developers.kakaoent.com/rss.xml',
+      },
+      {
+        source: '/feed',
+        destination: 'http://localhost:3000/api/staticdata'
       }
     ];
   }
