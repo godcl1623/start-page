@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 import { extractFormValues, openSearchResult } from './utils/helpers';
 import SelectBox from './SelectBox';
 
@@ -8,6 +9,18 @@ export default function Search() {
     const { selectedSearchEngine, inputValue } = extractFormValues(event);
     openSearchResult(selectedSearchEngine, inputValue);
   }
+
+  React.useEffect(() => {
+    const foo = async () => {
+      try {
+        const bar = await getServerSideProps();
+        console.log(bar);
+      } catch (error) {
+        if (error instanceof Error) throw new Error(error.message);
+      }
+    };
+    foo();
+  }, []);
 
   return (
     <form className='flex-center w-full h-12 shadow-lg dark:shadow-zinc-600' onSubmit={handleSubmit}>
@@ -27,3 +40,12 @@ export default function Search() {
     </form>
   );
 }
+
+const getServerSideProps = async () => {
+  try {
+    const response = await axios.get('http://localhost:3001/rss');
+    return response;
+  } catch (error) {
+    if (error instanceof Error) throw new Error(error.message);
+  }
+};
