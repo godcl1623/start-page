@@ -19,8 +19,7 @@ export class HttpRequest {
     return response;
   }
 
-  async post(data: unknown, endpointString?: string) {
-    const endpoint = endpointString ? endpointString : '';
+  async post(endpoint: string, data: unknown) {
     const response = await this.axios.post(endpoint, data);
 
     return response;
