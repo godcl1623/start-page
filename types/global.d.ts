@@ -14,3 +14,8 @@ export interface FeedsSourceType {
   originName: string | null;
   originLink: string | null;
 }
+
+export interface ParseResultType {
+  feedsObjectArray: FeedsObjectType[];
+  feedsSourceArray: FeedsSourceType[];
+}
