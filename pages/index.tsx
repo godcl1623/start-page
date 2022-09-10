@@ -1,6 +1,7 @@
+import React from 'react';
 import axios from 'axios';
 import Search from 'components/search';
-import React from 'react';
+import { HttpRequest } from 'api';
 
 interface IndexProps {
   rssResponse: string;
@@ -25,8 +26,9 @@ export default function Index({ rssResponse }: IndexProps) {
 }
 
 export async function getServerSideProps() {
+  const httpRequest = new HttpRequest();
   try {
-    const { data } = await axios.get('http://localhost:3000/rss');
+    const { data } = await httpRequest.get('http://localhost:3000/rss');
     return {
       props: {
         rssResponse: data
