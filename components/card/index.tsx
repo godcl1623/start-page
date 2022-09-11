@@ -23,15 +23,31 @@ export default function Card({ cardData }: CardProps) {
         ...cardData,
         isRead: true,
         isFavorite: favoriteState,
-      }
+      };
       axios.patch('/feed', newData);
       if (link) window.location.assign(link);
     }
   }
 
-  function handleCheckbox<T>(originalState: boolean, callback: CallbackType) {
+  function handleFavorite<T>(originalState: boolean, callback: CallbackType) {
     return function (event: React.MouseEvent<T>) {
       callback(!originalState);
+      const newData = {
+        ...cardData,
+        isFavorite: !originalState,
+      };
+      axios.patch('/feed', newData);
+    };
+  }
+
+  function handleRead<T>(originalState: boolean, callback: CallbackType) {
+    return function (event: React.MouseEvent<T>) {
+      callback(!originalState);
+      const newData = {
+        ...cardData,
+        isRead: !originalState,
+      };
+      axios.patch('/feed', newData);
     };
   }
 
@@ -54,7 +70,7 @@ export default function Card({ cardData }: CardProps) {
         <Checkbox
           targetState={favoriteState}
           buttonIcon={FavoriteIcon}
-          handleCheckbox={handleCheckbox(favoriteState, setFavoriteState)}
+          handleCheckbox={handleFavorite(favoriteState, setFavoriteState)}
         />
       </div>
       <div>
@@ -63,7 +79,7 @@ export default function Card({ cardData }: CardProps) {
           <Checkbox
             targetState={readState}
             buttonIcon={CheckIcon}
-            handleCheckbox={handleCheckbox(readState, setReadState)}
+            handleCheckbox={handleRead(readState, setReadState)}
           />
         </div>
         <p className='my-3'>{description}</p>
