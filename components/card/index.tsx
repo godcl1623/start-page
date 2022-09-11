@@ -31,7 +31,7 @@ export default function Card({ cardData }: CardProps) {
 
   return (
     <section
-      className='flex rounded-md shadow-lg px-6 py-4 bg-neutral-100 text-black cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200'
+      className={`flex rounded-md shadow-lg px-6 py-4 bg-neutral-100 text-black cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${(isRead || readState) ? 'brightness-75 dark:opacity-50' : 'brightness-100 dark:opacity-100'}`}
       onClick={handleCard}
     >
       <div className='mr-4 py-1'>
