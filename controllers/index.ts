@@ -1,10 +1,14 @@
 import { NextApiRequest } from 'next';
 import { FeedsObjectType, FeedsSourceType } from 'types/global';
-import { checkIfPOSTRequestValid, concatOverlayWithNewData } from './helpers';
+import {
+  returnMutationRequestKeys,
+  concatOverlayWithNewData,
+  concatNewDataByReplaceOldElement,
+} from './helpers';
 
 export const handlePOSTRequest = (request: NextApiRequest, fileContents: string) => {
   const { feedsObjectArray, feedsSourceArray } = request.body;
-  const numberOfKeysLessThanEight = checkIfPOSTRequestValid(feedsObjectArray);
+  const numberOfKeysLessThanEight = returnMutationRequestKeys(feedsObjectArray);
   if (numberOfKeysLessThanEight === 0) {
     const { feeds, origins } = JSON.parse(fileContents);
     const newFeedContents = concatOverlayWithNewData<FeedsObjectType>(feeds, feedsObjectArray);
@@ -12,6 +16,21 @@ export const handlePOSTRequest = (request: NextApiRequest, fileContents: string)
     return {
       feeds: newFeedContents,
       origins: newOrigins,
+    };
+  } else {
+    return false;
+  }
+};
+
+export const handlePATCHRequest = (request: NextApiRequest, fileContents: string) => {
+  const newData = request.body;
+  const numberOfKeysLessThanEight = returnMutationRequestKeys([newData]);
+  if (numberOfKeysLessThanEight === 0) {
+    const { feeds, origins } = JSON.parse(fileContents);
+    const feedsArrayWithNewData = concatNewDataByReplaceOldElement(feeds, newData);
+    return {
+      feeds: feedsArrayWithNewData,
+      origins,
     };
   } else {
     return false;
