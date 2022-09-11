@@ -63,7 +63,7 @@ export default function Card({ cardData }: CardProps) {
 
   return (
     <section
-      className={`flex rounded-md shadow-lg px-6 py-4 bg-neutral-100 text-black cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${returnReadStyle(isRead, readState)}`}
+      className={`flex rounded-md shadow-lg mb-8 px-6 py-4 bg-neutral-100 text-neutral-700 cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${returnReadStyle(isRead, readState)}`}
       onClick={handleCard}
     >
       <div className='mr-4 py-1'>
@@ -73,7 +73,7 @@ export default function Card({ cardData }: CardProps) {
           handleCheckbox={handleFavorite(favoriteState, setFavoriteState)}
         />
       </div>
-      <div>
+      <div className='w-full'>
         <div className='flex justify-between w-full'>
           <h2 className='text-lg'>{title}</h2>
           <Checkbox
