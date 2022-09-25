@@ -2,6 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import { AiFillStar as FavoriteIcon, AiFillRead as CheckIcon } from 'react-icons/ai';
 import { FeedsObjectType } from 'types/global';
+import { isTodayLessThanExtraDay } from 'common/helpers';
 import useDerivedStateFromProps from './hooks/useDerivedStateFromProps';
 import Checkbox from './Checkbox';
 
@@ -63,7 +64,10 @@ export default function Card({ cardData }: CardProps) {
 
   return (
     <section
-      className={`flex rounded-md shadow-lg mb-8 px-6 py-4 bg-neutral-100 text-neutral-700 cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${returnReadStyle(isRead, readState)}`}
+      className={`flex rounded-md shadow-lg mb-8 px-6 py-4 bg-neutral-100 text-neutral-700 cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${returnReadStyle(
+        isRead,
+        readState
+      )}`}
       onClick={handleCard}
     >
       <div className='mr-4 py-1'>
@@ -72,6 +76,9 @@ export default function Card({ cardData }: CardProps) {
           buttonIcon={FavoriteIcon}
           handleCheckbox={handleFavorite(favoriteState, setFavoriteState)}
         />
+        {isTodayLessThanExtraDay(pubDate) && (
+          <span className='text-xs text-yellow-300 font-bold'>New</span>
+        )}
       </div>
       <div className='w-full'>
         <div className='flex justify-between w-full'>
