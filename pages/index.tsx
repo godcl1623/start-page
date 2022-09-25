@@ -11,10 +11,18 @@ interface IndexProps {
 }
 
 export default function Index({ rssResponse, feeds }: IndexProps) {
-  useSaveRSS(rssResponse, feeds);
-  const feedsToDisplay = JSON.parse(feeds).feeds.map((feed: FeedsObjectType) => (
-    <Card cardData={feed} key={feed.id} />
-  ));
+  // useSaveRSS(rssResponse, feeds);
+  const sortByPubDate = (prev: FeedsObjectType, next: FeedsObjectType) => {
+    if (prev.pubDate && next.pubDate) {
+      const prevPubDate = new Date(prev.pubDate);
+      const nextPubDate = new Date(next.pubDate);
+      if (prevPubDate > nextPubDate) return -1;
+      else return 1;
+    }
+  };
+  const feedsToDisplay = JSON.parse(feeds)
+    .feeds.sort(sortByPubDate)
+    .map((feed: FeedsObjectType) => <Card cardData={feed} key={feed.id} />);
 
   return (
     <article className='flex-center flex-col w-full h-max min-h-full bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200 overflow-auto'>
