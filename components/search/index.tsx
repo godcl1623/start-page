@@ -1,6 +1,7 @@
 import React from 'react';
+import { SEARCH_ADDRESS_BY_ENGINE } from './utils/constants';
 import { extractFormValues, openSearchResult } from './utils/helpers';
-import SelectBox from './SelectBox';
+import SelectBox from '../common/SelectBox';
 
 export default function Search() {
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -14,7 +15,7 @@ export default function Search() {
       className='flex-center w-full h-12 shadow-lg dark:shadow-zinc-600'
       onSubmit={handleSubmit}
     >
-      <SelectBox />
+      <SelectBox optionValues={SEARCH_ADDRESS_BY_ENGINE} customStyles='rounded-l-md'/>
       <input
         name='searchInput'
         type='text'

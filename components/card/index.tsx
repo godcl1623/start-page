@@ -77,7 +77,7 @@ export default function Card({ cardData }: CardProps) {
           handleCheckbox={handleFavorite(favoriteState, setFavoriteState)}
         />
         {isTodayLessThanExtraDay(pubDate) && (
-          <span className='text-xs text-yellow-300 font-bold'>New</span>
+          <span className='text-xs text-yellow-500 font-bold dark:text-yellow-300'>New</span>
         )}
       </div>
       <div className='w-full'>
