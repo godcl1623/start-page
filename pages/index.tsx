@@ -4,6 +4,7 @@ import { HttpRequest } from 'api';
 import useSaveRSS from 'hooks/useSaveRSS';
 import Card from 'components/card';
 import { FeedsObjectType } from 'types/global';
+import { sortByPubDate } from 'common/helpers';
 
 interface IndexProps {
   rssResponse: string;
@@ -12,9 +13,12 @@ interface IndexProps {
 
 export default function Index({ rssResponse, feeds }: IndexProps) {
   useSaveRSS(rssResponse, feeds);
-  const feedsToDisplay = JSON.parse(feeds).feeds.map((feed: FeedsObjectType) => (
-    <Card cardData={feed} key={feed.id} />
-  ));
+
+  const feedsToDisplay = JSON.parse(feeds)
+    .feeds.sort(sortByPubDate)
+    .map((feed: FeedsObjectType) => (
+      <Card cardData={feed} key={feed.id} />
+    ));
 
   return (
     <article className='flex-center flex-col w-full h-max min-h-full bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200 overflow-auto'>
