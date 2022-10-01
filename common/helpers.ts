@@ -4,7 +4,7 @@ const extractObjectData = <T extends FeedsObjectType>(
   targetObject: T,
   targetProperty: string
 ) => {
-  if (targetProperty === 'pubDate') return new Date(targetObject['pubDate']);
+  if (targetProperty === 'pubDate' && targetObject['pubDate']) return new Date(targetObject['pubDate']);
   else return targetObject[targetProperty];
 };
 
@@ -13,7 +13,7 @@ export const handleSort = <T extends FeedsObjectType>(targetProperty: string, re
     if (Object.keys(prev).length > 0 && Object.keys(next).length > 0) {
       const prevData = extractObjectData(prev, targetProperty);
       const nextData = extractObjectData(next, targetProperty);
-      if (prevData > nextData) return reverse ? 1 : -1;
+      if ((prevData && nextData) && prevData > nextData) return reverse ? 1 : -1;
       else return reverse ? -1 : 1;
     } else {
       return reverse ? -1 : 1;

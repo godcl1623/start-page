@@ -8,7 +8,7 @@ type ObjectType = {
 interface Props {
   optionValues: string[] | ObjectType;
   customStyles?: string;
-  setSortState: (stateString: string, stateStringArray: string[]) => void;
+  setSortState?: (stateString: string, stateStringArray: string[]) => void;
 }
 
 export default function SelectBox({ optionValues, customStyles, setSortState }: Props) {
@@ -32,7 +32,7 @@ export default function SelectBox({ optionValues, customStyles, setSortState }: 
   }
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortState(event.currentTarget.value, SORT_STANDARD);
+    if (setSortState) setSortState(event.currentTarget.value, SORT_STANDARD);
   };
 
   return (
