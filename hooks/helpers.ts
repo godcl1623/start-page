@@ -37,7 +37,7 @@ export const makeFeedDataArray = (
 
 export const postRSSParseResult = async (feedsParseResult: ParseResultType) => {
   try {
-    const response = await axios.post('/feed', feedsParseResult);
+    const response = await axios.post('/api/feed', feedsParseResult);
     return response;
   } catch (error) {
     console.log('새로운 피드가 없습니다');

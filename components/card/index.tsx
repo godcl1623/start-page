@@ -17,6 +17,7 @@ export default function Card({ cardData }: CardProps) {
   const parsedPubDate = new Date(pubDate as string).toDateString();
   const [readState, setReadState] = useDerivedStateFromProps<boolean>(isRead);
   const [favoriteState, setFavoriteState] = useDerivedStateFromProps<boolean>(isFavorite);
+  const [dateState, setDateState] = React.useState(false);
 
   function handleCard(event: React.MouseEvent) {
     if (!(event.target instanceof SVGElement)) {
@@ -62,6 +63,14 @@ export default function Card({ cardData }: CardProps) {
     }
   };
 
+  // hydration 오류 수정용
+  React.useEffect(() => {
+    const dateFlag = isTodayLessThanExtraDay(pubDate);
+    if (dateFlag) {
+      setDateState(dateFlag);
+    }
+  }, [pubDate]);
+
   return (
     <section
       className={`flex rounded-md shadow-lg mb-8 px-6 py-4 bg-neutral-100 text-neutral-700 cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${returnReadStyle(
@@ -76,7 +85,7 @@ export default function Card({ cardData }: CardProps) {
           buttonIcon={FavoriteIcon}
           handleCheckbox={handleFavorite(favoriteState, setFavoriteState)}
         />
-        {isTodayLessThanExtraDay(pubDate) && (
+        {dateState && (
           <span className='text-xs text-yellow-500 font-bold dark:text-yellow-300'>New</span>
         )}
       </div>

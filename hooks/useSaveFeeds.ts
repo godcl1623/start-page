@@ -1,7 +1,7 @@
 import React from 'react';
 import { parseXml, makeFeedDataArray, postRSSParseResult } from './helpers';
 
-const useSaveRSS = (rssResponse: string, feeds: string) => {
+const useSaveFeeds = (rssResponse: string, feeds: string) => {
   React.useEffect(() => {
     if (rssResponse && feeds) {
       const parsedFeeds = JSON.parse(feeds).feeds;
@@ -27,4 +27,4 @@ const useSaveRSS = (rssResponse: string, feeds: string) => {
   }, [rssResponse, feeds]);
 };
 
-export default useSaveRSS;
+export default useSaveFeeds;
