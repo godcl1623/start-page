@@ -5,8 +5,8 @@ import { HttpRequest } from 'api';
 import useSaveRSS from 'hooks/useSaveRSS';
 import Card from 'components/card';
 import { FeedsObjectType } from 'types/global';
-import { sortByPubDate } from 'common/helpers';
-import { SORT_STANDARD } from 'common/constants';
+import { handleSort } from 'common/helpers';
+import { SORT_STANDARD, SORT_STANDARD_STATE } from 'common/constants';
 import SelectBox from 'components/common/SelectBox';
 
 interface IndexProps {
@@ -15,10 +15,21 @@ interface IndexProps {
 }
 
 export default function Index({ rssResponse, feeds }: IndexProps) {
+  const [currentSort, setCurrentSort] = React.useState(0);
   useSaveRSS(rssResponse, feeds);
 
+  const checkShouldSortByReverse = (sortState: number) => sortState === 1;
+
+  const setSortState = (stateString: string, stateStringArray: string[]) => {
+    if (stateStringArray.includes(stateString)) {
+      setCurrentSort(stateStringArray.indexOf(stateString));
+    } else {
+      setCurrentSort(0);
+    }
+  };
+
   const feedsToDisplay = JSON.parse(feeds)
-    .feeds.sort(sortByPubDate)
+    .feeds.sort(handleSort(SORT_STANDARD_STATE[currentSort], checkShouldSortByReverse(currentSort)))
     .map((feed: FeedsObjectType) => <Card cardData={feed} key={feed.id} />);
 
   return (
@@ -42,7 +53,11 @@ export default function Index({ rssResponse, feeds }: IndexProps) {
                 </a>
               </Link>
             </section>
-            <SelectBox optionValues={SORT_STANDARD} customStyles='rounded-md shadow-md text-xs dark:shadow-zinc-600' />
+            <SelectBox
+              optionValues={SORT_STANDARD}
+              customStyles='rounded-md shadow-md text-xs dark:shadow-zinc-600'
+              setSortState={setSortState}
+            />
           </section>
         </section>
         <section>{feedsToDisplay}</section>

@@ -1,3 +1,6 @@
+import React from 'react';
+import { SORT_STANDARD } from 'common/constants';
+
 type ObjectType = {
   [key in string]: string;
 };
@@ -5,9 +8,10 @@ type ObjectType = {
 interface Props {
   optionValues: string[] | ObjectType;
   customStyles?: string;
+  setSortState: (stateString: string, stateStringArray: string[]) => void;
 }
 
-export default function SelectBox({ optionValues, customStyles }: Props) {
+export default function SelectBox({ optionValues, customStyles, setSortState }: Props) {
   let options: JSX.Element[] = [];
   if (Array.isArray(optionValues)) {
     options = options
@@ -27,10 +31,15 @@ export default function SelectBox({ optionValues, customStyles }: Props) {
       );
   }
 
+  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortState(event.currentTarget.value, SORT_STANDARD);
+  };
+
   return (
     <select
       name='searchEngines'
       className={`h-full px-2 text-gray-400 dark:focus:outline-sky-600 ${customStyles}`}
+      onChange={handleChange}
     >
       {options}
     </select>

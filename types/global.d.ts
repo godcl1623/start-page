@@ -1,18 +1,19 @@
 export interface FeedsObjectType {
   id: number;
-  title: string | null;
-  description: string | null;
-  link: string | null;
-  pubDate: string | null;
-  origin: string | null;
+  title: string;
+  description: string;
+  link: string;
+  pubDate: string;
+  origin: string;
   isRead: boolean;
   isFavorite: boolean;
+  [key: string]: number | string | boolean;
 }
 
 export interface FeedsSourceType {
   id: number;
-  originName: string | null;
-  originLink: string | null;
+  originName: string;
+  originLink: string;
 }
 
 export interface ParseResultType {
