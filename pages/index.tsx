@@ -9,6 +9,7 @@ import { handleSort } from 'common/helpers';
 import { SORT_STANDARD, SORT_STANDARD_STATE } from 'common/constants';
 import SelectBox from 'components/common/SelectBox';
 import { AxiosResponse } from 'axios';
+import Modal from 'components/modal';
 
 interface IndexProps {
   rssResponse: string;
@@ -18,6 +19,7 @@ interface IndexProps {
 
 export default function Index({ rssResponse, feeds, responseArrays }: IndexProps) {
   const [currentSort, setCurrentSort] = React.useState(0);
+  const [modalState, setModalState] = React.useState(false);
   useSaveFeeds(rssResponse, feeds);
   // React.useEffect(() => {
   //   if (responseArrays) {
@@ -50,7 +52,7 @@ export default function Index({ rssResponse, feeds, responseArrays }: IndexProps
         <section>
           <section className='flex justify-between h-8 mb-4'>
             <section>
-              <button className='mr-4 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200'>
+              <button className='mr-4 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200' onClick={() => setModalState(!modalState)}>
                 구독 추가
               </button>
               <button className='mr-4 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200'>
@@ -71,6 +73,7 @@ export default function Index({ rssResponse, feeds, responseArrays }: IndexProps
         </section>
         <section>{feedsToDisplay}</section>
       </section>
+      { modalState && (<Modal>test</Modal>)}
     </article>
   );
 }
