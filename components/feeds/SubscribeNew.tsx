@@ -1,8 +1,35 @@
 import React from 'react';
+import axios from 'axios';
 
 export default function SubscribeNew() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const input = event.currentTarget['0'];
+    const urlsRule = /^http/;
+    let body = {};
+    if (input instanceof HTMLInputElement) {
+      if (urlsRule.test(input.value)) {
+        try {
+          body = {
+            mode: 'test',
+            url: input.value,
+          };
+          const urlTestResult = await axios.post('/api/urls', body);
+          if (urlTestResult) {
+            body = {
+              ...body,
+              mode: 'post',
+            };
+            const postResult = await axios.post('/api/urls', body);
+            console.log(postResult);
+          }
+        } catch (error) {
+          alert('올바르지 않은 피드 주소입니다.');
+        }
+      } else {
+        alert('URL 형식을 확인해주세요.');
+      }
+    }
   };
 
   return (
