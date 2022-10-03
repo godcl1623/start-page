@@ -17,7 +17,20 @@ export default async function handler(request: NextApiRequest, response: NextApi
         response.status(404).json(false);
       }
     } else if (request.body.mode === 'post') {
-      response.status(200).json(request.body.url);
+      const { urls } = JSON.parse(fileContents);
+      const { url } = request.body;
+      if (urls.includes(url)) {
+        response.status(502).json({
+          "reason": "Url already exists."
+        });
+      } else {
+        const urlsWithNewUrl = [...urls, url];
+        const body = {
+          urls: urlsWithNewUrl,
+        };
+        fs.writeFile(`${jsonDirectory}/urls.json`, JSON.stringify(body));
+        response.status(200).json(true);
+      }
     }
   }
 }

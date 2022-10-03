@@ -1,7 +1,10 @@
 import React from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+import { useRouter } from 'next/router';
 
 export default function SubscribeNew() {
+  const router = useRouter();
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const input = event.currentTarget['0'];
@@ -21,10 +24,18 @@ export default function SubscribeNew() {
               mode: 'post',
             };
             const postResult = await axios.post('/api/urls', body);
-            console.log(postResult);
+            if (postResult) {
+              alert('저장되었습니다.');
+              router.reload();
+            }
           }
         } catch (error) {
-          alert('올바르지 않은 피드 주소입니다.');
+          if (error instanceof AxiosError) {
+            if (error.response?.status === 404) alert('올바르지 않은 피드 주소입니다.');
+            else if (error.response?.status === 502) alert('이미 존재하는 주소입니다.');
+          } else if (error instanceof Error) {
+            throw new Error(error.message);
+          }
         }
       } else {
         alert('URL 형식을 확인해주세요.');
