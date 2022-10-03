@@ -1,45 +1,39 @@
 import React from 'react';
 import axios, { AxiosError } from 'axios';
 import { useRouter } from 'next/router';
+import {
+  checkIfFeedOriginValid,
+  postNewFeedOrigin,
+  refreshPage,
+  extractInputValue,
+  checkIfStringPassesRule,
+} from './utils/helpers';
 
 export default function SubscribeNew() {
   const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     const input = event.currentTarget['0'];
-    const urlsRule = /^http/;
-    let body = {};
-    if (input instanceof HTMLInputElement) {
-      if (urlsRule.test(input.value)) {
-        try {
-          body = {
-            mode: 'test',
-            url: input.value,
-          };
-          const urlTestResult = await axios.post('/api/urls', body);
-          if (urlTestResult) {
-            body = {
-              ...body,
-              mode: 'post',
-            };
-            const postResult = await axios.post('/api/urls', body);
-            if (postResult) {
-              alert('저장되었습니다.');
-              router.reload();
-            }
-          }
-        } catch (error) {
-          if (error instanceof AxiosError) {
-            if (error.response?.status === 404) alert('올바르지 않은 피드 주소입니다.');
-            else if (error.response?.status === 502) alert('이미 존재하는 주소입니다.');
-          } else if (error instanceof Error) {
-            throw new Error(error.message);
-          }
-        }
-      } else {
-        alert('URL 형식을 확인해주세요.');
-      }
+    const url = extractInputValue(input);
+    const ruleCheckResult = checkIfStringPassesRule(url);
+
+    let isFeedOriginValid = false;
+    let postResult = false;
+
+    if (url && ruleCheckResult) {
+      isFeedOriginValid = await checkIfFeedOriginValid(ruleCheckResult, url);
+    } else {
+      alert('URL 형식을 확인해주세요.');
+    }
+
+    if (url && isFeedOriginValid) {
+      postResult = await postNewFeedOrigin(isFeedOriginValid, url);
+    }
+
+    if (postResult) {
+      refreshPage(postResult);
     }
   };
 
