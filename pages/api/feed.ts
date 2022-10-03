@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import path from 'path';
 import { promises as fs } from 'fs';
-import { handlePOSTRequest, handlePATCHRequest } from 'controllers';
+import { handlePOSTRequest, handlePATCHRequest } from 'controllers/feed';
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse) {
   const jsonDirectory = path.join(process.cwd(), 'model');
