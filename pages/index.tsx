@@ -27,9 +27,9 @@ export default function Index({ rssResponse, feeds, responseArrays }: IndexProps
   // React.useEffect(() => {
   //   if (responseArrays) {
   //     const parser = new DOMParser();
-  //     responseArrays.forEach((foo: any) => {
+  //     responseArrays.forEach((foo: any, index: number) => {
   //       const xml = parser.parseFromString(foo, 'text/xml');
-  //       console.log(xml)
+  //       console.log(`index ${index}: `, xml)
   //     })
   //   }
   // }, [responseArrays]);
