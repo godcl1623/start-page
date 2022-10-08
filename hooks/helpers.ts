@@ -50,18 +50,26 @@ export const makeFeedDataArray = (
   id: number
 ) => {
   return rawFeedsArray.map((feedData: Element) => {
-    const [title, description, link, , , pubDate] = feedData.children;
+    let feedIndex = id + Math.random();
+    const feedDataArray = Array.from(feedData.children);
+    const title = findNode(feedDataArray, 'title')?.textContent || '무제';
+    const description =
+      findNode(feedDataArray, 'description')?.textContent || '출처를 참조해주세요.';
+    const parsedDescription = description.length > 250 ? description.slice(0, 247) + '...' : description;
+    const pubDate = findNode(feedDataArray, 'pubDate')?.textContent || '-';
+    const link = findNode(feedDataArray, 'link')?.textContent
+      ? findNode(feedDataArray, 'link')?.textContent || '/'
+      : findNode(feedDataArray, 'link')?.attributes.getNamedItem('href')?.value || '/';
     const result: FeedsObjectType = {
-      id,
-      title: title.textContent,
-      description: description.textContent,
-      link: link.textContent,
-      pubDate: pubDate.textContent,
+      id: `${feedOriginName}_${feedIndex}`,
+      title,
+      description: parsedDescription,
+      link,
+      pubDate,
       origin: feedOriginName,
       isRead: false,
       isFavorite: false,
     };
-    id += 1;
     return result;
   });
 };

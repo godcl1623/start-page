@@ -1,5 +1,5 @@
 export interface FeedsObjectType {
-  id: number;
+  id: string;
   title: string | null;
   description: string | null;
   link: string | null;

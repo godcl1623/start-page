@@ -24,19 +24,8 @@ export default function Index({ rssResponse, feeds, responseArrays }: IndexProps
   const [currentSort, setCurrentSort] = React.useState(0);
   const [modalState, setModalState] = React.useState(false);
   const startPageRef = React.useRef<HTMLElement | null>(null);
-  useSaveFeeds(rssResponse, feeds);
-  React.useEffect(() => {
-    const parser = new DOMParser();
-    // console.log('sample: ', parseXml(rssResponse));
-    if (responseArrays) {
-      // const parser = new DOMParser();
-      responseArrays.forEach((foo: any, index: number) => {
-        // const xml = parser.parseFromString(foo, 'text/xml');
-        const xml = parseXml(foo);
-        // console.log(`index ${index}: `, xml)
-      })
-    }
-  }, [responseArrays]);
+  useSaveFeeds(responseArrays, feeds);
+
   const checkShouldSortByReverse = (sortState: number) => sortState === 1;
   const setSortState = (stateString: string, stateStringArray: string[]) => {
     if (stateStringArray.includes(stateString)) {
@@ -46,9 +35,13 @@ export default function Index({ rssResponse, feeds, responseArrays }: IndexProps
     }
   };
 
-  const feedsToDisplay = JSON.parse(feeds)
-    .feeds.sort(handleSort(SORT_STANDARD_STATE[currentSort], checkShouldSortByReverse(currentSort)))
-    .map((feed: FeedsObjectType) => <Card cardData={feed} key={feed.id} />);
+  const feedsToDisplay = feeds
+    ? JSON.parse(feeds)
+        .feeds.sort(
+          handleSort(SORT_STANDARD_STATE[currentSort], checkShouldSortByReverse(currentSort))
+        )
+        .map((feed: FeedsObjectType) => <Card cardData={feed} key={feed.id} />)
+    : [];
 
   const handleClick = () => {
     document.documentElement.scrollTo({ top: 0 });

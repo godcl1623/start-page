@@ -10,7 +10,7 @@ export const handlePOSTRequest = (request: NextApiRequest, fileContents: string)
   const { feedsObjectArray, feedsSourceArray } = request.body;
   const numberOfKeysLessThanEight = returnMutationRequestKeys(feedsObjectArray);
   if (numberOfKeysLessThanEight === 0) {
-    const { feeds, origins } = JSON.parse(fileContents);
+    const { feeds, origins } = fileContents ? JSON.parse(fileContents) : { feeds: [], origins: [] };
     const newFeedContents = concatOverlayWithNewData<FeedsObjectType>(feeds, feedsObjectArray);
     const newOrigins = concatOverlayWithNewData<FeedsSourceType>(origins, feedsSourceArray);
     return {

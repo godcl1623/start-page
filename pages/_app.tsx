@@ -24,7 +24,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           body,
           div#__next {
             width: 100%;
-            height: max-content;
+            height: 100%;
           }
 
           * {

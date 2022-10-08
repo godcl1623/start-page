@@ -1,41 +1,45 @@
 import React from 'react';
+import { FeedsObjectType } from 'types/global';
 import { parseXml, makeFeedDataArray, postRSSParseResult } from './helpers';
 
-const useSaveFeeds = (rssResponse: string, feeds: string) => {
-  const [rawRss, setRawRss] = React.useState<string>('');
+const useSaveFeeds = (responseArray: string[], feeds: string) => {
+  const [rawRssArray, setRawRssArray] = React.useState<string[]>([]);
   const [feedsList, setFeedsList] = React.useState<string>('');
 
   React.useEffect(() => {
-    if (rssResponse) setRawRss(rssResponse);
-  }, [rssResponse]);
+    if (responseArray) setRawRssArray(responseArray);
+  }, [responseArray]);
 
   React.useEffect(() => {
     if (feeds) setFeedsList(feeds);
   }, [feeds]);
 
   React.useEffect(() => {
-    if (rawRss && feedsList) {
-      const parsedFeeds = JSON.parse(feedsList).feeds;
-      const parsedOrigins = JSON.parse(feedsList).origins;
+    if (rawRssArray) {
+      const parsedFeeds = feedsList ? JSON.parse(feedsList).feeds : [];
+      const parsedOrigins = feedsList ? JSON.parse(feedsList).origins : [];
       let id = parsedFeeds.length;
       let originId = parsedOrigins.length;
-      const { feedOriginName, feedOriginParsedLink, rssFeeds } = parseXml(rawRss);
-      const feedsObjectArray = makeFeedDataArray(rssFeeds, feedOriginName, id);
-      const feedsSourceArray = [
-        {
-          id: originId,
-          originName: feedOriginName,
-          originLink: feedOriginParsedLink,
-        },
-      ];
-      const feedsParseResult = {
-        feedsObjectArray,
-        feedsSourceArray,
-      };
-
-      postRSSParseResult(feedsParseResult);
+      rawRssArray.forEach((rawRss: string) => {
+        const { feedOriginName, feedOriginParsedLink, rssFeeds } = parseXml(rawRss);
+        const feedsObjectArray = makeFeedDataArray(rssFeeds, feedOriginName, id);
+        const feedsSourceArray = [
+          {
+            id: originId,
+            originName: feedOriginName,
+            originLink: feedOriginParsedLink,
+          },
+        ];
+        const feedsParseResult = {
+          feedsObjectArray,
+          feedsSourceArray,
+        };
+  
+        postRSSParseResult(feedsParseResult);
+        originId += 1;
+      });
     }
-  }, [rawRss, feedsList]);
+  }, [rawRssArray, feedsList]);
 };
 
 export default useSaveFeeds;
