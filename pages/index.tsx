@@ -12,6 +12,7 @@ import { AxiosResponse } from 'axios';
 import Modal from 'components/modal';
 import SubscriptionDialogBox from 'components/feeds';
 import SubscribeNew from 'components/feeds/SubscribeNew';
+import { parseXml } from 'hooks/helpers';
 
 interface IndexProps {
   rssResponse: string;
@@ -24,15 +25,18 @@ export default function Index({ rssResponse, feeds, responseArrays }: IndexProps
   const [modalState, setModalState] = React.useState(false);
   const startPageRef = React.useRef<HTMLElement | null>(null);
   useSaveFeeds(rssResponse, feeds);
-  // React.useEffect(() => {
-  //   if (responseArrays) {
-  //     const parser = new DOMParser();
-  //     responseArrays.forEach((foo: any, index: number) => {
-  //       const xml = parser.parseFromString(foo, 'text/xml');
-  //       console.log(`index ${index}: `, xml)
-  //     })
-  //   }
-  // }, [responseArrays]);
+  React.useEffect(() => {
+    const parser = new DOMParser();
+    // console.log('sample: ', parseXml(rssResponse));
+    if (responseArrays) {
+      // const parser = new DOMParser();
+      responseArrays.forEach((foo: any, index: number) => {
+        // const xml = parser.parseFromString(foo, 'text/xml');
+        const xml = parseXml(foo);
+        // console.log(`index ${index}: `, xml)
+      })
+    }
+  }, [responseArrays]);
   const checkShouldSortByReverse = (sortState: number) => sortState === 1;
   const setSortState = (stateString: string, stateStringArray: string[]) => {
     if (stateStringArray.includes(stateString)) {
