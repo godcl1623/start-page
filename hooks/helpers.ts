@@ -52,7 +52,6 @@ export const makeFeedDataArray = (
   return rawFeedsArray.map((feedData: Element) => {
     let feedIndex = id + Math.random();
     const feedDataArray = Array.from(feedData.children);
-    console.log(feedDataArray)
     const title = findNode(feedDataArray, 'title')?.textContent || '무제';
     const content = findNode(feedDataArray, 'content')
       ? findNode(feedDataArray, 'content')?.textContent
