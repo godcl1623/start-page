@@ -52,11 +52,19 @@ export const makeFeedDataArray = (
   return rawFeedsArray.map((feedData: Element) => {
     let feedIndex = id + Math.random();
     const feedDataArray = Array.from(feedData.children);
+    console.log(feedDataArray);
     const title = findNode(feedDataArray, 'title')?.textContent || '무제';
-    const description =
-      findNode(feedDataArray, 'description')?.textContent || '출처를 참조해주세요.';
-    const parsedDescription = description.length > 250 ? description.slice(0, 247) + '...' : description;
-    const pubDate = findNode(feedDataArray, 'pubDate')?.textContent || '-';
+    const content = findNode(feedDataArray, 'content')
+      ? findNode(feedDataArray, 'content')?.textContent
+      : findNode(feedDataArray, 'content:encoded')?.textContent;
+    const description = findNode(feedDataArray, 'description')
+      ? findNode(feedDataArray, 'description')?.textContent || '출처를 참조해주세요.'
+      : content || '출처를 참조해주세요.';
+    const parsedDescription =
+      description.length > 250 ? description.slice(0, 247) + '...' : description;
+    const pubDate = findNode(feedDataArray, 'pubDate')
+      ? findNode(feedDataArray, 'pubDate')?.textContent || '-'
+      : findNode(feedDataArray, 'updated')?.textContent || '-';
     const link = findNode(feedDataArray, 'link')?.textContent
       ? findNode(feedDataArray, 'link')?.textContent || '/'
       : findNode(feedDataArray, 'link')?.attributes.getNamedItem('href')?.value || '/';
