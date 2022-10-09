@@ -29,7 +29,6 @@ export const handlePOSTRequest = async ({
     sendValidationResult(response, validationResult);
   } else if (mode === 'post') {
     const { urls } = JSON.parse(stringifiedFile);
-    console.log(urls)
     const overlapCheckResult = checkIfUrlOverlapped(urls, url);
     writeNewUrlToFile({ response, flag: overlapCheckResult, fileDirectory, urlsArray: urls, url });
   }

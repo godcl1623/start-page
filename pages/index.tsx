@@ -12,15 +12,13 @@ import { AxiosResponse } from 'axios';
 import Modal from 'components/modal';
 import SubscriptionDialogBox from 'components/feeds';
 import SubscribeNew from 'components/feeds/SubscribeNew';
-import { parseXml } from 'hooks/helpers';
 
 interface IndexProps {
-  rssResponse: string;
   feeds: string;
   responseArrays: string[];
 }
 
-export default function Index({ rssResponse, feeds, responseArrays }: IndexProps) {
+export default function Index({ feeds, responseArrays }: IndexProps) {
   const [currentSort, setCurrentSort] = React.useState(0);
   const [modalState, setModalState] = React.useState(false);
   const startPageRef = React.useRef<HTMLElement | null>(null);
@@ -110,7 +108,6 @@ export default function Index({ rssResponse, feeds, responseArrays }: IndexProps
 export async function getServerSideProps() {
   const httpRequest = new HttpRequest();
   try {
-    // 기능 정리 전까지 rssResponse 살리기
     const { data: rawUrls } = await httpRequest.get('http://localhost:3000/api/urls');
     const parsedUrls = JSON.parse(rawUrls).urls;
     const rssResponses = await getRssResponses(parsedUrls);
@@ -119,13 +116,10 @@ export async function getServerSideProps() {
       responseArrays = rssResponses.map((response: any) => response.value.data);
     }
 
-    const { data: rssResponse } = await httpRequest.get('http://localhost:3000/rss');
-
     const { data: feeds } = await httpRequest.get('http://localhost:3000/api/feed');
 
     return {
       props: {
-        rssResponse,
         feeds,
         responseArrays,
       },

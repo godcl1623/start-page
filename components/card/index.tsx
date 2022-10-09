@@ -26,8 +26,8 @@ export default function Card({ cardData }: CardProps) {
         isRead: true,
         isFavorite: favoriteState,
       };
-      axios.patch('/feed', newData);
-      if (link) window.location.assign(link);
+      axios.patch('/api/feed', newData);
+      // if (link) window.location.assign(link);
     }
   }
 
@@ -38,7 +38,7 @@ export default function Card({ cardData }: CardProps) {
         ...cardData,
         isFavorite: !originalState,
       };
-      axios.patch('/feed', newData);
+      axios.patch('/api/feed', newData);
     };
   }
 
@@ -49,7 +49,7 @@ export default function Card({ cardData }: CardProps) {
         ...cardData,
         isRead: !originalState,
       };
-      axios.patch('/feed', newData);
+      axios.patch('/api/feed', newData);
     };
   }
 
