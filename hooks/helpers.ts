@@ -52,7 +52,7 @@ export const makeFeedDataArray = (
   return rawFeedsArray.map((feedData: Element) => {
     let feedIndex = id + Math.random();
     const feedDataArray = Array.from(feedData.children);
-    console.log(feedDataArray);
+    console.log(feedDataArray)
     const title = findNode(feedDataArray, 'title')?.textContent || '무제';
     const content = findNode(feedDataArray, 'content')
       ? findNode(feedDataArray, 'content')?.textContent
@@ -61,7 +61,9 @@ export const makeFeedDataArray = (
       ? findNode(feedDataArray, 'description')?.textContent || '출처를 참조해주세요.'
       : content || '출처를 참조해주세요.';
     const parsedDescription =
-      description.length > 250 ? description.slice(0, 247) + '...' : description;
+      description.length > 250
+        ? stripTags(description)?.textContent?.slice(0, 247) + '...'
+        : stripTags(description)?.textContent || '출처를 참조해주세요.';
     const pubDate = findNode(feedDataArray, 'pubDate')
       ? findNode(feedDataArray, 'pubDate')?.textContent || '-'
       : findNode(feedDataArray, 'updated')?.textContent || '-';
@@ -80,6 +82,11 @@ export const makeFeedDataArray = (
     };
     return result;
   });
+};
+
+const stripTags = (stringWithTags: string) => {
+  const parseResult = new DOMParser().parseFromString(stringWithTags, 'text/html');
+  return findNode(Array.from(parseResult.children[0].children), 'BODY');
 };
 
 export const postRSSParseResult = async (feedsParseResult: ParseResultType) => {
