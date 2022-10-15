@@ -4,7 +4,7 @@ import Search from 'components/search';
 import { HttpRequest } from 'api';
 import useSaveFeeds from 'hooks/useSaveFeeds';
 import Card from 'components/card';
-import { FeedsObjectType } from 'types/global';
+import { ParsedFeedsDataType } from 'types/global';
 import { handleSort } from 'common/helpers';
 import { SORT_STANDARD, SORT_STANDARD_STATE } from 'common/constants';
 import SelectBox from 'components/common/SelectBox';
@@ -35,10 +35,13 @@ export default function Index({ feeds, responseArrays }: IndexProps) {
 
   const feedsToDisplay = feeds
     ? JSON.parse(feeds)
-        .feeds.sort(
-          handleSort(SORT_STANDARD_STATE[currentSort], checkShouldSortByReverse(currentSort))
-        )
-        .map((feed: FeedsObjectType) => <Card cardData={feed} key={feed.id} />)
+        .data.map((feedData: ParsedFeedsDataType) => feedData.feeds)
+        .reduce((resultArray: React.ReactNode[], currentArray: React.ReactNode[]) => {
+          resultArray.push(...currentArray);
+          return resultArray;
+        }, [])
+        .sort(handleSort(SORT_STANDARD_STATE[currentSort], checkShouldSortByReverse(currentSort)))
+        .map((feed: ParsedFeedsDataType) => <Card cardData={feed} key={feed.id} />)
     : [];
 
   const handleClick = () => {

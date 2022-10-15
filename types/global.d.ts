@@ -1,4 +1,4 @@
-export interface FeedsObjectType {
+export interface ParsedFeedsDataType {
   id: string;
   title: string | null;
   description: string | null;
@@ -10,15 +10,16 @@ export interface FeedsObjectType {
   [key: string]: number | string | boolean | null;
 }
 
-export interface FeedsSourceType {
+export interface NewParseResultType {
   id: number;
   originName: string | null;
   originLink: string | null;
   lastFeedsLength: number;
   latestFeedTitle: string | null;
+  feeds?: ParsedFeedsDataType[];
 }
 
 export interface ParseResultType {
-  feedsObjectArray: FeedsObjectType[];
-  feedsSourceArray: FeedsSourceType[];
+  feedsObjectArray: ParsedFeedsDataType[];
+  feedsSourceArray: NewParseResultType[];
 }

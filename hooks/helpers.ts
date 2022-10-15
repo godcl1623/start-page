@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { FeedsObjectType, ParseResultType } from 'types/global';
+import { ParsedFeedsDataType, ParseResultType, NewParseResultType } from 'types/global';
 
 const findNode = (xmlNodesArray: Element[], nodeName: string) => {
   return xmlNodesArray.find((xmlNode: Element) => xmlNode.nodeName === nodeName);
@@ -69,7 +69,7 @@ export const makeFeedDataArray = (
     const link = findNode(feedDataArray, 'link')?.textContent
       ? findNode(feedDataArray, 'link')?.textContent || '/'
       : findNode(feedDataArray, 'link')?.attributes.getNamedItem('href')?.value || '/';
-    const result: FeedsObjectType = {
+    const result: ParsedFeedsDataType = {
       id: `${feedOriginName}_${feedIndex}`,
       title,
       description: parsedDescription,
@@ -88,7 +88,7 @@ const stripTags = (stringWithTags: string) => {
   return findNode(Array.from(parseResult.children[0].children), 'BODY');
 };
 
-export const postRSSParseResult = async (feedsParseResult: ParseResultType) => {
+export const postRSSParseResult = async (feedsParseResult: any) => {
   try {
     const response = await axios.post('/api/feed', feedsParseResult);
     return response;

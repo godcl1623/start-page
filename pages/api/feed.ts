@@ -11,10 +11,11 @@ export default async function handler(request: NextApiRequest, response: NextApi
   } else if (request.method === 'POST') {
     const result = handlePOSTRequest(request, fileContents);
     if (result) {
-      fs.writeFile(`${jsonDirectory}/feeds.json`, JSON.stringify(result));
+      const newData = {
+        data: result,
+      };
+      fs.writeFile(`${jsonDirectory}/feeds.json`, JSON.stringify(newData));
       response.status(200).json('success');
-    } else {
-      response.status(416).json('Request failed: number of request properties is not satisfied.');
     }
   } else if (request.method === 'PATCH') {
     const result = handlePATCHRequest(request, fileContents);

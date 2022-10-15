@@ -1,5 +1,5 @@
 import { NextApiRequest } from 'next';
-import { FeedsObjectType, FeedsSourceType } from 'types/global';
+import { ParsedFeedsDataType, NewParseResultType } from 'types/global';
 import {
   returnMutationRequestKeys,
   concatOverlayWithNewData,
@@ -7,18 +7,41 @@ import {
 } from './helpers';
 
 export const handlePOSTRequest = (request: NextApiRequest, fileContents: string) => {
-  const { feedsObjectArray, feedsSourceArray } = request.body;
-  const numberOfKeysLessThanEight = returnMutationRequestKeys(feedsObjectArray);
-  if (numberOfKeysLessThanEight === 0) {
-    const { feeds, origins } = fileContents ? JSON.parse(fileContents) : { feeds: [], origins: [] };
-    const newFeedContents = concatOverlayWithNewData<FeedsObjectType>(feeds, feedsObjectArray);
-    const newOrigins = concatOverlayWithNewData<FeedsSourceType>(origins, feedsSourceArray);
-    return {
-      feeds: newFeedContents,
-      origins: newOrigins,
-    };
+  const parseResult = request.body;
+  if (parseResult.length > 0) {
+    const { data } = fileContents ? JSON.parse(fileContents) : { data: [] };
+    let newData: NewParseResultType[];
+    if (data.length === 0) {
+      newData = [...parseResult];
+    } else {
+      newData = data.map((storedFeedsData: NewParseResultType, index: number) => {
+        if (storedFeedsData.originName === parseResult[index]?.originName) {
+          const { lastFeedsLength, latestFeedTitle } = storedFeedsData;
+          if (
+            lastFeedsLength < parseResult[index].lastFeedsLength ||
+            latestFeedTitle !== parseResult[index].latestFeedTitle
+          ) {
+            return {
+              ...storedFeedsData,
+              lastFeedsLength: parseResult[index].lastFeedsLength,
+              latestFeedTitle: parseResult[index].latestFeedTitle,
+              feeds: storedFeedsData.feeds
+                ?.slice(storedFeedsData.feeds?.length)
+                .concat(parseResult[index].feeds),
+            };
+          } else {
+            return storedFeedsData;
+          }
+        }
+      });
+    }
+    if (data.length >= parseResult.length) {
+      return newData;
+    } else {
+      return newData.concat(parseResult.slice(newData.length));
+    }
   } else {
-    return false;
+    return JSON.parse(fileContents).data;
   }
 };
 

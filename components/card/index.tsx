@@ -1,13 +1,13 @@
 import React from 'react';
 import axios from 'axios';
 import { AiFillStar as FavoriteIcon, AiFillRead as CheckIcon } from 'react-icons/ai';
-import { FeedsObjectType } from 'types/global';
+import { ParsedFeedsDataType } from 'types/global';
 import { isTodayLessThanExtraDay } from 'common/helpers';
 import useDerivedStateFromProps from './hooks/useDerivedStateFromProps';
 import Checkbox from './Checkbox';
 
 type CardProps = {
-  cardData: FeedsObjectType;
+  cardData: ParsedFeedsDataType;
 };
 
 type CallbackType = (value: any) => void;

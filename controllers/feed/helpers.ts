@@ -1,13 +1,15 @@
-import { FeedsObjectType } from 'types/global';
+import { ParsedFeedsDataType, NewParseResultType } from 'types/global';
 
 interface ConcatGenericType {
   title?: string | null;
   originName?: string | null;
 }
 
-export const returnMutationRequestKeys = (feedsObjectArray: FeedsObjectType[]) => {
-  return feedsObjectArray.filter(
-    (feedsObject: FeedsObjectType) => Object.keys(feedsObject).length < 8
+export const returnMutationRequestKeys = (parseResult: NewParseResultType[]) => {
+  return parseResult.filter((parseResultKeys: NewParseResultType) =>
+    parseResultKeys && parseResultKeys.feeds
+      ? Object.keys(parseResultKeys.feeds[0]).length < 8
+      : false
   ).length;
 };
 
