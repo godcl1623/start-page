@@ -14,6 +14,8 @@ export interface FeedsSourceType {
   id: number;
   originName: string | null;
   originLink: string | null;
+  lastFeedsLength: number;
+  latestFeedTitle: string | null;
 }
 
 export interface ParseResultType {

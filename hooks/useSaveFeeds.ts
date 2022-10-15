@@ -23,11 +23,14 @@ const useSaveFeeds = (responseArray: string[], feeds: string) => {
       rawRssArray.forEach((rawRss: string) => {
         const { feedOriginName, feedOriginParsedLink, rssFeeds } = parseXml(rawRss);
         const feedsObjectArray = makeFeedDataArray(rssFeeds, feedOriginName, id);
+        const latestFeed: FeedsObjectType = feedsObjectArray[0];
         const feedsSourceArray = [
           {
             id: originId,
             originName: feedOriginName,
             originLink: feedOriginParsedLink,
+            lastFeedsLength: feedsObjectArray.length,
+            latestFeedTitle: latestFeed.title,
           },
         ];
         const feedsParseResult = {
