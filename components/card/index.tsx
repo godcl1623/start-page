@@ -27,7 +27,7 @@ export default function Card({ cardData }: CardProps) {
         isFavorite: favoriteState,
       };
       axios.patch('/api/feed', newData);
-      // if (link) window.location.assign(link);
+      if (link) window.location.assign(link);
     }
   }
 

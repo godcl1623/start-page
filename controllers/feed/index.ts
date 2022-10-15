@@ -47,14 +47,25 @@ export const handlePOSTRequest = (request: NextApiRequest, fileContents: string)
 
 export const handlePATCHRequest = (request: NextApiRequest, fileContents: string) => {
   const newData = request.body;
-  const numberOfKeysLessThanEight = returnMutationRequestKeys([newData]);
-  if (numberOfKeysLessThanEight === 0) {
-    const { feeds, origins } = JSON.parse(fileContents);
-    const feedsArrayWithNewData = concatNewDataByReplaceOldElement(feeds, newData);
-    return {
-      feeds: feedsArrayWithNewData,
-      origins,
+  if (newData && newData.id) {
+    const { data } = fileContents ? JSON.parse(fileContents) : { data: [] };
+    if (!data) return null;
+    const dataContainsChangeNeededFeed = data.find((storedFeeds: NewParseResultType) =>
+      storedFeeds.feeds?.find((feed: ParsedFeedsDataType) => feed.id === newData.id)
+    );
+    const newFeeds = dataContainsChangeNeededFeed.feeds.map((feed: ParsedFeedsDataType) => {
+      if (feed.id === newData.id) return newData;
+      else return feed;
+    });
+    const newFeedsData = {
+      ...dataContainsChangeNeededFeed,
+      feeds: newFeeds,
     };
+    const newFile = data
+      .filter((bar: NewParseResultType) => bar.originName !== newFeedsData.originName)
+      .concat([newFeedsData])
+      .sort((prev: NewParseResultType, next: NewParseResultType) => prev.id - next.id);
+    return newFile;
   } else {
     return false;
   }
