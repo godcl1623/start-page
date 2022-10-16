@@ -1,6 +1,4 @@
 import React from 'react';
-import axios, { AxiosError } from 'axios';
-import { useRouter } from 'next/router';
 import {
   checkIfFeedOriginValid,
   postNewFeedOrigin,
@@ -10,8 +8,6 @@ import {
 } from './utils/helpers';
 
 export default function SubscribeNew() {
-  const router = useRouter();
-
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 

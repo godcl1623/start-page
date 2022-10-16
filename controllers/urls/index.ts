@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios, { AxiosError } from 'axios';
 import { promises as fs } from 'fs';
+import { areEqual } from 'common/capsuledConditions';
 
 interface HandlerArguments {
   request: NextApiRequest;
@@ -24,10 +25,10 @@ export const handlePOSTRequest = async ({
   fileDirectory,
 }: HandlerArguments) => {
   const { mode, url } = request.body;
-  if (mode === 'test') {
+  if (areEqual(mode, 'test')) {
     const validationResult = await checkIfUrlValid(url);
     sendValidationResult(response, validationResult);
-  } else if (mode === 'post') {
+  } else if (areEqual(mode, 'post')) {
     const { urls } = JSON.parse(stringifiedFile);
     const overlapCheckResult = checkIfUrlOverlapped(urls, url);
     writeNewUrlToFile({ response, flag: overlapCheckResult, fileDirectory, urlsArray: urls, url });

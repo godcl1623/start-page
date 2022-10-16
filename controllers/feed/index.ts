@@ -1,6 +1,6 @@
 import { NextApiRequest } from 'next';
 import { ParsedFeedsDataType, ParseResultType } from 'types/global';
-import { isRearBiggerThanFront, areEqual, aOrB } from 'common/capsuledConditions';
+import { isRearBiggerThanFront, areEqual, isSatisfyingAOrB, isFrontBiggerThanRear } from 'common/capsuledConditions';
 
 export const handlePOSTRequest = (request: NextApiRequest, fileContents: string) => {
   const parseResult: ParseResultType[] = request.body;
@@ -15,7 +15,7 @@ export const handlePOSTRequest = (request: NextApiRequest, fileContents: string)
     } = storedFeedsData;
     const { lastFeedsLength, latestFeedTitle, feeds } = parseResult[index];
     if (
-      aOrB(
+      isSatisfyingAOrB(
         isRearBiggerThanFront(storedLastFeedsLength, lastFeedsLength),
         !areEqual(storedLatestFeedTitle, latestFeedTitle)
       )
@@ -30,7 +30,7 @@ export const handlePOSTRequest = (request: NextApiRequest, fileContents: string)
       return storedFeedsData;
     }
   });
-  if (data.length >= parseResult.length) {
+  if (isFrontBiggerThanRear(data.length, parseResult.length, true)) {
     return newData;
   } else {
     return newData.concat(parseResult.slice(newData.length));

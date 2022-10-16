@@ -1,5 +1,6 @@
+import { areEqual } from 'common/capsuledConditions';
 import React from 'react';
-import { ParseResultType, ParsedFeedsDataType } from 'types/global';
+import { ParsedFeedsDataType } from 'types/global';
 import { parseXml, makeFeedDataArray, postRSSParseResult } from './helpers';
 
 const useSaveFeeds = (responseArray: string[], feeds: string) => {
@@ -7,7 +8,8 @@ const useSaveFeeds = (responseArray: string[], feeds: string) => {
   const [feedsList, setFeedsList] = React.useState<string>('');
 
   React.useEffect(() => {
-    if (responseArray) setRawRssArray(responseArray);
+    if (responseArray)
+      setRawRssArray((oldArray: string[]) => oldArray.slice(oldArray.length).concat(responseArray));
   }, [responseArray]);
 
   React.useEffect(() => {
@@ -23,7 +25,7 @@ const useSaveFeeds = (responseArray: string[], feeds: string) => {
         const { feedOriginName, feedOriginParsedLink, rssFeeds } = parseXml(rawRss);
         const parsedFeedsArray = makeFeedDataArray(rssFeeds, feedOriginName, id);
         const latestFeed: ParsedFeedsDataType = parsedFeedsArray[0];
-        if (feedOriginName !== totalFeeds[index]?.originName) {
+        if (!areEqual(feedOriginName, totalFeeds[index]?.originName)) {
           const result = {
             id: originId,
             originName: feedOriginName,

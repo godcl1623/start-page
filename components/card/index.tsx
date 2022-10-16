@@ -54,11 +54,13 @@ export default function Card({ cardData }: CardProps) {
   }
 
   const returnReadStyle = (booleanA: boolean, booleanB: boolean) => {
-    if (booleanA) {
-      if (booleanB) return 'brightness-75 dark:opacity-50';
+    const flagA = booleanA;
+    const flagB = booleanB;
+    if (flagA) {
+      if (flagB) return 'brightness-75 dark:opacity-50';
       else return 'brightness-100 dark:opacity-100';
     } else {
-      if (booleanB) return 'brightness-75 dark:opacity-50';
+      if (flagB) return 'brightness-75 dark:opacity-50';
       else return 'brightness-100 dark:opacity-100';
     }
   };

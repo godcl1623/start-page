@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { areEqual } from 'common/capsuledConditions';
 import { ParsedFeedsDataType } from 'types/global';
 
 const findNode = (xmlNodesArray: Element[], nodeName: string) => {
@@ -17,7 +18,7 @@ const separateFeedsAndOriginInfo = (xmlNodesArray: HTMLCollection) => {
   let feedOriginInfo: Element[] = [];
   let rssFeeds: Element[] = [];
   const rawFeedsContainer = xmlNodesArray;
-  if (rawFeedsContainer.length === 1) {
+  if (areEqual(rawFeedsContainer.length, 1)) {
     const parsedRawFeedsData = Array.from(rawFeedsContainer[0].children);
     feedOriginInfo = filterNode(parsedRawFeedsData, 'item', true);
     rssFeeds = filterNode(parsedRawFeedsData, 'item');
