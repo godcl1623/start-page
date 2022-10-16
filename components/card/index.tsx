@@ -37,6 +37,7 @@ export default function Card({ cardData }: CardProps) {
       const newData = {
         ...cardData,
         isFavorite: !originalState,
+        isRead: readState,
       };
       axios.patch('/api/feed', newData);
     };
@@ -48,6 +49,7 @@ export default function Card({ cardData }: CardProps) {
       const newData = {
         ...cardData,
         isRead: !originalState,
+        isFavorite: favoriteState,
       };
       axios.patch('/api/feed', newData);
     };
