@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ParsedFeedsDataType, ParseResultType, NewParseResultType } from 'types/global';
+import { ParsedFeedsDataType } from 'types/global';
 
 const findNode = (xmlNodesArray: Element[], nodeName: string) => {
   return xmlNodesArray.find((xmlNode: Element) => xmlNode.nodeName === nodeName);

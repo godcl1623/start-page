@@ -10,16 +10,11 @@ export interface ParsedFeedsDataType {
   [key: string]: number | string | boolean | null;
 }
 
-export interface NewParseResultType {
+export interface ParseResultType {
   id: number;
   originName: string | null;
   originLink: string | null;
   lastFeedsLength: number;
   latestFeedTitle: string | null;
   feeds?: ParsedFeedsDataType[];
-}
-
-export interface ParseResultType {
-  feedsObjectArray: ParsedFeedsDataType[];
-  feedsSourceArray: NewParseResultType[];
 }

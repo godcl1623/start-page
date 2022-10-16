@@ -1,72 +1,61 @@
 import { NextApiRequest } from 'next';
-import { ParsedFeedsDataType, NewParseResultType } from 'types/global';
-import {
-  returnMutationRequestKeys,
-  concatOverlayWithNewData,
-  concatNewDataByReplaceOldElement,
-} from './helpers';
+import { ParsedFeedsDataType, ParseResultType } from 'types/global';
+import { isRearBiggerThanFront, areEqual, aOrB } from 'common/capsuledConditions';
 
 export const handlePOSTRequest = (request: NextApiRequest, fileContents: string) => {
-  const parseResult = request.body;
-  if (parseResult.length > 0) {
-    const { data } = fileContents ? JSON.parse(fileContents) : { data: [] };
-    let newData: NewParseResultType[];
-    if (data.length === 0) {
-      newData = [...parseResult];
+  const parseResult: ParseResultType[] = request.body;
+  const { data } = fileContents ? JSON.parse(fileContents) : { data: [] };
+  if (areEqual(parseResult.length, 0)) return data;
+  if (areEqual(data.length, 0)) return [...parseResult];
+  const newData = data.map((storedFeedsData: ParseResultType, index: number) => {
+    const {
+      lastFeedsLength: storedLastFeedsLength,
+      latestFeedTitle: storedLatestFeedTitle,
+      feeds: storedFeeds,
+    } = storedFeedsData;
+    const { lastFeedsLength, latestFeedTitle, feeds } = parseResult[index];
+    if (
+      aOrB(
+        isRearBiggerThanFront(storedLastFeedsLength, lastFeedsLength),
+        !areEqual(storedLatestFeedTitle, latestFeedTitle)
+      )
+    ) {
+      return {
+        ...storedFeedsData,
+        lastFeedsLength,
+        latestFeedTitle,
+        feeds: storedFeeds?.slice(storedFeeds?.length).concat(feeds || []),
+      };
     } else {
-      newData = data.map((storedFeedsData: NewParseResultType, index: number) => {
-        if (storedFeedsData.originName === parseResult[index]?.originName) {
-          const { lastFeedsLength, latestFeedTitle } = storedFeedsData;
-          if (
-            lastFeedsLength < parseResult[index].lastFeedsLength ||
-            latestFeedTitle !== parseResult[index].latestFeedTitle
-          ) {
-            return {
-              ...storedFeedsData,
-              lastFeedsLength: parseResult[index].lastFeedsLength,
-              latestFeedTitle: parseResult[index].latestFeedTitle,
-              feeds: storedFeedsData.feeds
-                ?.slice(storedFeedsData.feeds?.length)
-                .concat(parseResult[index].feeds),
-            };
-          } else {
-            return storedFeedsData;
-          }
-        }
-      });
+      return storedFeedsData;
     }
-    if (data.length >= parseResult.length) {
-      return newData;
-    } else {
-      return newData.concat(parseResult.slice(newData.length));
-    }
+  });
+  if (data.length >= parseResult.length) {
+    return newData;
   } else {
-    return JSON.parse(fileContents).data;
+    return newData.concat(parseResult.slice(newData.length));
   }
 };
 
 export const handlePATCHRequest = (request: NextApiRequest, fileContents: string) => {
   const newData = request.body;
-  if (newData && newData.id) {
-    const { data } = fileContents ? JSON.parse(fileContents) : { data: [] };
-    if (!data) return null;
-    const dataContainsChangeNeededFeed = data.find((storedFeeds: NewParseResultType) =>
-      storedFeeds.feeds?.find((feed: ParsedFeedsDataType) => feed.id === newData.id)
-    );
-    const newFeeds = dataContainsChangeNeededFeed.feeds.map((feed: ParsedFeedsDataType) => {
-      if (feed.id === newData.id) return newData;
-      else return feed;
-    });
-    const newFeedsData = {
-      ...dataContainsChangeNeededFeed,
-      feeds: newFeeds,
-    };
-    const newFile = data
-      .filter((bar: NewParseResultType) => bar.originName !== newFeedsData.originName)
-      .concat([newFeedsData])
-      .sort((prev: NewParseResultType, next: NewParseResultType) => prev.id - next.id);
-    return newFile;
-  } else {
-    return false;
-  }
+  if (!newData) return false;
+  const { data } = fileContents ? JSON.parse(fileContents) : { data: [] };
+  if (!data) return null;
+  const dataContainsChangeNeededFeed = data.find((storedFeeds: ParseResultType) =>
+    storedFeeds.feeds?.find((feed: ParsedFeedsDataType) => feed.id === newData.id)
+  );
+  const newFeeds = dataContainsChangeNeededFeed.feeds.map((feed: ParsedFeedsDataType) => {
+    if (areEqual(feed.id, newData.id)) return newData;
+    else return feed;
+  });
+  const newFeedsData = {
+    ...dataContainsChangeNeededFeed,
+    feeds: newFeeds,
+  };
+  const newFile = data
+    .filter((storedFeeds: ParseResultType) => storedFeeds.originName !== newFeedsData.originName)
+    .concat([newFeedsData])
+    .sort((prev: ParseResultType, next: ParseResultType) => prev.id - next.id);
+  return newFile;
 };
