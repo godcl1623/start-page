@@ -1,11 +1,12 @@
 import { areEqual } from 'common/capsuledConditions';
 import React from 'react';
-import { ParsedFeedsDataType } from 'types/global';
+import { ParsedFeedsDataType, ParseResultType } from 'types/global';
 import { parseXml, makeFeedDataArray, postRSSParseResult } from './helpers';
 
 const useSaveFeeds = (responseArray: string[], feeds: string) => {
   const [rawRssArray, setRawRssArray] = React.useState<string[]>([]);
   const [feedsList, setFeedsList] = React.useState<string>('');
+  const [newFeeds, setNewFeeds] = React.useState<ParseResultType[]>([]);
 
   React.useEffect(() => {
     if (responseArray)
@@ -45,9 +46,15 @@ const useSaveFeeds = (responseArray: string[], feeds: string) => {
           };
         }
       });
-      postRSSParseResult(parseResult);
+      postRSSParseResult(parseResult).then(result => {
+        if (result) {
+          setNewFeeds(result?.data.data);
+        }
+      });
     }
   }, [rawRssArray, feedsList]);
+
+  return newFeeds;
 };
 
 export default useSaveFeeds;

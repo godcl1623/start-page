@@ -16,7 +16,7 @@ export default async function handler(request: NextApiRequest, response: NextApi
         data: result,
       };
       fs.writeFile(`${jsonDirectory}/feeds.json`, JSON.stringify(newData));
-      response.status(200).json('success');
+      response.status(200).json(newData);
     }
   } else if (areEqual(request.method, 'PATCH')) {
     const result = handlePATCHRequest(request, fileContents);

@@ -4,7 +4,7 @@ import Search from 'components/search';
 import { HttpRequest } from 'api';
 import useSaveFeeds from 'hooks/useSaveFeeds';
 import Card from 'components/card';
-import { ParsedFeedsDataType } from 'types/global';
+import { ParsedFeedsDataType, ParseResultType } from 'types/global';
 import { handleSort } from 'common/helpers';
 import { SORT_STANDARD, SORT_STANDARD_STATE } from 'common/constants';
 import SelectBox from 'components/common/SelectBox';
@@ -22,7 +22,7 @@ export default function Index({ feeds, responseArrays }: IndexProps) {
   const [currentSort, setCurrentSort] = React.useState(0);
   const [modalState, setModalState] = React.useState(false);
   const startPageRef = React.useRef<HTMLElement | null>(null);
-  useSaveFeeds(responseArrays, feeds);
+  const newFeeds = useSaveFeeds(responseArrays, feeds);
 
   const checkShouldSortByReverse = (sortState: number) => sortState === 1;
   const setSortState = (stateString: string, stateStringArray: string[]) => {
@@ -33,14 +33,13 @@ export default function Index({ feeds, responseArrays }: IndexProps) {
     }
   };
 
-  const feedsToDisplay = feeds
-    ? JSON.parse(feeds)
-        .data.map((feedData: ParsedFeedsDataType) => feedData.feeds)
-        .reduce((resultArray: React.ReactNode[], currentArray: React.ReactNode[]) => {
-          resultArray.push(...currentArray);
+  const feedsToDisplay = newFeeds
+    ? newFeeds.map((feedData: ParseResultType) => feedData.feeds)
+        .reduce((resultArray: ParsedFeedsDataType[] | undefined, currentArray: ParsedFeedsDataType[] | undefined) => {
+          if (currentArray) resultArray?.push(...currentArray);
           return resultArray;
         }, [])
-        .sort(handleSort(SORT_STANDARD_STATE[currentSort], checkShouldSortByReverse(currentSort)))
+        ?.sort(handleSort(SORT_STANDARD_STATE[currentSort], checkShouldSortByReverse(currentSort)))
         .map((feed: ParsedFeedsDataType) => <Card cardData={feed} key={feed.id} />)
     : [];
 
