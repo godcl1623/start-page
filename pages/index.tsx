@@ -12,17 +12,29 @@ import { AxiosResponse } from 'axios';
 import Modal from 'components/modal';
 import SubscriptionDialogBox from 'components/feeds';
 import SubscribeNew from 'components/feeds/SubscribeNew';
+import CancelSubscription from 'components/feeds/CancelSubscription';
 
 interface IndexProps {
   feeds: string;
   responseArrays: string[];
+  parsedUrls: string[];
 }
 
-export default function Index({ feeds, responseArrays }: IndexProps) {
+type ModalKeys = 'addSubscription' | 'cancelSubscription';
+
+type ModalStateType = {
+  [key in ModalKeys]: boolean;
+};
+
+export default function Index({ feeds, responseArrays, parsedUrls }: IndexProps) {
   const [currentSort, setCurrentSort] = React.useState(0);
-  const [modalState, setModalState] = React.useState(false);
+  const [modalState, setModalState] = React.useState<ModalStateType>({
+    addSubscription: false,
+    cancelSubscription: false,
+  });
   const startPageRef = React.useRef<HTMLElement | null>(null);
   const newFeeds = useSaveFeeds(responseArrays, feeds);
+  const originNames = newFeeds?.map((feedsData) => feedsData.originName);
 
   const checkShouldSortByReverse = (sortState: number) => sortState === 1;
   const setSortState = (stateString: string, stateStringArray: string[]) => {
@@ -34,26 +46,38 @@ export default function Index({ feeds, responseArrays }: IndexProps) {
   };
 
   const feedsToDisplay = newFeeds
-    ? newFeeds.map((feedData: ParseResultType) => feedData.feeds)
-        .reduce((resultArray: ParsedFeedsDataType[] | undefined, currentArray: ParsedFeedsDataType[] | undefined) => {
-          if (currentArray) resultArray?.push(...currentArray);
-          return resultArray;
-        }, [])
+    ? newFeeds
+        .map((feedData: ParseResultType) => feedData.feeds)
+        .reduce(
+          (
+            resultArray: ParsedFeedsDataType[] | undefined,
+            currentArray: ParsedFeedsDataType[] | undefined
+          ) => {
+            if (currentArray) resultArray?.push(...currentArray);
+            return resultArray;
+          },
+          []
+        )
         ?.sort(handleSort(SORT_STANDARD_STATE[currentSort], checkShouldSortByReverse(currentSort)))
         .map((feed: ParsedFeedsDataType) => <Card cardData={feed} key={feed.id} />)
     : [];
 
-  const handleClick = () => {
+  const handleClick = (target: ModalKeys) => () => {
     document.documentElement.scrollTo({ top: 0 });
-    closeModal(!modalState);
+    closeModal(target, !modalState[target])();
   };
 
-  const closeModal = (lastModalState = false) => {
-    setModalState(lastModalState);
-  };
+  const closeModal =
+    (target: ModalKeys, lastModalState = false) =>
+    () => {
+      setModalState(modalStateObject => ({
+        ...modalStateObject,
+        [target]: lastModalState,
+      }));
+    };
 
   React.useEffect(() => {
-    if (modalState) {
+    if (modalState.addSubscription || modalState.cancelSubscription) {
       document.documentElement.style.overflow = 'hidden';
     } else {
       document.documentElement.style.overflow = 'auto';
@@ -74,11 +98,14 @@ export default function Index({ feeds, responseArrays }: IndexProps) {
             <section>
               <button
                 className='mr-4 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200'
-                onClick={handleClick}
+                onClick={handleClick('addSubscription')}
               >
                 구독 추가
               </button>
-              <button className='mr-4 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200'>
+              <button
+                className='mr-4 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200'
+                onClick={handleClick('cancelSubscription')}
+              >
                 구독 취소
               </button>
               <Link href='/favorites'>
@@ -96,10 +123,17 @@ export default function Index({ feeds, responseArrays }: IndexProps) {
         </section>
         <section>{feedsToDisplay}</section>
       </section>
-      {modalState && (
-        <Modal closeModal={closeModal}>
-          <SubscriptionDialogBox closeModal={closeModal}>
+      {modalState.addSubscription && (
+        <Modal closeModal={closeModal('addSubscription')}>
+          <SubscriptionDialogBox closeModal={closeModal('addSubscription')}>
             <SubscribeNew />
+          </SubscriptionDialogBox>
+        </Modal>
+      )}
+      {modalState.cancelSubscription && (
+        <Modal closeModal={closeModal('cancelSubscription')}>
+          <SubscriptionDialogBox closeModal={closeModal('cancelSubscription')}>
+            <CancelSubscription urls={parsedUrls} originNames={originNames} />
           </SubscriptionDialogBox>
         </Modal>
       )}
@@ -124,6 +158,7 @@ export async function getServerSideProps() {
       props: {
         feeds,
         responseArrays,
+        parsedUrls,
       },
     };
   } catch (error) {
