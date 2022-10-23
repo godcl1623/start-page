@@ -6,9 +6,19 @@ interface Props {
   originNames: (string | null)[];
 }
 
+interface CheckboxValue {
+  [key: string]: string | boolean;
+}
+
+interface SubscriptionCheckboxes {
+  [key: string]: CheckboxValue;
+}
+
 export default function CancelSubscription({ urls, originNames }: Props) {
   const [subscriptionList, setSubscriptionList] = React.useState<string[]>([]);
   const [originsList, setOriginsList] = React.useState<(string | null)[]>([]);
+  const [subscriptionCheckboxes, setSubscriptionCheckboxes] =
+    React.useState<SubscriptionCheckboxes>({});
 
   React.useEffect(() => {
     if (urls.length > 0) {
@@ -24,12 +34,61 @@ export default function CancelSubscription({ urls, originNames }: Props) {
     }
   }, [originNames]);
 
-  const subscriptionOptions = subscriptionList.map((url: string, index: number) => (
-    <li key={url} className='flex w-full py-2 px-4 list-none'>
-      <input type='checkbox' className='mr-2' />
-      <label>{originsList[index]}</label>
-    </li>
-  ));
+  React.useEffect(() => {
+    if (subscriptionList.length > 0 && originsList.length > 0) {
+      const valueContainer: SubscriptionCheckboxes = {};
+      const objectMadeBySubscriptions = originsList.reduce((acc, curr, index) => {
+        let keyText: string;
+        if (curr) keyText = curr;
+        else keyText = `blog_${index}`;
+        acc[keyText] = {
+          value: subscriptionList[index],
+          checked: false,
+        };
+        return acc;
+      }, valueContainer);
+      setSubscriptionCheckboxes(previousObject => ({
+        ...previousObject,
+        ...objectMadeBySubscriptions,
+      }));
+    }
+  }, [subscriptionList, originsList]);
+
+  const changeSubscriptionState = (target: string, status: boolean) => () => {
+    setSubscriptionCheckboxes((previousObject: SubscriptionCheckboxes) => {
+      return {
+        ...previousObject,
+        [target]: {
+          ...previousObject[target],
+          checked: status,
+        },
+      };
+    });
+  };
+
+  const subscriptionOptions = Object.keys(subscriptionCheckboxes).map(
+    (origins: string, index: number) => {
+      const { value, checked } = subscriptionCheckboxes[origins];
+      const inputValue = typeof value === 'string' ? value : '';
+      const inputChecked = typeof checked === 'boolean' ? checked : false;
+      return (
+        <li
+          key={origins}
+          className='flex w-full py-2 px-4 list-none cursor-pointer'
+          onClick={changeSubscriptionState(origins, !checked)}
+        >
+          <input
+            type='checkbox'
+            className='mr-2 cursor-pointer'
+            value={inputValue}
+            checked={inputChecked}
+            onChange={changeSubscriptionState(origins, !checked)}
+          />
+          <label className='cursor-pointer'>{originsList[index] || `blog_${index}`}</label>
+        </li>
+      );
+    }
+  );
 
   return (
     <section className='h-full'>
