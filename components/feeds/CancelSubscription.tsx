@@ -6,7 +6,7 @@ import Button from './Button';
 interface Props {
   urls: string[];
   originNames: (string | null)[];
-  closeModal: (value: string) => () => void;
+  closeModal: () => void;
 }
 
 interface CheckboxValue {
