@@ -48,6 +48,7 @@ export default function CancelSubscription({ urls, originNames, closeModal }: Pr
         acc[keyText] = {
           value: subscriptionList[index],
           checked: false,
+          deleteFeeds: false,
         };
         return acc;
       }, valueContainer);
@@ -70,25 +71,45 @@ export default function CancelSubscription({ urls, originNames, closeModal }: Pr
     });
   };
 
+  const changeDeleteFeedsState = (target: string, status: boolean) => () => {
+    setSubscriptionCheckboxes((previousObject: SubscriptionCheckboxes) => {
+      return {
+        ...previousObject,
+        [target]: {
+          ...previousObject[target],
+          deleteFeeds: status,
+        },
+      };
+    });
+  };
+
   const subscriptionOptions = Object.keys(subscriptionCheckboxes).map(
     (origins: string, index: number) => {
-      const { value, checked } = subscriptionCheckboxes[origins];
+      const { value, checked, deleteFeeds } = subscriptionCheckboxes[origins];
       const inputValue = typeof value === 'string' ? value : '';
       const inputChecked = typeof checked === 'boolean' ? checked : false;
+      const deleteFeedsChecked = typeof deleteFeeds === 'boolean' ? deleteFeeds : false;
       return (
-        <li
-          key={origins}
-          className='flex w-full py-2 px-4 list-none cursor-pointer'
-          onClick={changeSubscriptionState(origins, !checked)}
-        >
+        <li key={origins} className='flex justify-between w-full py-2 px-4 list-none cursor-pointer'>
+          <div onClick={changeSubscriptionState(origins, !checked)}>
+            <input
+              name='url'
+              type='checkbox'
+              className='mr-2 cursor-pointer'
+              value={inputValue}
+              checked={inputChecked}
+              onChange={changeSubscriptionState(origins, !checked)}
+            />
+            <label className='cursor-pointer'>{originsList[index] || `blog_${index}`}</label>
+          </div>
           <input
+            name='deleteFeeds'
             type='checkbox'
             className='mr-2 cursor-pointer'
-            value={inputValue}
-            checked={inputChecked}
-            onChange={changeSubscriptionState(origins, !checked)}
+            value={String(deleteFeedsChecked)}
+            checked={deleteFeedsChecked}
+            onChange={changeDeleteFeedsState(origins, !deleteFeedsChecked)}
           />
-          <label className='cursor-pointer'>{originsList[index] || `blog_${index}`}</label>
         </li>
       );
     }
@@ -121,7 +142,12 @@ export default function CancelSubscription({ urls, originNames, closeModal }: Pr
           <br />
           선택해주세요.
         </h1>
-        <ul className='flex-center flex-col w-full h-full mb-4'>{subscriptionOptions}</ul>
+        <ul className='relative flex-center flex-col w-full h-full mb-4'>
+          {subscriptionOptions}
+          <div className='absolute -top-5 right-1 text-sm'>
+            피드 삭제
+          </div>
+        </ul>
         <Button type='submit' customStyle={`bg-sky-400 dark:bg-sky-800`}>
           저장
         </Button>
