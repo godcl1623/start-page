@@ -133,7 +133,7 @@ export default function Index({ feeds, responseArrays, parsedUrls }: IndexProps)
       {modalState.cancelSubscription && (
         <Modal closeModal={closeModal('cancelSubscription')}>
           <SubscriptionDialogBox closeModal={closeModal('cancelSubscription')}>
-            <CancelSubscription urls={parsedUrls} originNames={originNames} />
+            <CancelSubscription urls={parsedUrls} originNames={originNames} closeModal={closeModal('cancelSubscription')} />
           </SubscriptionDialogBox>
         </Modal>
       )}

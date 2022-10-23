@@ -1,9 +1,12 @@
 import React from 'react';
+import axios from 'axios';
+import { useRouter } from 'next/router';
 import Button from './Button';
 
 interface Props {
   urls: string[];
   originNames: (string | null)[];
+  closeModal: (value: string) => () => void;
 }
 
 interface CheckboxValue {
@@ -14,11 +17,12 @@ interface SubscriptionCheckboxes {
   [key: string]: CheckboxValue;
 }
 
-export default function CancelSubscription({ urls, originNames }: Props) {
+export default function CancelSubscription({ urls, originNames, closeModal }: Props) {
   const [subscriptionList, setSubscriptionList] = React.useState<string[]>([]);
   const [originsList, setOriginsList] = React.useState<(string | null)[]>([]);
   const [subscriptionCheckboxes, setSubscriptionCheckboxes] =
     React.useState<SubscriptionCheckboxes>({});
+  const router = useRouter();
 
   React.useEffect(() => {
     if (urls.length > 0) {
@@ -90,9 +94,28 @@ export default function CancelSubscription({ urls, originNames }: Props) {
     }
   );
 
+  const sendChangeUrlsListRequest = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formInputs = event.currentTarget.querySelectorAll('input');
+    const checkedInputs = Array.from(formInputs)
+      .filter(input => input.checked)
+      .map(input => input.value);
+    try {
+      const result = await axios.patch('/api/urls', checkedInputs);
+      if (result.data) {
+        window.alert('저장되었습니다.');
+        router.reload();
+      }
+    } catch (error) {
+      window.alert('오류가 발생했습니다.');
+      if (axios.isAxiosError(error)) return Promise.reject(error);
+      else if (error instanceof Error) throw new Error(error.message);
+    }
+  };
+
   return (
     <section className='h-full'>
-      <form className='w-full h-full'>
+      <form className='w-full h-full' onSubmit={sendChangeUrlsListRequest}>
         <h1 className='mb-4 text-xl'>
           구독을 취소할 블로그 / 사이트를
           <br />
@@ -102,7 +125,7 @@ export default function CancelSubscription({ urls, originNames }: Props) {
         <Button type='submit' customStyle={`bg-sky-400 dark:bg-sky-800`}>
           저장
         </Button>
-        <Button type='button' customStyle={`dark:bg-neutral-500`}>
+        <Button type='button' customStyle={`dark:bg-neutral-500`} clickHandler={closeModal}>
           취소
         </Button>
       </form>

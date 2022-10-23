@@ -81,3 +81,22 @@ const writeNewUrlToFile = ({
     response.status(200).json(true);
   }
 };
+
+export const handlePATCHRequest = async ({
+  request,
+  response,
+  stringifiedFile,
+  fileDirectory,
+}: HandlerArguments) => {
+  const urlsToDelete = request.body;
+  if (urlsToDelete.length > 0) {
+    const { urls } = JSON.parse(stringifiedFile);
+    const filteredList = urls.filter((url: string) => !urlsToDelete.includes(url));
+    const newList = {
+      urls: filteredList,
+    };
+    fs.writeFile(`${fileDirectory}/urls.json`, JSON.stringify(newList));
+    response.status(200).json(true);
+  }
+  return false;
+};

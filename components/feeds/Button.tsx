@@ -1,7 +1,7 @@
 interface Props {
   customStyle?: string;
   type: 'button' | 'submit' | 'reset' | undefined;
-  clickHandler?: () => void;
+  clickHandler?: (value: string) => () => void;
   children: string;
 }
 
