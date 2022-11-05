@@ -119,19 +119,32 @@ export default function CancelSubscription({ urls, originNames, closeModal }: Pr
     event.preventDefault();
     const formInputs = event.currentTarget.querySelectorAll('input');
     const checkedInputs = Array.from(formInputs)
-      .filter(input => input.checked)
-      .map(input => input.value);
-    try {
-      const result = await axios.patch('/api/urls', checkedInputs);
-      if (result.data) {
-        window.alert('저장되었습니다.');
-        router.reload();
-      }
-    } catch (error) {
-      window.alert('오류가 발생했습니다.');
-      if (axios.isAxiosError(error)) return Promise.reject(error);
-      else if (error instanceof Error) throw new Error(error.message);
-    }
+      .reduce((resultObject: SubscriptionCheckboxes, input, index) => {
+        if (input.name === 'url') {
+          resultObject[`${index / 2}`] = {
+            ...resultObject[`${index / 2}`],
+            url: input.value,
+            unsubscribe: input.checked,
+          };
+        } else if (input.name === 'deleteFeeds') {
+          resultObject[`${(index - 1) / 2}`] = {
+            ...resultObject[`${(index - 1) / 2}`],
+            deleteFeeds: input.checked,
+          };
+        }
+        return resultObject;
+      }, {});
+    // try {
+    //   const result = await axios.patch('/api/urls', checkedInputs);
+    //   if (result.data) {
+    //     window.alert('저장되었습니다.');
+    //     router.reload();
+    //   }
+    // } catch (error) {
+    //   window.alert('오류가 발생했습니다.');
+    //   if (axios.isAxiosError(error)) return Promise.reject(error);
+    //   else if (error instanceof Error) throw new Error(error.message);
+    // }
   };
 
   return (
