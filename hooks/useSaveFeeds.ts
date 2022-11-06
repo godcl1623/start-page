@@ -3,10 +3,15 @@ import React from 'react';
 import { ParsedFeedsDataType, ParseResultType } from 'types/global';
 import { parseXml, makeFeedDataArray, postRSSParseResult } from './helpers';
 
-const useSaveFeeds = (responseArray: string[], feeds: string) => {
+interface OptionTypes {
+  isFilterFavorite?: boolean;
+}
+
+const useSaveFeeds = (responseArray: string[], feeds: string, options?: OptionTypes) => {
   const [rawRssArray, setRawRssArray] = React.useState<string[]>([]);
   const [feedsList, setFeedsList] = React.useState<string>('');
   const [newFeeds, setNewFeeds] = React.useState<ParseResultType[]>([]);
+  const [isFilterFavorite, setIsFilterFavorite] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     if (responseArray)
@@ -16,6 +21,12 @@ const useSaveFeeds = (responseArray: string[], feeds: string) => {
   React.useEffect(() => {
     if (feeds) setFeedsList(feeds);
   }, [feeds]);
+
+  React.useEffect(() => {
+    if (options && options.isFilterFavorite != null) {
+      setIsFilterFavorite(options.isFilterFavorite);
+    }
+  }, [options, options?.isFilterFavorite]);
 
   React.useEffect(() => {
     if (rawRssArray) {
@@ -48,11 +59,23 @@ const useSaveFeeds = (responseArray: string[], feeds: string) => {
       });
       postRSSParseResult(parseResult).then(result => {
         if (result) {
-          setNewFeeds(result?.data.data);
+          setNewFeeds(previousFeeds =>
+            previousFeeds.slice(previousFeeds.length).concat(result?.data.data)
+          );
         }
       });
     }
-  }, [rawRssArray, feedsList]);
+  }, [rawRssArray, feedsList, isFilterFavorite]);
+
+  if (isFilterFavorite) {
+    return newFeeds.map((feedData: ParseResultType) => {
+      const filteredFeeds = feedData.feeds?.filter((feed: ParsedFeedsDataType) => feed.isFavorite);
+      return {
+        ...feedData,
+        feeds: filteredFeeds,
+      };
+    });
+  }
 
   return newFeeds;
 };

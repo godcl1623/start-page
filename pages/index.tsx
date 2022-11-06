@@ -32,8 +32,9 @@ export default function Index({ feeds, responseArrays, parsedUrls }: IndexProps)
     addSubscription: false,
     cancelSubscription: false,
   });
+  const [isFilterFavorite, setIsFilterFavorite] = React.useState<boolean>(false);
   const startPageRef = React.useRef<HTMLElement | null>(null);
-  const newFeeds = useSaveFeeds(responseArrays, feeds);
+  const newFeeds = useSaveFeeds(responseArrays, feeds, { isFilterFavorite });
   const originNames = newFeeds?.map((feedsData) => feedsData.originName);
 
   const checkShouldSortByReverse = (sortState: number) => sortState === 1;
@@ -76,6 +77,10 @@ export default function Index({ feeds, responseArrays, parsedUrls }: IndexProps)
       }));
     };
 
+  const filterFavorites = () => {
+    setIsFilterFavorite(!isFilterFavorite);
+  };
+
   React.useEffect(() => {
     if (modalState.addSubscription || modalState.cancelSubscription) {
       document.documentElement.style.overflow = 'hidden';
@@ -108,11 +113,12 @@ export default function Index({ feeds, responseArrays, parsedUrls }: IndexProps)
               >
                 구독 취소
               </button>
-              <Link href='/favorites'>
-                <a className='mr-4 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200'>
-                  즐겨찾기
-                </a>
-              </Link>
+              <button
+                className='mr-4 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200'
+                onClick={filterFavorites}
+              >
+                즐겨찾기
+              </button>
             </section>
             <SelectBox
               optionValues={SORT_STANDARD}
