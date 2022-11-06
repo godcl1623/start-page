@@ -77,6 +77,7 @@ export default function CancelSubscription({ urls, originNames, closeModal }: Pr
         ...previousObject,
         [target]: {
           ...previousObject[target],
+          checked: status,
           deleteFeeds: status,
         },
       };
@@ -90,7 +91,7 @@ export default function CancelSubscription({ urls, originNames, closeModal }: Pr
       const inputChecked = typeof checked === 'boolean' ? checked : false;
       const deleteFeedsChecked = typeof deleteFeeds === 'boolean' ? deleteFeeds : false;
       return (
-        <li key={origins} className='flex justify-between w-full py-2 px-4 list-none cursor-pointer'>
+        <li key={origins} className='flex justify-between w-full py-2 px-4 list-none cursor-pointer select-none'>
           <div onClick={changeSubscriptionState(origins, !checked)}>
             <input
               name='url'

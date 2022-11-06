@@ -94,16 +94,6 @@ export const handlePATCHRequest = async ({
   stringifiedFile,
   fileDirectory,
 }: HandlerArguments) => {
-  // const urlsToDelete = request.body;
-  // if (urlsToDelete.length > 0) {
-  //   const { urls } = JSON.parse(stringifiedFile);
-  //   const filteredList = urls.filter((url: string) => !urlsToDelete.includes(url));
-  //   const newList = {
-  //     urls: filteredList,
-  //   };
-  //   // fs.writeFile(`${fileDirectory}/urls.json`, JSON.stringify(newList));
-  //   response.status(200).json(true);
-  // }
   const subscriptionList = request.body;
   const unsubscribeList = subscriptionList.filter(
     (subscriptionData: SubscriptionData) => subscriptionData.unsubscribe
@@ -111,32 +101,26 @@ export const handlePATCHRequest = async ({
   const deleteFeedsList = subscriptionList.filter(
     (subsciriptionData: SubscriptionData) => subsciriptionData.deleteFeeds
   );
-  /* 쓰기 기능만 활성화하면 완료 */
   if (unsubscribeList.length > 0) {
     const { urls } = JSON.parse(stringifiedFile);
     const filteredList = urls.filter(
       (url: string) =>
         !unsubscribeList.map((listData: SubscriptionData) => listData.url).includes(url)
     );
-    // const newList = {
-    //   urls: filteredList,
-    // };
-    // fs.writeFile(`${fileDirectory}/urls.json`, JSON.stringify(newList));
+    const newList = {
+      urls: filteredList,
+    };
+    fs.writeFile(`${fileDirectory}/urls.json`, JSON.stringify(newList));
+    response.status(200).json(true);
   }
-  /* delete로 구현이 불가능하면 patch로 바꿀 것 */
   if (deleteFeedsList.length > 0) {
-    deleteFeedsList.forEach((listData: SubscriptionData) => {
-      setTimeout(() => {
-        axios.delete(
-          `http://localhost:3000/api/feed/${listData.url.split('/')[2].replaceAll('.', '_')}`
-        );
-      }, 100);
-    });
-    // const result = await Promise.all(deleteRequests);
-    // for (const listData of deleteFeedsList) {
-    //   axios.delete(`http://localhost:3000/api/feed/${listData.url.split('/')[2].replaceAll('.', '_')}`);
-    // }
-    // console.log('result: ', result);
+    const arrayForRequest = deleteFeedsList.map((subscriptionData: SubscriptionData) => subscriptionData.url.split('/')[2]);
+    try {
+      await axios.delete('http://localhost:3000/api/feed', { data: arrayForRequest });
+      response.status(200).json(true);
+    } catch (error) {
+      return Promise.reject(error);
+    }
   }
   return false;
 };
