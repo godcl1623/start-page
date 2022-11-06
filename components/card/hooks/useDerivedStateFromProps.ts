@@ -1,4 +1,5 @@
 import React from 'react';
+import { areEqual } from 'common/capsuledConditions';
 
 const useDerivedStateFromProps = <T>(
   propsToMakeState: T
@@ -6,7 +7,7 @@ const useDerivedStateFromProps = <T>(
   const [stateToDifferentiate, setState] = React.useState<T | null>(null);
 
   React.useEffect(() => {
-    if (propsToMakeState !== stateToDifferentiate) setState(propsToMakeState);
+    if (!areEqual(propsToMakeState, stateToDifferentiate)) setState(propsToMakeState);
   }, []);
 
   return [stateToDifferentiate as T, setState as React.Dispatch<React.SetStateAction<T>>];

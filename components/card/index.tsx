@@ -1,13 +1,13 @@
 import React from 'react';
 import axios from 'axios';
 import { AiFillStar as FavoriteIcon, AiFillRead as CheckIcon } from 'react-icons/ai';
-import { FeedsObjectType } from 'types/global';
+import { ParsedFeedsDataType } from 'types/global';
 import { isTodayLessThanExtraDay } from 'common/helpers';
 import useDerivedStateFromProps from './hooks/useDerivedStateFromProps';
 import Checkbox from './Checkbox';
 
 type CardProps = {
-  cardData: FeedsObjectType;
+  cardData: ParsedFeedsDataType;
 };
 
 type CallbackType = (value: any) => void;
@@ -17,6 +17,7 @@ export default function Card({ cardData }: CardProps) {
   const parsedPubDate = new Date(pubDate as string).toDateString();
   const [readState, setReadState] = useDerivedStateFromProps<boolean>(isRead);
   const [favoriteState, setFavoriteState] = useDerivedStateFromProps<boolean>(isFavorite);
+  const [dateState, setDateState] = React.useState(false);
 
   function handleCard(event: React.MouseEvent) {
     if (!(event.target instanceof SVGElement)) {
@@ -25,7 +26,7 @@ export default function Card({ cardData }: CardProps) {
         isRead: true,
         isFavorite: favoriteState,
       };
-      axios.patch('/feed', newData);
+      axios.patch('/api/feed', newData);
       if (link) window.location.assign(link);
     }
   }
@@ -36,8 +37,9 @@ export default function Card({ cardData }: CardProps) {
       const newData = {
         ...cardData,
         isFavorite: !originalState,
+        isRead: readState,
       };
-      axios.patch('/feed', newData);
+      axios.patch('/api/feed', newData);
     };
   }
 
@@ -47,20 +49,31 @@ export default function Card({ cardData }: CardProps) {
       const newData = {
         ...cardData,
         isRead: !originalState,
+        isFavorite: favoriteState,
       };
-      axios.patch('/feed', newData);
+      axios.patch('/api/feed', newData);
     };
   }
 
   const returnReadStyle = (booleanA: boolean, booleanB: boolean) => {
-    if (booleanA) {
-      if (booleanB) return 'brightness-75 dark:opacity-50';
+    const flagA = booleanA;
+    const flagB = booleanB;
+    if (flagA) {
+      if (flagB) return 'brightness-75 dark:opacity-50';
       else return 'brightness-100 dark:opacity-100';
     } else {
-      if (booleanB) return 'brightness-75 dark:opacity-50';
+      if (flagB) return 'brightness-75 dark:opacity-50';
       else return 'brightness-100 dark:opacity-100';
     }
   };
+
+  // hydration 오류 수정용
+  React.useEffect(() => {
+    const dateFlag = isTodayLessThanExtraDay(pubDate);
+    if (dateFlag) {
+      setDateState(dateFlag);
+    }
+  }, [pubDate]);
 
   return (
     <section
@@ -76,8 +89,8 @@ export default function Card({ cardData }: CardProps) {
           buttonIcon={FavoriteIcon}
           handleCheckbox={handleFavorite(favoriteState, setFavoriteState)}
         />
-        {isTodayLessThanExtraDay(pubDate) && (
-          <span className='text-xs text-yellow-300 font-bold'>New</span>
+        {dateState && (
+          <span className='text-xs text-yellow-500 font-bold dark:text-yellow-300'>New</span>
         )}
       </div>
       <div className='w-full'>

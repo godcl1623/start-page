@@ -1,5 +1,5 @@
-export interface FeedsObjectType {
-  id: number;
+export interface ParsedFeedsDataType {
+  id: string;
   title: string | null;
   description: string | null;
   link: string | null;
@@ -7,15 +7,14 @@ export interface FeedsObjectType {
   origin: string | null;
   isRead: boolean;
   isFavorite: boolean;
-}
-
-export interface FeedsSourceType {
-  id: number;
-  originName: string | null;
-  originLink: string | null;
+  [key: string]: number | string | boolean | null;
 }
 
 export interface ParseResultType {
-  feedsObjectArray: FeedsObjectType[];
-  feedsSourceArray: FeedsSourceType[];
+  id: number;
+  originName: string | null;
+  originLink: string | null;
+  lastFeedsLength: number;
+  latestFeedTitle: string | null;
+  feeds?: ParsedFeedsDataType[];
 }

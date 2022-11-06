@@ -1,14 +1,40 @@
-import { FeedsObjectType } from 'types/global';
+import { ParsedFeedsDataType } from 'types/global';
+import {
+  areEqual,
+  isSatisfyingBothAAndB,
+  isFrontBiggerThanRear,
+  isNull,
+} from './capsuledConditions';
 
-export const sortByPubDate = (prev: FeedsObjectType, next: FeedsObjectType) => {
-  if (prev.pubDate && next.pubDate) {
-    const prevPubDate = new Date(prev.pubDate);
-    const nextPubDate = new Date(next.pubDate);
-    if (prevPubDate > nextPubDate) return -1;
-    else return 1;
-  } else {
-    return -1;
-  }
+const extractObjectData = <T extends ParsedFeedsDataType>(
+  targetObject: T,
+  targetProperty: string
+) => {
+  if (areEqual(targetProperty, 'pubDate') && targetObject['pubDate'])
+    return new Date(targetObject['pubDate']);
+  else return targetObject[targetProperty];
+};
+
+export const handleSort = <T extends ParsedFeedsDataType>(
+  targetProperty: string,
+  reverse = false
+) => {
+  return (prev: T, next: T) => {
+    if (
+      isSatisfyingBothAAndB(
+        isFrontBiggerThanRear(Object.keys(prev).length, 0),
+        isFrontBiggerThanRear(Object.keys(next).length, 0)
+      )
+    ) {
+      const prevData = extractObjectData(prev, targetProperty);
+      const nextData = extractObjectData(next, targetProperty);
+      if (isSatisfyingBothAAndB(prevData && nextData, isFrontBiggerThanRear(prevData, nextData)))
+        return reverse ? 1 : -1;
+      else return reverse ? -1 : 1;
+    } else {
+      return reverse ? -1 : 1;
+    }
+  };
 };
 
 const returnDaysAddedDate = (dateString: string, daysToAdd: number) => {
