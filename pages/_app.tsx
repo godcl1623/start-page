@@ -1,13 +1,24 @@
 import React from 'react';
 import type { AppProps } from 'next/app';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Seo from 'components/Seo';
 import 'tailwindcss/tailwind.css';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 4,
+    },
+  },
+});
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <React.Fragment>
       <Seo title='Start Page' />
-      <Component {...pageProps} />
+      <QueryClientProvider client={queryClient}>
+        <Component {...pageProps} />
+      </QueryClientProvider>
       <style jsx global>{`
         @tailwind base;
         @tailwind components;
