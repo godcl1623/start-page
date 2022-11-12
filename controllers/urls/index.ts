@@ -1,7 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios, { AxiosError } from 'axios';
 import { promises as fs } from 'fs';
+import RequestControllers from 'controllers';
 import { areEqual } from 'common/capsuledConditions';
+
+const { getDataFrom, deleteDataOf } = new RequestControllers();
 
 interface HandlerArguments {
   request: NextApiRequest;
@@ -43,7 +46,7 @@ export const handlePOSTRequest = async ({
 
 const checkIfUrlValid = async (url: string) => {
   try {
-    const { data } = await axios.get(url);
+    const { data } = await getDataFrom(url);
     return data;
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -116,7 +119,7 @@ export const handlePATCHRequest = async ({
   if (deleteFeedsList.length > 0) {
     const arrayForRequest = deleteFeedsList.map((subscriptionData: SubscriptionData) => subscriptionData.url.split('/')[2]);
     try {
-      await axios.delete('http://localhost:3000/api/feed', { data: arrayForRequest });
+      await deleteDataOf(`${process.env.REQUEST_URL}/feed`, { data: arrayForRequest });
       response.status(200).json(true);
     } catch (error) {
       return Promise.reject(error);

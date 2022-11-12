@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import RequestControllers from 'controllers';
 import Button from './Button';
 
 interface Props {
@@ -23,6 +24,7 @@ export default function CancelSubscription({ urls, originNames, closeModal }: Pr
   const [subscriptionCheckboxes, setSubscriptionCheckboxes] =
     React.useState<SubscriptionCheckboxes>({});
   const router = useRouter();
+  const { patchDataTo } = new RequestControllers();
 
   React.useEffect(() => {
     if (urls.length > 0) {
@@ -91,7 +93,10 @@ export default function CancelSubscription({ urls, originNames, closeModal }: Pr
       const inputChecked = typeof checked === 'boolean' ? checked : false;
       const deleteFeedsChecked = typeof deleteFeeds === 'boolean' ? deleteFeeds : false;
       return (
-        <li key={origins} className='flex justify-between w-full py-2 px-4 list-none cursor-pointer select-none'>
+        <li
+          key={origins}
+          className='flex justify-between w-full py-2 px-4 list-none cursor-pointer select-none'
+        >
           <div onClick={changeSubscriptionState(origins, !checked)}>
             <input
               name='url'
@@ -119,8 +124,8 @@ export default function CancelSubscription({ urls, originNames, closeModal }: Pr
   const sendChangeUrlsListRequest = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formInputs = event.currentTarget.querySelectorAll('input');
-    const checkedInputs = Array.from(formInputs)
-      .reduce((resultArray: CheckboxValue[], input, index) => {
+    const checkedInputs = Array.from(formInputs).reduce(
+      (resultArray: CheckboxValue[], input, index) => {
         if (input.name === 'url') {
           resultArray.push({
             ...resultArray[index / 2],
@@ -134,9 +139,11 @@ export default function CancelSubscription({ urls, originNames, closeModal }: Pr
           };
         }
         return resultArray;
-      }, []);
+      },
+      []
+    );
     try {
-      const result = await axios.patch('/api/urls', checkedInputs);
+      const result = await patchDataTo('/urls', checkedInputs);
       if (result.data) {
         window.alert('저장되었습니다.');
         router.reload();
@@ -158,9 +165,7 @@ export default function CancelSubscription({ urls, originNames, closeModal }: Pr
         </h1>
         <ul className='relative flex-center flex-col w-full h-full mb-4'>
           {subscriptionOptions}
-          <div className='absolute -top-5 right-1 text-sm'>
-            피드 삭제
-          </div>
+          <div className='absolute -top-5 right-1 text-sm'>피드 삭제</div>
         </ul>
         <Button type='submit' customStyle={`bg-sky-400 dark:bg-sky-800`}>
           저장

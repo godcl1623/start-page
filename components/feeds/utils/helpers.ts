@@ -1,6 +1,9 @@
 import axios, { AxiosError } from 'axios';
 import Router from 'next/router';
+import RequestControllers from 'controllers';
 import { URLS_RULE } from './constants';
+
+const { postDataTo } = new RequestControllers();
 
 export const extractInputValue = (element: Element) => {
   if (element instanceof HTMLInputElement) return element.value;
@@ -22,7 +25,7 @@ export const checkIfFeedOriginValid = async (flag: boolean, url: string) => {
         url,
       };
 
-      const { data } = await axios.post('/api/urls', body);
+      const { data } = await postDataTo('/urls', body);
       return data;
     } catch (error) {
       if (error instanceof AxiosError && error.response?.status === 404) {
@@ -45,7 +48,7 @@ export const postNewFeedOrigin = async (flag: boolean, url: string) => {
         mode: 'post',
         url,
       };
-      const { data } = await axios.post('api/urls', body);
+      const { data } = await postDataTo('/urls', body);
       return data;
     } catch (error) {
       if (error instanceof AxiosError && error.response?.status === 502) {

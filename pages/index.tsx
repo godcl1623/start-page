@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import React from 'react';
 import Search from 'components/search';
-import { HttpRequest } from 'api';
+import RequestControllers from 'controllers';
 import useSaveFeeds from 'hooks/useSaveFeeds';
 import Card from 'components/card';
 import { ParsedFeedsDataType, ParseResultType } from 'types/global';
@@ -148,9 +148,9 @@ export default function Index({ feeds, responseArrays, parsedUrls }: IndexProps)
 }
 
 export async function getServerSideProps() {
-  const httpRequest = new HttpRequest();
+  const { getDataFrom } = new RequestControllers();
   try {
-    const { data: rawUrls } = await httpRequest.get('http://localhost:3000/api/urls');
+    const { data: rawUrls } = await getDataFrom('/urls');
     const parsedUrls = JSON.parse(rawUrls).urls;
     const rssResponses = await getRssResponses(parsedUrls);
     let responseArrays: string[] = [];
@@ -158,7 +158,7 @@ export async function getServerSideProps() {
       responseArrays = rssResponses.map((response: any) => response.value.data);
     }
 
-    const { data: feeds } = await httpRequest.get('http://localhost:3000/api/feed');
+    const { data: feeds } = await getDataFrom('/feed');
 
     return {
       props: {
@@ -175,9 +175,9 @@ export async function getServerSideProps() {
 const getRssResponses = async (
   feedsUrls: string[]
 ): Promise<PromiseSettledResult<AxiosResponse>[] | undefined> => {
-  const httpRequest = new HttpRequest();
+  const { getDataFrom } = new RequestControllers();
   try {
-    const rssRequests = feedsUrls.map((feedUrl: string) => httpRequest.get(feedUrl));
+    const rssRequests = feedsUrls.map((feedUrl: string) => getDataFrom(feedUrl));
     const result = await Promise.allSettled(rssRequests);
     return result;
   } catch (error) {
