@@ -1,13 +1,19 @@
 import React from 'react';
+import useHandleFeedOrigin from './hooks/useHandleFeedOrigin';
 import {
-  checkIfFeedOriginValid,
-  postNewFeedOrigin,
   refreshPage,
   extractInputValue,
   checkIfStringPassesRule,
 } from './utils/helpers';
 
 export default function SubscribeNew() {
+  const [inputUrl, setInputUrl] = React.useState<string>('/');
+  const [ruleCheckResult, setRuleCheckResult] = React.useState<boolean>(false);
+  const [isFeedOriginValid, setIsFeedOriginValid] = React.useState<boolean>(false);
+  const [postResult, setPostResult] = React.useState<boolean>(false);
+  const checkIfFeedOriginValid = useHandleFeedOrigin('/urls', 'test');
+  const postNewFeedOrigin = useHandleFeedOrigin('/urls', 'post');
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -15,23 +21,26 @@ export default function SubscribeNew() {
     const url = extractInputValue(input);
     const ruleCheckResult = checkIfStringPassesRule(url);
 
-    let isFeedOriginValid = false;
-    let postResult = false;
+    if (url) setInputUrl(url);
+    if (ruleCheckResult) setRuleCheckResult(ruleCheckResult);
+    else alert('URL 형식을 확인해주세요.');
+  };
 
-    if (url && ruleCheckResult) {
-      isFeedOriginValid = await checkIfFeedOriginValid(ruleCheckResult, url);
-    } else {
-      alert('URL 형식을 확인해주세요.');
+  React.useEffect(() => {
+    if (inputUrl !== '/' && ruleCheckResult) {
+      checkIfFeedOriginValid(inputUrl).then(({ data }) => setIsFeedOriginValid(data));
     }
 
-    if (url && isFeedOriginValid) {
-      postResult = await postNewFeedOrigin(isFeedOriginValid, url);
+    if (inputUrl !== '/' && isFeedOriginValid) {
+      postNewFeedOrigin(inputUrl).then(({ data }) => setPostResult(data));
     }
+  }, [inputUrl, ruleCheckResult, isFeedOriginValid]);
 
+  React.useEffect(() => {
     if (postResult) {
       refreshPage(postResult);
     }
-  };
+  }, [postResult]);
 
   return (
     <section className='w-full h-full'>
