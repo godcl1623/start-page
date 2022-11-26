@@ -1,4 +1,5 @@
 import { promises as fs } from "fs";
+import { JSON_DIRECTORY } from 'common/constants';
 
 export interface SourceDataInput {
     name: string;
@@ -13,6 +14,10 @@ export type SourceDataToModify = Partial<SourceDataInput>;
 
 export interface FileContentsInterface {
     sources: SourceData[];
+}
+
+export interface UpdateDataOptions {
+    originalId?: number;
 }
 
 export class CustomError {
@@ -55,11 +60,12 @@ export const checkIfDataExists = (
 };
 
 export const updateData = <T extends object>(
-    storedList: unknown[],
-    jsonDirectory: string,
-    dataToAdd: T
+    storedList: T[],
+    dataToAdd: T, 
+    options?: UpdateDataOptions,
 ) => {
-    const sourceId = storedList.length;
+    const { originalId } = options || {};
+    const sourceId = originalId ?? storedList.length;
     const newSource = {
         id: sourceId,
         ...dataToAdd,
@@ -69,7 +75,7 @@ export const updateData = <T extends object>(
         sources: updatedSources,
     };
     try {
-        fs.writeFile(`${jsonDirectory}/sources.json`, JSON.stringify(body));
+        fs.writeFile(`${JSON_DIRECTORY}/sources.json`, JSON.stringify(body));
         return true;
     } catch (error) {
         console.log(error);

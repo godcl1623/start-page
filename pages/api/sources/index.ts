@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import path from "path";
 import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
 import {
@@ -11,14 +10,14 @@ import {
     FileContentsInterface,
     SourceData,
 } from "controllers/sources";
+import { JSON_DIRECTORY } from 'common/constants';
 
-export default async function handler(
+export default async function sourceHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    const jsonDirectory = path.join(process.cwd(), "model");
     const fileContents = await fs.readFile(
-        `${jsonDirectory}/sources.json`,
+        `${JSON_DIRECTORY}/sources.json`,
         "utf8"
     );
     if (fileContents == null) {
@@ -43,7 +42,7 @@ export default async function handler(
             if (checkIfDataExists(urlsList, sourceDataInput.url)) {
                 throw new CustomError(409, "source already exists.");
             }
-            const updateResult = updateData(sources, jsonDirectory, sourceDataInput);
+            const updateResult = updateData(sources, sourceDataInput);
             if (updateResult) {
                 response.status(201).send("success");
             } else {
