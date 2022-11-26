@@ -1,14 +1,15 @@
 import React from 'react';
-import axios from 'axios';
+import { useMutation } from '@tanstack/react-query';
 import { AiFillStar as FavoriteIcon, AiFillRead as CheckIcon } from 'react-icons/ai';
 import { ParsedFeedsDataType } from 'types/global';
 import { isTodayLessThanExtraDay } from 'common/helpers';
+import RequestControllers from 'controllers';
 import useDerivedStateFromProps from './hooks/useDerivedStateFromProps';
 import Checkbox from './Checkbox';
 
-type CardProps = {
+interface CardProps {
   cardData: ParsedFeedsDataType;
-};
+}
 
 type CallbackType = (value: any) => void;
 
@@ -18,6 +19,11 @@ export default function Card({ cardData }: CardProps) {
   const [readState, setReadState] = useDerivedStateFromProps<boolean>(isRead);
   const [favoriteState, setFavoriteState] = useDerivedStateFromProps<boolean>(isFavorite);
   const [dateState, setDateState] = React.useState(false);
+  const { patchDataTo } = new RequestControllers();
+  const mutationFn = (newData: ParsedFeedsDataType) => patchDataTo('/feed', newData);
+  const { mutate } = useMutation({
+    mutationFn,
+  });
 
   function handleCard(event: React.MouseEvent) {
     if (!(event.target instanceof SVGElement)) {
@@ -26,7 +32,7 @@ export default function Card({ cardData }: CardProps) {
         isRead: true,
         isFavorite: favoriteState,
       };
-      axios.patch('/api/feed', newData);
+      mutate(newData);
       if (link) window.location.assign(link);
     }
   }
@@ -39,7 +45,7 @@ export default function Card({ cardData }: CardProps) {
         isFavorite: !originalState,
         isRead: readState,
       };
-      axios.patch('/api/feed', newData);
+      mutate(newData);
     };
   }
 
@@ -51,7 +57,7 @@ export default function Card({ cardData }: CardProps) {
         isRead: !originalState,
         isFavorite: favoriteState,
       };
-      axios.patch('/api/feed', newData);
+      mutate(newData);
     };
   }
 

@@ -1,6 +1,9 @@
 import axios from 'axios';
 import { areEqual } from 'common/capsuledConditions';
 import { ParsedFeedsDataType } from 'types/global';
+import RequestControllers from 'controllers';
+
+const { postDataTo } = new RequestControllers();
 
 const findNode = (xmlNodesArray: Element[], nodeName: string) => {
   return xmlNodesArray.find((xmlNode: Element) => xmlNode.nodeName === nodeName);
@@ -91,7 +94,7 @@ const stripTags = (stringWithTags: string) => {
 
 export const postRSSParseResult = async (feedsParseResult: any) => {
   try {
-    const response = await axios.post('/api/feed', feedsParseResult);
+    const response = await postDataTo('/feed', feedsParseResult);
     return response;
   } catch (error) {
     console.log('새로운 피드가 없습니다');

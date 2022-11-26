@@ -8,7 +8,6 @@
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-.pnp.*
 
 # testing
 /coverage
@@ -42,8 +41,5 @@ next-env.d.ts
 
 # env
 .env*
-
-# history
-.history
 
 model/
