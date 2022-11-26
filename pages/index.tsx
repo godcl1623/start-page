@@ -45,6 +45,15 @@ export default function Index({ feeds, responseArrays, parsedUrls }: IndexProps)
       setCurrentSort(0);
     }
   };
+  const { putDataTo, patchDataTo, deleteDataOf } = new RequestControllers();
+  
+  React.useEffect(() => {
+    patchDataTo('/sources/0', {
+      name: '카카오 Dev',
+    });
+    // patchDataTo('/sources/0', {});
+    // deleteDataOf('/sources/0');
+  }, []);
 
   const feedsToDisplay = newFeeds
     ? newFeeds

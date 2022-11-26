@@ -40,8 +40,7 @@ export default async function sourceNameHandler(
             if (!checkIfDataExists(idList, Number(sourceId))) {
                 throw new CustomError(404, 'source not exists');
             }
-            const filteredSources = sources.filter((sourceData: SourceData) => sourceData.id !== Number(sourceId));
-            const updateResult = updateData(filteredSources, putDataInput, { originalId: Number(sourceId) });
+            const updateResult = updateData(sources, putDataInput, { originalId: Number(sourceId) });
             if (updateResult) {
                 response.status(200).send("success");
             } else {
@@ -55,9 +54,30 @@ export default async function sourceNameHandler(
             }
         }
     } else if (areEqual(request.method, "PATCH")) {
-        const { sourceId } = request.query;
-        const patchDataInput: SourceDataToModify = request.body;
-        response.status(200).send("success");
+        try {
+            const { sourceId } = request.query;
+            const putDataInput: SourceDataToModify = request.body;
+            if (!checkIfDataValid(putDataInput, 1, "string")) {
+                throw new CustomError(403, "wrong data input");
+            }
+            const { sources }: FileContentsInterface = JSON.parse(fileContents);
+            const idList = sources.map((sourceData: SourceData) => sourceData.id);
+            if (!checkIfDataExists(idList, Number(sourceId))) {
+                throw new CustomError(404, 'source not exists');
+            }
+            const updateResult = updateData(sources, putDataInput, { originalId: Number(sourceId) });
+            if (updateResult) {
+                response.status(200).send("success");
+            } else {
+                throw new CustomError(400, 'update failed');
+            }
+        } catch (error) {
+            if (error instanceof CustomError) {
+                response.status(error.code).send(error.message);
+            } else {
+                response.status(400).send(error);
+            }
+        }
     } else if (areEqual(request.method, "DELETE")) {
         const { sourceId } = request.query;
         response.status(200).send("success");

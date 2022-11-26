@@ -1,5 +1,5 @@
 import { promises as fs } from "fs";
-import { JSON_DIRECTORY } from 'common/constants';
+import { JSON_DIRECTORY } from "common/constants";
 
 export interface SourceDataInput {
     name: string;
@@ -61,16 +61,24 @@ export const checkIfDataExists = (
 
 export const updateData = <T extends object>(
     storedList: T[],
-    dataToAdd: T, 
-    options?: UpdateDataOptions,
+    dataToAdd: T,
+    options?: UpdateDataOptions
 ) => {
     const { originalId } = options || {};
     const sourceId = originalId ?? storedList.length;
+    const originalData = originalId != null ? storedList[originalId] : null;
     const newSource = {
+        ...originalData,
         id: sourceId,
         ...dataToAdd,
     };
-    const updatedSources = [...storedList, newSource];
+    if (originalId != null) {
+        storedList.splice((originalId as number), 1);
+    }
+    const updatedSources =
+        originalId != null
+            ? storedList.concat([newSource])
+            : [...storedList, newSource];
     const body = {
         sources: updatedSources,
     };
