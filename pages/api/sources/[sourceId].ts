@@ -6,10 +6,10 @@ import {
     checkIfDataValid,
     checkIfDataExists,
     updateData,
-    SourceDataInput,
     FileContentsInterface,
     SourceData,
     SourceDataToModify,
+    deleteData,
 } from "controllers/sources";
 import { JSON_DIRECTORY } from 'common/constants';
 
@@ -24,6 +24,8 @@ export default async function sourceNameHandler(
     if (fileContents == null) {
         response.status(404).send("file not exists.");
     }
+    const { sources }: FileContentsInterface = JSON.parse(fileContents);
+    const idList = sources?.map((sourceData: SourceData) => sourceData.id);
     if (areEqual(request.method, "GET")) {
         response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "POST")) {
@@ -35,8 +37,6 @@ export default async function sourceNameHandler(
             if (!checkIfDataValid(putDataInput, 2, "string")) {
                 throw new CustomError(403, "wrong data input");
             }
-            const { sources }: FileContentsInterface = JSON.parse(fileContents);
-            const idList = sources.map((sourceData: SourceData) => sourceData.id);
             if (!checkIfDataExists(idList, Number(sourceId))) {
                 throw new CustomError(404, 'source not exists');
             }
@@ -60,8 +60,6 @@ export default async function sourceNameHandler(
             if (!checkIfDataValid(putDataInput, 1, "string")) {
                 throw new CustomError(403, "wrong data input");
             }
-            const { sources }: FileContentsInterface = JSON.parse(fileContents);
-            const idList = sources.map((sourceData: SourceData) => sourceData.id);
             if (!checkIfDataExists(idList, Number(sourceId))) {
                 throw new CustomError(404, 'source not exists');
             }
@@ -80,7 +78,23 @@ export default async function sourceNameHandler(
         }
     } else if (areEqual(request.method, "DELETE")) {
         const { sourceId } = request.query;
-        response.status(200).send("success");
+        try {
+            if (!checkIfDataExists(idList, Number(sourceId))) {
+                throw new CustomError(404, 'source not exists');
+            }
+            const deleteResult = deleteData(sources, Number(sourceId));
+            if (deleteResult) {
+                response.status(204).send("success");
+            } else {
+                throw new CustomError(400, 'update failed');
+            }
+        } catch (error) {
+            if (error instanceof CustomError) {
+                response.status(error.code).send(error.message);
+            } else {
+                response.status(400).send(error);
+            }
+        }
     } else {
         response.status(404).send("Not Found");
     }

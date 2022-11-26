@@ -72,13 +72,31 @@ export const updateData = <T extends object>(
         id: sourceId,
         ...dataToAdd,
     };
-    if (originalId != null) {
-        storedList.splice((originalId as number), 1);
-    }
     const updatedSources =
         originalId != null
-            ? storedList.concat([newSource])
+            ? storedList
+                .filter((_, index: number) => index !== originalId)
+                .concat([newSource])
             : [...storedList, newSource];
+    const body = {
+        sources: updatedSources,
+    };
+    try {
+        fs.writeFile(`${JSON_DIRECTORY}/sources.json`, JSON.stringify(body));
+        return true;
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+};
+
+export const deleteData = <T extends object>(
+    storedList: T[],
+    idToDelete: number
+) => {
+    const updatedSources = storedList.filter(
+        (_, index: number) => index !== idToDelete
+    );
     const body = {
         sources: updatedSources,
     };
