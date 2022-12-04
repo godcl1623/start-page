@@ -16,7 +16,7 @@ export default async function feedsHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    const { getDataFrom } = new RequestControllers();
+    const { getDataFrom, postDataTo } = new RequestControllers();
     const fileContents = await fs.readFile(
         `${JSON_DIRECTORY}/feeds.json`,
         "utf8"
@@ -47,7 +47,10 @@ export default async function feedsHandler(
                 let originId = storedFeeds.length;
                 const parseResult = totalFeedsFromSources.map(
                     (rawRss: string, index: number) => {
-                        const indexedFeed = storedFeeds[index] != null ? storedFeeds[index].feeds : [];
+                        const indexedFeed =
+                            storedFeeds[index] != null
+                                ? storedFeeds[index].feeds
+                                : [];
                         const id = indexedFeed != null ? indexedFeed.length : 0;
                         const {
                             feedOriginName,
@@ -95,9 +98,10 @@ export default async function feedsHandler(
                             storedFeeds[index]?.latestFeedTitle
                 );
                 if (differentiateArray.length > 0) {
+                    postDataTo("/feeds/new", parseResult);
                     response.status(200).json(parseResult);
                 } else {
-                    response.status(204).send('no new feeds available');
+                    response.status(204).send("no new feeds available");
                 }
             } else {
                 response.status(408).send("new feeds request timeout");
@@ -106,7 +110,37 @@ export default async function feedsHandler(
             response.status(400).send(error);
         }
     } else if (areEqual(request.method, "POST")) {
-        response.status(405).send("Method Not Allowed");
+        try {
+            const storedFeeds: ParseResultType[] = fileContents
+                ? JSON.parse(fileContents).data
+                : [];
+            const dataToWrite: ParseResultType[] = request.body;
+            dataToWrite.forEach((feedToWrite: ParseResultType, index: number) => {
+                const ifFeedToWriteInStoredFeeds = storedFeeds.find((storedFeed: ParseResultType) => storedFeed.originName === feedToWrite.originName);
+                if (ifFeedToWriteInStoredFeeds == null) {
+                    storedFeeds.push(feedToWrite);
+                    const newData = {
+                        data: storedFeeds,
+                    };
+                    fs.writeFile(`${JSON_DIRECTORY}/feeds.json`, JSON.stringify(newData));
+                } else {
+                    const arrayContainsDataToChange = storedFeeds.slice(0, index + 1);
+                    const otherArray = storedFeeds.slice(index + 1);
+                    arrayContainsDataToChange[arrayContainsDataToChange.length - 1] = {
+                        ...arrayContainsDataToChange[arrayContainsDataToChange.length - 1],
+                        ...feedToWrite,
+                    };
+                    const newFeeds = arrayContainsDataToChange.concat(otherArray);
+                    const newData = {
+                        data: newFeeds,
+                    };
+                    fs.writeFile(`${JSON_DIRECTORY}/feeds.json`, JSON.stringify(newData));
+                }
+            });
+            response.status(201).send("success");
+        } catch (error) {
+            response.status(400).send(error);
+        }
     } else if (areEqual(request.method, "PUT")) {
         response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "PATCH")) {
