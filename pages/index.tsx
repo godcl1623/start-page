@@ -45,6 +45,11 @@ export default function Index({ feeds, responseArrays, parsedUrls }: IndexProps)
       setCurrentSort(0);
     }
   };
+  const { getDataFrom, postDataTo, putDataTo, patchDataTo, deleteDataOf } = new RequestControllers();
+
+  React.useEffect(() => {
+    getDataFrom('/feeds/new');
+  }, []);
 
   const feedsToDisplay = newFeeds
     ? newFeeds
@@ -150,21 +155,21 @@ export default function Index({ feeds, responseArrays, parsedUrls }: IndexProps)
 export async function getServerSideProps() {
   const { getDataFrom } = new RequestControllers();
   try {
-    const { data: rawUrls } = await getDataFrom('/urls');
-    const parsedUrls = JSON.parse(rawUrls).urls;
-    const rssResponses = await getRssResponses(parsedUrls);
-    let responseArrays: string[] = [];
-    if (rssResponses) {
-      responseArrays = rssResponses.map((response: any) => response.value.data);
-    }
+    // const { data: rawUrls } = await getDataFrom('/urls');
+    // const parsedUrls = JSON.parse(rawUrls).urls;
+    // const rssResponses = await getRssResponses(parsedUrls);
+    // let responseArrays: string[] = [];
+    // if (rssResponses) {
+    //   responseArrays = rssResponses.map((response: any) => response.value.data);
+    // }
 
-    const { data: feeds } = await getDataFrom('/feed');
+    // const { data: feeds } = await getDataFrom('/feed');
 
     return {
       props: {
-        feeds,
-        responseArrays,
-        parsedUrls,
+        // feeds,
+        // responseArrays,
+        // parsedUrls,
       },
     };
   } catch (error) {
