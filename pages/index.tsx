@@ -13,6 +13,7 @@ import Modal from "components/modal";
 import SubscriptionDialogBox from "components/feeds";
 import SubscribeNew from "components/feeds/SubscribeNew";
 import CancelSubscription from "components/feeds/CancelSubscription";
+import { useQuery } from '@tanstack/react-query';
 
 interface IndexProps {
     feeds: string;
@@ -31,6 +32,8 @@ export default function Index({
     responseArrays,
     parsedUrls,
 }: IndexProps) {
+    const { getDataFrom, postDataTo, putDataTo, patchDataTo, deleteDataOf } =
+        new RequestControllers();
     const [currentSort, setCurrentSort] = React.useState(0);
     const [modalState, setModalState] = React.useState<ModalStateType>({
         addSubscription: false,
@@ -40,7 +43,9 @@ export default function Index({
         React.useState<boolean>(false);
     const [newFeeds, setNewFeeds] = React.useState<ParseResultType[]>([]);
     const startPageRef = React.useRef<HTMLElement | null>(null);
-    const originNames = newFeeds?.map((feedsData) => feedsData.originName);
+    const newFeedsRequestResult = useQuery<AxiosResponse<ParseResultType[]>>(['/feeds/new'], () => getDataFrom('/feeds/new'))?.data?.data;
+    const feedsFromServer = newFeedsRequestResult ? newFeedsRequestResult : newFeeds;
+    const originNames = feedsFromServer?.map((feedsData) => feedsData.originName);
 
     const checkShouldSortByReverse = (sortState: number) => sortState === 1;
     const setSortState = (stateString: string, stateStringArray: string[]) => {
@@ -50,15 +55,9 @@ export default function Index({
             setCurrentSort(0);
         }
     };
-    const { getDataFrom, postDataTo, putDataTo, patchDataTo, deleteDataOf } =
-        new RequestControllers();
 
-    React.useEffect(() => {
-        getDataFrom("/feeds/new");
-    }, []);
-
-    const feedsToDisplay = newFeeds
-        ? newFeeds
+    const feedsToDisplay = feedsFromServer
+        ? feedsFromServer
             .map((feedData: ParseResultType) => feedData.feeds)
             .reduce(
                 (
