@@ -17,7 +17,7 @@ export default async function feedsSetIdHandler(
     if (areEqual(request.method, "GET")) {
         response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "POST")) {
-        response.status(200).send("success");
+        response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "PUT")) {
         response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "PATCH")) {
