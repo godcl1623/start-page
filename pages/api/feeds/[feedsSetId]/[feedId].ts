@@ -23,26 +23,44 @@ export default async function feedsSetIdHandler(
         response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "PATCH")) {
         try {
-            const parsedFile: ParseResultType[] = JSON.parse(fileContents).data;
+            const parsedFile: ParseResultType[] = fileContents
+                ? JSON.parse(fileContents).data
+                : [];
             const dataToChange: ParsedFeedsDataType = request.body;
             const { id, origin } = dataToChange;
             const feedsSetRelatedToRequest = parsedFile.find(
                 (storedFeed: ParseResultType) =>
                     storedFeed.originName === origin
             );
-            if (feedsSetRelatedToRequest != null && feedsSetRelatedToRequest.feeds) {
+            if (
+                feedsSetRelatedToRequest != null &&
+                feedsSetRelatedToRequest.feeds
+            ) {
+                const feedSetIndex = parsedFile.indexOf(
+                    feedsSetRelatedToRequest
+                );
                 const totalFeeds = [...feedsSetRelatedToRequest.feeds];
-                const oldFeed = totalFeeds.find((feed: ParsedFeedsDataType) => feed.id === id);
+                const oldFeed = totalFeeds.find(
+                    (feed: ParsedFeedsDataType) => feed.id === id
+                );
                 if (oldFeed != null) {
                     const oldFeedIndex = totalFeeds.indexOf(oldFeed);
                     totalFeeds[oldFeedIndex] = dataToChange;
                 }
-                const newData = {
-                    data: totalFeeds,
+                const newFeedsSetRelatedToRequest = {
+                    ...feedsSetRelatedToRequest,
+                    feeds: totalFeeds,
                 };
-                fs.writeFile(`${JSON_DIRECTORY}/feeds.json`, JSON.stringify(newData));
+                parsedFile[feedSetIndex] = newFeedsSetRelatedToRequest;
+                const newData = {
+                    data: parsedFile,
+                };
+                fs.writeFile(
+                    `${JSON_DIRECTORY}/feeds.json`,
+                    JSON.stringify(newData)
+                );
             } else {
-                response.status(404).send('feed not found');
+                response.status(404).send("feed not found");
             }
             response.status(200).send("success");
         } catch (error) {

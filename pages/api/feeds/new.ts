@@ -112,10 +112,41 @@ export default async function feedsHandler(
     } else if (areEqual(request.method, "POST")) {
         try {
             const dataToWrite: ParseResultType[] = request.body;
+            const storedFeeds: ParseResultType[] = fileContents
+                ? JSON.parse(fileContents).data
+                : [];
+            const newFeedSets = dataToWrite.map(
+                (newFeedSet: ParseResultType, feedSetIndex: number) => {
+                    const newFeedsList = newFeedSet.feeds;
+                    const newFeedsListWithUserStates = newFeedsList?.map(
+                        (newFeeds: ParsedFeedsDataType, feedIndex: number) => {
+                            const correspondFeed = storedFeeds[feedSetIndex]
+                                ? storedFeeds[feedSetIndex].feeds ?? []
+                                : [];
+                            return {
+                                ...newFeeds,
+                                isRead: correspondFeed[feedIndex]
+                                    ? correspondFeed[feedIndex].isRead
+                                    : false,
+                                isFavorite: correspondFeed[feedIndex]
+                                    ? correspondFeed[feedIndex].isFavorite
+                                    : false,
+                            };
+                        }
+                    );
+                    return {
+                        ...newFeedSet,
+                        feeds: newFeedsListWithUserStates,
+                    };
+                }
+            );
             const newData = {
-                data: dataToWrite,
+                data: newFeedSets,
             };
-            fs.writeFile(`${JSON_DIRECTORY}/feeds.json`, JSON.stringify(newData));
+            fs.writeFile(
+                `${JSON_DIRECTORY}/feeds.json`,
+                JSON.stringify(newData)
+            );
             response.status(201).send("success");
         } catch (error) {
             response.status(400).send(error);
