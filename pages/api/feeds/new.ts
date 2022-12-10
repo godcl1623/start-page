@@ -111,32 +111,11 @@ export default async function feedsHandler(
         }
     } else if (areEqual(request.method, "POST")) {
         try {
-            const storedFeeds: ParseResultType[] = fileContents
-                ? JSON.parse(fileContents).data
-                : [];
             const dataToWrite: ParseResultType[] = request.body;
-            dataToWrite.forEach((feedToWrite: ParseResultType, index: number) => {
-                const ifFeedToWriteInStoredFeeds = storedFeeds.find((storedFeed: ParseResultType) => storedFeed.originName === feedToWrite.originName);
-                if (ifFeedToWriteInStoredFeeds == null) {
-                    storedFeeds.push(feedToWrite);
-                    const newData = {
-                        data: storedFeeds,
-                    };
-                    fs.writeFile(`${JSON_DIRECTORY}/feeds.json`, JSON.stringify(newData));
-                } else {
-                    const arrayContainsDataToChange = storedFeeds.slice(0, index + 1);
-                    const otherArray = storedFeeds.slice(index + 1);
-                    arrayContainsDataToChange[arrayContainsDataToChange.length - 1] = {
-                        ...arrayContainsDataToChange[arrayContainsDataToChange.length - 1],
-                        ...feedToWrite,
-                    };
-                    const newFeeds = arrayContainsDataToChange.concat(otherArray);
-                    const newData = {
-                        data: newFeeds,
-                    };
-                    fs.writeFile(`${JSON_DIRECTORY}/feeds.json`, JSON.stringify(newData));
-                }
-            });
+            const newData = {
+                data: dataToWrite,
+            };
+            fs.writeFile(`${JSON_DIRECTORY}/feeds.json`, JSON.stringify(newData));
             response.status(201).send("success");
         } catch (error) {
             response.status(400).send(error);

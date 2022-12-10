@@ -34,7 +34,8 @@ export default function Index({ feeds, responseArrays, parsedUrls }: IndexProps)
   });
   const [isFilterFavorite, setIsFilterFavorite] = React.useState<boolean>(false);
   const startPageRef = React.useRef<HTMLElement | null>(null);
-  const newFeeds = useSaveFeeds(responseArrays, feeds, { isFilterFavorite });
+  // const newFeeds = useSaveFeeds(responseArrays, feeds, { isFilterFavorite });
+  const newFeeds: any[] = [];
   const originNames = newFeeds?.map((feedsData) => feedsData.originName);
 
   const checkShouldSortByReverse = (sortState: number) => sortState === 1;
