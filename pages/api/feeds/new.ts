@@ -75,7 +75,7 @@ export default async function feedsHandler(
                                 originName: feedOriginName,
                                 originLink: feedOriginParsedLink,
                                 lastFeedsLength: parsedFeedsArray.length,
-                                latestFeedTitle: latestFeed.title,
+                                latestFeedTitle: latestFeed?.title,
                                 feeds: parsedFeedsArray,
                             };
                             originId += 1;
@@ -84,7 +84,7 @@ export default async function feedsHandler(
                             return {
                                 ...storedFeeds[index],
                                 lastFeedsLength: parsedFeedsArray.length,
-                                latestFeedTitle: latestFeed.title,
+                                latestFeedTitle: latestFeed?.title,
                                 feeds: parsedFeedsArray,
                             };
                         }
@@ -107,6 +107,7 @@ export default async function feedsHandler(
                 response.status(408).send("new feeds request timeout");
             }
         } catch (error) {
+            console.log(error)
             response.status(400).send(error);
         }
     } else if (areEqual(request.method, "POST")) {
