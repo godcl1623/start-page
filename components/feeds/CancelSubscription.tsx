@@ -7,12 +7,6 @@ interface Props {
     sources: string;
 }
 
-interface CheckboxValue {
-    sourceId: number;
-    checked: boolean;
-
-}
-
 interface SourcesList {
     sources: SourceData[];
 }

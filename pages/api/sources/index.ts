@@ -3,7 +3,6 @@ import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
 import {
     CustomError,
-    checkIfDataValid,
     checkIfDataExists,
     updateData,
     SourceDataInput,
@@ -32,9 +31,6 @@ export default async function sourceHandler(
     } else if (areEqual(request.method, "POST")) {
         try {
             const sourceDataInput: SourceDataInput = request.body;
-            if (!checkIfDataValid(sourceDataInput, 2, "string")) {
-                throw new CustomError(403, "wrong data input");
-            }
             const { sources }: FileContentsInterface = JSON.parse(fileContents);
             const urlsList = sources.map(
                 (sourceData: SourceData) => sourceData.url
