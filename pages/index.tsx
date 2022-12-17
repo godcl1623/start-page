@@ -26,12 +26,8 @@ type ModalStateType = {
     [key in ModalKeys]: boolean;
 };
 
-export default function Index({
-    feeds,
-    sources,
-}: IndexProps) {
-    const { getDataFrom, postDataTo, putDataTo, patchDataTo, deleteDataOf } =
-        new RequestControllers();
+export default function Index({ feeds, sources }: IndexProps) {
+    const { getDataFrom } = new RequestControllers();
     const [currentSort, setCurrentSort] = React.useState(0);
     const [modalState, setModalState] = React.useState<ModalStateType>({
         addSubscription: false,
@@ -80,6 +76,10 @@ export default function Index({
                     checkShouldSortByReverse(currentSort)
                 )
             )
+            .filter((feed: ParsedFeedsDataType) => {
+                if (isFilterFavorite) return feed.isFavorite;
+                return feed;
+            })
             .map((feed: ParsedFeedsDataType) => (
                 <Card cardData={feed} key={feed.id} />
             ))
@@ -174,9 +174,7 @@ export default function Index({
                     <SubscriptionDialogBox
                         closeModal={closeModal("cancelSubscription")}
                     >
-                        <CancelSubscription
-                            sources={sources}
-                        />
+                        <CancelSubscription sources={sources} />
                     </SubscriptionDialogBox>
                 </Modal>
             )}
