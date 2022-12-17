@@ -13,12 +13,11 @@ import Modal from "components/modal";
 import SubscriptionDialogBox from "components/feeds";
 import SubscribeNew from "components/feeds/SubscribeNew";
 import CancelSubscription from "components/feeds/CancelSubscription";
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
 interface IndexProps {
     feeds: string;
-    responseArrays: string[];
-    parsedUrls: string[];
+    sources: string;
 }
 
 type ModalKeys = "addSubscription" | "cancelSubscription";
@@ -29,8 +28,7 @@ type ModalStateType = {
 
 export default function Index({
     feeds,
-    responseArrays,
-    parsedUrls,
+    sources,
 }: IndexProps) {
     const { getDataFrom, postDataTo, putDataTo, patchDataTo, deleteDataOf } =
         new RequestControllers();
@@ -43,9 +41,16 @@ export default function Index({
         React.useState<boolean>(false);
     const [newFeeds, setNewFeeds] = React.useState<ParseResultType[]>([]);
     const startPageRef = React.useRef<HTMLElement | null>(null);
-    const newFeedsRequestResult = useQuery<AxiosResponse<ParseResultType[]>>(['/feeds/new'], () => getDataFrom('/feeds/new'))?.data?.data;
-    const feedsFromServer = newFeedsRequestResult ? newFeedsRequestResult : newFeeds;
-    const originNames = feedsFromServer?.map((feedsData) => feedsData.originName);
+    const newFeedsRequestResult = useQuery<AxiosResponse<ParseResultType[]>>(
+        ["/feeds/new"],
+        () => getDataFrom("/feeds/new")
+    )?.data?.data;
+    const feedsFromServer = newFeedsRequestResult
+        ? newFeedsRequestResult
+        : newFeeds;
+    const originNames = feedsFromServer?.map(
+        (feedsData) => feedsData.originName
+    );
 
     const checkShouldSortByReverse = (sortState: number) => sortState === 1;
     const setSortState = (stateString: string, stateStringArray: string[]) => {
@@ -170,9 +175,7 @@ export default function Index({
                         closeModal={closeModal("cancelSubscription")}
                     >
                         <CancelSubscription
-                            urls={parsedUrls}
-                            originNames={originNames}
-                            closeModal={closeModal("cancelSubscription")}
+                            sources={sources}
                         />
                     </SubscriptionDialogBox>
                 </Modal>
@@ -185,10 +188,12 @@ export async function getServerSideProps() {
     const { getDataFrom } = new RequestControllers();
     try {
         const { data: feeds } = await getDataFrom("/feeds");
+        const { data: sources } = await getDataFrom("/sources");
 
         return {
             props: {
                 feeds,
+                sources,
             },
         };
     } catch (error) {

@@ -44,7 +44,7 @@ export default async function feedsHandler(
                 const storedFeeds: ParseResultType[] = fileContents
                     ? JSON.parse(fileContents).data
                     : [];
-                let originId = storedFeeds.length;
+                let originId = sources.length > 0 ? storedFeeds.length + 1 : 0;
                 const parseResult = totalFeedsFromSources.map(
                     (rawRss: string, index: number) => {
                         const indexedFeed =
@@ -71,7 +71,7 @@ export default async function feedsHandler(
                             )
                         ) {
                             const result: ParseResultType = {
-                                id: originId,
+                                id: sources[index].id ? sources[index].id : originId,
                                 originName: feedOriginName,
                                 originLink: feedOriginParsedLink,
                                 lastFeedsLength: parsedFeedsArray.length,

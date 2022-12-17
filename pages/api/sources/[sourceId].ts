@@ -12,6 +12,7 @@ import {
     deleteData,
 } from "controllers/sources";
 import { JSON_DIRECTORY } from 'common/constants';
+import RequestControllers from 'controllers';
 
 export default async function sourceNameHandler(
     request: NextApiRequest,
@@ -26,56 +27,15 @@ export default async function sourceNameHandler(
     }
     const { sources }: FileContentsInterface = JSON.parse(fileContents);
     const idList = sources?.map((sourceData: SourceData) => sourceData.id);
+    const { deleteDataOf } = new RequestControllers();
     if (areEqual(request.method, "GET")) {
         response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "POST")) {
         response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "PUT")) {
-        try {
-            const { sourceId } = request.query;
-            const putDataInput: SourceData = request.body;
-            if (!checkIfDataValid(putDataInput, 2, "string")) {
-                throw new CustomError(403, "wrong data input");
-            }
-            if (!checkIfDataExists(idList, Number(sourceId))) {
-                throw new CustomError(404, 'source not exists');
-            }
-            const updateResult = updateData(sources, putDataInput, { originalId: Number(sourceId) });
-            if (updateResult) {
-                response.status(200).send("success");
-            } else {
-                throw new CustomError(400, 'update failed');
-            }
-        } catch (error) {
-            if (error instanceof CustomError) {
-                response.status(error.code).send(error.message);
-            } else {
-                response.status(400).send(error);
-            }
-        }
+        response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "PATCH")) {
-        try {
-            const { sourceId } = request.query;
-            const putDataInput: SourceDataToModify = request.body;
-            if (!checkIfDataValid(putDataInput, 1, "string")) {
-                throw new CustomError(403, "wrong data input");
-            }
-            if (!checkIfDataExists(idList, Number(sourceId))) {
-                throw new CustomError(404, 'source not exists');
-            }
-            const updateResult = updateData(sources, putDataInput, { originalId: Number(sourceId) });
-            if (updateResult) {
-                response.status(200).send("success");
-            } else {
-                throw new CustomError(400, 'update failed');
-            }
-        } catch (error) {
-            if (error instanceof CustomError) {
-                response.status(error.code).send(error.message);
-            } else {
-                response.status(400).send(error);
-            }
-        }
+        response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "DELETE")) {
         const { sourceId } = request.query;
         try {
@@ -84,7 +44,12 @@ export default async function sourceNameHandler(
             }
             const deleteResult = deleteData(sources, Number(sourceId));
             if (deleteResult) {
-                response.status(204).send("success");
+                const result = await deleteDataOf(`/feeds/${sourceId}`);
+                if(result.status === 204) {
+                    response.status(204).send("success");
+                } else {
+                    throw new CustomError(400, 'update failed');
+                }
             } else {
                 throw new CustomError(400, 'update failed');
             }

@@ -1,185 +1,69 @@
-import React from 'react';
-import axios, { AxiosResponse } from 'axios';
-import { useMutation } from '@tanstack/react-query';
-import { useRouter } from 'next/router';
-import RequestControllers from 'controllers';
-import Button from './Button';
+import React from "react";
+import { SourceData } from "controllers/sources";
+import Button from "./Button";
+import DeleteButtonWrapper from 'components/common/DeleteButtonWrapper';
 
 interface Props {
-  urls: string[];
-  originNames: (string | null)[];
-  closeModal: () => void;
+    sources: string;
 }
 
 interface CheckboxValue {
-  [key: string]: string | boolean;
+    sourceId: number;
+    checked: boolean;
+
 }
 
-interface SubscriptionCheckboxes {
-  [key: string]: CheckboxValue;
+interface SourcesList {
+    sources: SourceData[];
 }
 
-export default function CancelSubscription({ urls, originNames, closeModal }: Props) {
-  const [subscriptionList, setSubscriptionList] = React.useState<string[]>([]);
-  const [originsList, setOriginsList] = React.useState<(string | null)[]>([]);
-  const [subscriptionCheckboxes, setSubscriptionCheckboxes] =
-    React.useState<SubscriptionCheckboxes>({});
-  const router = useRouter();
-  const { patchDataTo } = new RequestControllers();
-  const mutationFn = (checkedInputs: CheckboxValue[]) => patchDataTo('/urls', checkedInputs);
-  const onSuccess = () => {
-    window.alert('저장되었습니다.');
-    router.reload();
-  };
-  const onError = (error: unknown) => {
-    window.alert('오류가 발생했습니다.');
-    if (axios.isAxiosError(error)) return Promise.reject(error);
-    else if (error instanceof Error) throw new Error(error.message);
-  };
-  const { mutate } = useMutation({
-    mutationFn,
-    onError,
-    onSuccess,
-  })
-
-  React.useEffect(() => {
-    if (urls.length > 0) {
-      setSubscriptionList(previousArray => previousArray.slice(previousArray.length).concat(urls));
-    }
-  }, [urls]);
-
-  React.useEffect(() => {
-    if (originNames.length > 0) {
-      setOriginsList(previousArray =>
-        previousArray.slice(previousArray.length).concat(originNames)
-      );
-    }
-  }, [originNames]);
-
-  React.useEffect(() => {
-    if (subscriptionList.length > 0 && originsList.length > 0) {
-      const valueContainer: SubscriptionCheckboxes = {};
-      const objectMadeBySubscriptions = originsList.reduce((acc, curr, index) => {
-        let keyText: string;
-        if (curr) keyText = curr;
-        else keyText = `blog_${index}`;
-        acc[keyText] = {
-          value: subscriptionList[index],
-          checked: false,
-          deleteFeeds: false,
-        };
-        return acc;
-      }, valueContainer);
-      setSubscriptionCheckboxes(previousObject => ({
-        ...previousObject,
-        ...objectMadeBySubscriptions,
-      }));
-    }
-  }, [subscriptionList, originsList]);
-
-  const changeSubscriptionState = (target: string, status: boolean) => () => {
-    setSubscriptionCheckboxes((previousObject: SubscriptionCheckboxes) => {
-      return {
-        ...previousObject,
-        [target]: {
-          ...previousObject[target],
-          checked: status,
-        },
-      };
-    });
-  };
-
-  const changeDeleteFeedsState = (target: string, status: boolean) => () => {
-    setSubscriptionCheckboxes((previousObject: SubscriptionCheckboxes) => {
-      return {
-        ...previousObject,
-        [target]: {
-          ...previousObject[target],
-          checked: status,
-          deleteFeeds: status,
-        },
-      };
-    });
-  };
-
-  const subscriptionOptions = Object.keys(subscriptionCheckboxes).map(
-    (origins: string, index: number) => {
-      const { value, checked, deleteFeeds } = subscriptionCheckboxes[origins];
-      const inputValue = typeof value === 'string' ? value : '';
-      const inputChecked = typeof checked === 'boolean' ? checked : false;
-      const deleteFeedsChecked = typeof deleteFeeds === 'boolean' ? deleteFeeds : false;
-      return (
-        <li
-          key={origins}
-          className='flex justify-between w-full py-2 px-4 list-none cursor-pointer select-none'
-        >
-          <div onClick={changeSubscriptionState(origins, !checked)}>
-            <input
-              name='url'
-              type='checkbox'
-              className='mr-2 cursor-pointer'
-              value={inputValue}
-              checked={inputChecked}
-              onChange={changeSubscriptionState(origins, !checked)}
-            />
-            <label className='cursor-pointer'>{originsList[index] || `blog_${index}`}</label>
-          </div>
-          <input
-            name='deleteFeeds'
-            type='checkbox'
-            className='mr-2 cursor-pointer'
-            value={String(deleteFeedsChecked)}
-            checked={deleteFeedsChecked}
-            onChange={changeDeleteFeedsState(origins, !deleteFeedsChecked)}
-          />
-        </li>
-      );
-    }
-  );
-
-  const sendChangeUrlsListRequest = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formInputs = event.currentTarget.querySelectorAll('input');
-    const checkedInputs = Array.from(formInputs).reduce(
-      (resultArray: CheckboxValue[], input, index) => {
-        if (input.name === 'url') {
-          resultArray.push({
-            ...resultArray[index / 2],
-            url: input.value,
-            unsubscribe: input.checked,
-          });
-        } else if (input.name === 'deleteFeeds') {
-          resultArray[(index - 1) / 2] = {
-            ...resultArray[(index - 1) / 2],
-            deleteFeeds: input.checked,
-          };
-        }
-        return resultArray;
-      },
-      []
+export default function CancelSubscription({
+    sources,
+}: Props) {
+    const [subscriptionList, setSubscriptionList] = React.useState<SourceData[]>(
+        []
     );
-    mutate(checkedInputs);
-  };
 
-  return (
-    <section className='h-full'>
-      <form className='w-full h-full' onSubmit={sendChangeUrlsListRequest}>
-        <h1 className='mb-4 text-xl'>
-          구독을 취소할 블로그 / 사이트를
-          <br />
-          선택해주세요.
-        </h1>
-        <ul className='relative flex-center flex-col w-full h-full mb-4'>
-          {subscriptionOptions}
-          <div className='absolute -top-5 right-1 text-sm'>피드 삭제</div>
-        </ul>
-        <Button type='submit' customStyle={`bg-sky-400 dark:bg-sky-800`}>
-          저장
-        </Button>
-        <Button type='button' customStyle={`dark:bg-neutral-500`} clickHandler={closeModal}>
-          취소
-        </Button>
-      </form>
-    </section>
-  );
+    React.useEffect(() => {
+        if (sources != null) {
+            const { sources: sourcesList }: SourcesList = JSON.parse(sources);
+            setSubscriptionList(previousArray => previousArray.slice(previousArray.length).concat(sourcesList));
+        }
+    }, [sources]);
+
+    const subscriptionOptions = Object.keys(subscriptionList).map(
+        (origins: string, index: number) => {
+            const { id, name }: SourceData = subscriptionList[index];
+            return (
+                <li
+                    key={origins}
+                    className="flex justify-between w-full py-2 px-4 list-none cursor-pointer select-none"
+                >
+                    <div>
+                        {name || `blog_${index}`}
+                    </div>
+                    <DeleteButtonWrapper deleteTarget={id}>
+                        <Button type="button" customStyle='bg-red-600 dark:bg-red-700'>삭제</Button>
+                    </DeleteButtonWrapper>
+                </li>
+            );
+        }
+    );
+
+    return (
+        <section className="h-full">
+            <div
+                className="w-full h-full"
+            >
+                <h1 className="mb-4 text-xl">
+                    구독을 취소할 블로그 / 사이트를
+                    <br />
+                    선택해주세요.
+                </h1>
+                <ul className="relative flex-center flex-col w-full h-full mb-4">
+                    {subscriptionOptions}
+                </ul>
+            </div>
+        </section>
+    );
 }
