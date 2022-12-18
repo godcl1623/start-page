@@ -56,6 +56,7 @@ export default function Index({ feeds, sources }: IndexProps) {
         }
     };
 
+    // TODO: state를 사용하지 않고 useQuery 반환 데이터만 사용하도록 수정
     const feedsToDisplay = newFeeds
         ? newFeeds
             .map((feedData: ParseResultType) => feedData.feeds)
@@ -79,8 +80,9 @@ export default function Index({ feeds, sources }: IndexProps) {
                 if (isFilterFavorite) return feed.isFavorite;
                 return feed;
             })
+            // TODO: props 이름 수정할 것
             .map((feed: ParsedFeedsDataType) => (
-                <Card cardData={feed} key={feed.id} />
+                <Card cardData={feed} key={feed.id} foo={refetchStoredFeeds} />
             ))
         : [];
 
@@ -103,6 +105,7 @@ export default function Index({ feeds, sources }: IndexProps) {
         refetchStoredFeeds();
     };
 
+    // TODO: 이하 불필요한 useEffect 발생시 삭제할 것
     React.useEffect(() => {
         if (feeds) {
             const { data }: { data: ParseResultType[] } = JSON.parse(feeds);
