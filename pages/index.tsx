@@ -56,8 +56,8 @@ export default function Index({ feeds, sources }: IndexProps) {
         }
     };
 
-    const feedsToDisplay = feedsFromServer
-        ? feedsFromServer
+    const feedsToDisplay = newFeeds
+        ? newFeeds
             .map((feedData: ParseResultType) => feedData.feeds)
             .reduce(
                 (
@@ -128,6 +128,14 @@ export default function Index({ feeds, sources }: IndexProps) {
             );
         }
     }, [storedFeeds]);
+
+    React.useEffect(() => {
+        if (newFeedsRequestResult != null && typeof newFeedsRequestResult !== 'string') {
+            setNewFeeds((previousArray) =>
+                previousArray.slice(previousArray.length).concat(newFeedsRequestResult)
+            );
+        }
+    }, [newFeedsRequestResult]);
 
     return (
         <article
