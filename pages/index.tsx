@@ -1,8 +1,6 @@
-import Link from "next/link";
 import React from "react";
 import Search from "components/search";
 import RequestControllers from "controllers";
-import useSaveFeeds from "hooks/useSaveFeeds";
 import Card from "components/card";
 import { ParsedFeedsDataType, ParseResultType } from "types/global";
 import { handleSort } from "common/helpers";
@@ -41,6 +39,7 @@ export default function Index({ feeds, sources }: IndexProps) {
         ["/feeds/new"],
         () => getDataFrom("/feeds/new")
     )?.data?.data;
+    const { data: storedFeeds, refetch: refetchStoredFeeds } = useQuery<AxiosResponse<string>>(['/feeds'], () => getDataFrom('/feeds'));
     const feedsFromServer = newFeedsRequestResult
         ? newFeedsRequestResult
         : newFeeds;
@@ -101,6 +100,7 @@ export default function Index({ feeds, sources }: IndexProps) {
 
     const filterFavorites = () => {
         setIsFilterFavorite(!isFilterFavorite);
+        refetchStoredFeeds();
     };
 
     React.useEffect(() => {
@@ -119,6 +119,15 @@ export default function Index({ feeds, sources }: IndexProps) {
             document.documentElement.style.overflow = "auto";
         }
     }, [modalState, startPageRef]);
+
+    React.useEffect(() => {
+        if (storedFeeds != null) {
+            const { data }: { data: ParseResultType[] } = JSON.parse(storedFeeds.data);
+            setNewFeeds((previousArray) =>
+                previousArray.slice(previousArray.length).concat(data)
+            );
+        }
+    }, [storedFeeds]);
 
     return (
         <article
