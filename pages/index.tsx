@@ -39,13 +39,13 @@ export default function Index({ feeds, sources }: IndexProps) {
         ["/feeds/new"],
         () => getDataFrom("/feeds/new")
     )?.data?.data;
-    const { data: storedFeeds, refetch: refetchStoredFeeds } = useQuery<AxiosResponse<string>>(['/feeds'], () => getDataFrom('/feeds'));
+    const { refetch: refetchStoredFeeds } = useQuery<AxiosResponse<string>>(
+        ["/feeds"],
+        () => getDataFrom("/feeds")
+    );
     const feedsFromServer = newFeedsRequestResult
         ? newFeedsRequestResult
         : newFeeds;
-    const originNames = feedsFromServer?.map(
-        (feedsData) => feedsData.originName
-    );
 
     const checkShouldSortByReverse = (sortState: number) => sortState === 1;
     const setSortState = (stateString: string, stateStringArray: string[]) => {
@@ -56,9 +56,8 @@ export default function Index({ feeds, sources }: IndexProps) {
         }
     };
 
-    // TODO: state를 사용하지 않고 useQuery 반환 데이터만 사용하도록 수정
-    const feedsToDisplay = newFeeds
-        ? newFeeds
+    const feedsToDisplay = feedsFromServer
+        ? feedsFromServer
             .map((feedData: ParseResultType) => feedData.feeds)
             .reduce(
                 (
@@ -80,9 +79,12 @@ export default function Index({ feeds, sources }: IndexProps) {
                 if (isFilterFavorite) return feed.isFavorite;
                 return feed;
             })
-            // TODO: props 이름 수정할 것
             .map((feed: ParsedFeedsDataType) => (
-                <Card cardData={feed} key={feed.id} foo={refetchStoredFeeds} />
+                <Card
+                    cardData={feed}
+                    key={feed.id}
+                    refetchFeeds={refetchStoredFeeds}
+                />
             ))
         : [];
 
@@ -105,7 +107,6 @@ export default function Index({ feeds, sources }: IndexProps) {
         refetchStoredFeeds();
     };
 
-    // TODO: 이하 불필요한 useEffect 발생시 삭제할 것
     React.useEffect(() => {
         if (feeds) {
             const { data }: { data: ParseResultType[] } = JSON.parse(feeds);
@@ -122,23 +123,6 @@ export default function Index({ feeds, sources }: IndexProps) {
             document.documentElement.style.overflow = "auto";
         }
     }, [modalState, startPageRef]);
-
-    React.useEffect(() => {
-        if (storedFeeds != null) {
-            const { data }: { data: ParseResultType[] } = JSON.parse(storedFeeds.data);
-            setNewFeeds((previousArray) =>
-                previousArray.slice(previousArray.length).concat(data)
-            );
-        }
-    }, [storedFeeds]);
-
-    React.useEffect(() => {
-        if (newFeedsRequestResult != null && typeof newFeedsRequestResult !== 'string') {
-            setNewFeeds((previousArray) =>
-                previousArray.slice(previousArray.length).concat(newFeedsRequestResult)
-            );
-        }
-    }, [newFeedsRequestResult]);
 
     return (
         <article

@@ -12,16 +12,22 @@ import Checkbox from "./Checkbox";
 
 interface CardProps {
     cardData: ParsedFeedsDataType;
-    // TODO: props 이름 수정
-    foo: any;
+    refetchFeeds: any;
 }
 
 type CallbackType = (value: any) => void;
 
-// TODO: props 이름 수정
-export default function Card({ cardData, foo }: CardProps) {
-    const { title, description, link, pubDate, origin, isRead, isFavorite, id } =
-        cardData;
+export default function Card({ cardData, refetchFeeds }: CardProps) {
+    const {
+        title,
+        description,
+        link,
+        pubDate,
+        origin,
+        isRead,
+        isFavorite,
+        id,
+    } = cardData;
     const parsedPubDate = new Date(pubDate as string).toDateString();
     const [readState, setReadState] = useDerivedStateFromProps<boolean>(isRead);
     const [favoriteState, setFavoriteState] =
@@ -33,12 +39,6 @@ export default function Card({ cardData, foo }: CardProps) {
     const { mutate, isSuccess } = useMutation({
         mutationFn,
     });
-    // TODO: 코드 위치 변경, 함수명(= props 이름) 변경
-    React.useEffect(() => {
-        if (isSuccess && favoriteState) {
-            foo();
-        }
-    }, [isSuccess, favoriteState]);
 
     function handleCard(event: React.MouseEvent) {
         if (!(event.target instanceof SVGElement)) {
@@ -95,6 +95,12 @@ export default function Card({ cardData, foo }: CardProps) {
             setDateState(dateFlag);
         }
     }, [pubDate]);
+
+    React.useEffect(() => {
+        if (isSuccess && favoriteState) {
+            refetchFeeds();
+        }
+    }, [isSuccess, favoriteState]);
 
     return (
         <section
