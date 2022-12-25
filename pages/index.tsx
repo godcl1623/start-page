@@ -39,10 +39,9 @@ export default function Index({ feeds, sources }: IndexProps) {
         ["/feeds/new"],
         () => getDataFrom("/feeds/new")
     )?.data?.data;
-    const { refetch: refetchStoredFeeds } = useQuery<AxiosResponse<string>>(
-        ["/feeds"],
-        () => getDataFrom("/feeds")
-    );
+    const { data: storedFeed, refetch: refetchStoredFeeds } = useQuery<
+        AxiosResponse<string>
+    >(["/feeds"], () => getDataFrom("/feeds"));
     const feedsFromServer = newFeedsRequestResult
         ? newFeedsRequestResult
         : newFeeds;
@@ -115,6 +114,15 @@ export default function Index({ feeds, sources }: IndexProps) {
             );
         }
     }, [feeds]);
+
+    React.useEffect(() => {
+        if (storedFeed && storedFeed.data) {
+            const { data }: { data: ParseResultType[] } = JSON.parse(storedFeed.data);
+            setNewFeeds((previousArray) => 
+                previousArray.slice(previousArray.length).concat(data)
+            );
+        }
+    }, [storedFeed]);
 
     React.useEffect(() => {
         if (modalState.addSubscription || modalState.cancelSubscription) {
