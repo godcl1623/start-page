@@ -24,7 +24,8 @@ const useHandleFeedOrigin = (url: string, mode: string) => {
     onError,
   });
 
-  return async (inputUrl: string) => {
+  return async (inputUrl: string | undefined) => {
+    if (inputUrl == null) return;
     const body = {
       mode,
       url: inputUrl,
