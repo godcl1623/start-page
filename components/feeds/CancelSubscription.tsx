@@ -9,7 +9,7 @@ interface Props {
     sources: string;
 }
 
-interface SourcesList {
+export interface SourcesList {
     sources: SourceData[];
 }
 

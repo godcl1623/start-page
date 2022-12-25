@@ -12,13 +12,14 @@ import SubscriptionDialogBox from "components/feeds";
 import SubscribeNew from "components/feeds/SubscribeNew";
 import CancelSubscription from "components/feeds/CancelSubscription";
 import { useQuery } from "@tanstack/react-query";
+import FilterBySource from "components/feeds/FilterBySource";
 
 interface IndexProps {
     feeds: string;
     sources: string;
 }
 
-type ModalKeys = "addSubscription" | "cancelSubscription";
+type ModalKeys = "addSubscription" | "cancelSubscription" | "filterBySource";
 
 type ModalStateType = {
     [key in ModalKeys]: boolean;
@@ -30,6 +31,7 @@ export default function Index({ feeds, sources }: IndexProps) {
     const [modalState, setModalState] = React.useState<ModalStateType>({
         addSubscription: false,
         cancelSubscription: false,
+        filterBySource: false,
     });
     const [isFilterFavorite, setIsFilterFavorite] =
         React.useState<boolean>(false);
@@ -57,34 +59,34 @@ export default function Index({ feeds, sources }: IndexProps) {
 
     const feedsToDisplay = feedsFromServer
         ? feedsFromServer
-            .map((feedData: ParseResultType) => feedData.feeds)
-            .reduce(
-                (
-                    resultArray: ParsedFeedsDataType[] | undefined,
-                    currentArray: ParsedFeedsDataType[] | undefined
-                ) => {
-                    if (currentArray) resultArray?.push(...currentArray);
-                    return resultArray;
-                },
-                []
-            )
-            ?.sort(
-                handleSort(
-                    SORT_STANDARD_STATE[currentSort],
-                    checkShouldSortByReverse(currentSort)
-                )
-            )
-            .filter((feed: ParsedFeedsDataType) => {
-                if (isFilterFavorite) return feed.isFavorite;
-                return feed;
-            })
-            .map((feed: ParsedFeedsDataType) => (
-                <Card
-                    cardData={feed}
-                    key={feed.id}
-                    refetchFeeds={refetchStoredFeeds}
-                />
-            ))
+              .map((feedData: ParseResultType) => feedData.feeds)
+              .reduce(
+                  (
+                      resultArray: ParsedFeedsDataType[] | undefined,
+                      currentArray: ParsedFeedsDataType[] | undefined
+                  ) => {
+                      if (currentArray) resultArray?.push(...currentArray);
+                      return resultArray;
+                  },
+                  []
+              )
+              ?.sort(
+                  handleSort(
+                      SORT_STANDARD_STATE[currentSort],
+                      checkShouldSortByReverse(currentSort)
+                  )
+              )
+              .filter((feed: ParsedFeedsDataType) => {
+                  if (isFilterFavorite) return feed.isFavorite;
+                  return feed;
+              })
+              .map((feed: ParsedFeedsDataType) => (
+                  <Card
+                      cardData={feed}
+                      key={feed.id}
+                      refetchFeeds={refetchStoredFeeds}
+                  />
+              ))
         : [];
 
     const handleClick = (target: ModalKeys) => () => {
@@ -117,8 +119,10 @@ export default function Index({ feeds, sources }: IndexProps) {
 
     React.useEffect(() => {
         if (storedFeed && storedFeed.data) {
-            const { data }: { data: ParseResultType[] } = JSON.parse(storedFeed.data);
-            setNewFeeds((previousArray) => 
+            const { data }: { data: ParseResultType[] } = JSON.parse(
+                storedFeed.data
+            );
+            setNewFeeds((previousArray) =>
                 previousArray.slice(previousArray.length).concat(data)
             );
         }
@@ -162,6 +166,12 @@ export default function Index({ feeds, sources }: IndexProps) {
                             >
                                 즐겨찾기
                             </button>
+                            <button
+                                className="mr-4 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
+                                onClick={handleClick("filterBySource")}
+                            >
+                                출처별 필터
+                            </button>
                         </section>
                         <SelectBox
                             optionValues={SORT_STANDARD}
@@ -187,6 +197,18 @@ export default function Index({ feeds, sources }: IndexProps) {
                         closeModal={closeModal("cancelSubscription")}
                     >
                         <CancelSubscription sources={sources} />
+                    </SubscriptionDialogBox>
+                </Modal>
+            )}
+            {modalState.filterBySource && (
+                <Modal closeModal={closeModal("filterBySource")}>
+                    <SubscriptionDialogBox
+                        closeModal={closeModal("filterBySource")}
+                    >
+                        <FilterBySource
+                            sources={sources}
+                            closeModal={closeModal("filterBySource")}
+                        />
                     </SubscriptionDialogBox>
                 </Modal>
             )}
