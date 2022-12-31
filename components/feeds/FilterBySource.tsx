@@ -1,66 +1,49 @@
-import { SourceData } from "controllers/sources";
 import React from "react";
-import { SourcesList } from "./CancelSubscription";
 import Button from "./common/Button";
 import ListItemBox from "./common/ListItemBox";
 import ModalTemplate from "./common/ModalTemplate";
+import { SourceStateType } from "hooks/useSourceFilters";
 
 interface Props {
-    sources: string;
+    displayState?: SourceStateType;
     closeModal: () => void;
+    setDisplayFlag: (target: string, value: boolean) => void;
 }
 
-type CheckedStateType = {
-    [key in string]: boolean;
-};
-
-export default function FilterBySource({ sources, closeModal }: Props) {
-    const [subscriptionList, setSubscriptionList] = React.useState<
-        SourceData[]
-    >([]);
-    const [checkedState, setCheckedState] = React.useState<CheckedStateType>(
-        {}
-    );
+export default function FilterBySource({
+    displayState,
+    closeModal,
+    setDisplayFlag,
+}: Props) {
+    if (displayState == null || Object.keys(displayState).length === 0) {
+        return <></>;
+    }
 
     const title = "표시할 출처를 선택해주세요";
 
-    const changeDisplayFlag = (target: string) => () => {
-        setCheckedState((previousObject) => ({
-            ...previousObject,
-            [target]: !checkedState[target],
-        }));
+    const changeDisplayFlag = (target: string, value: boolean) => () => {
+        setDisplayFlag(target, value);
     };
 
-    React.useEffect(() => {
-        if (sources != null) {
-            const { sources: sourcesList }: SourcesList = JSON.parse(sources);
-            setSubscriptionList((previousArray) =>
-                previousArray.slice(previousArray.length).concat(sourcesList)
-            );
-            sourcesList.forEach((source: SourceData) => {
-                const { name } = source;
-                setCheckedState((previousObject) => ({
-                    ...previousObject,
-                    [name]: true,
-                }));
-            });
-        }
-    }, [sources]);
-
-    const subscriptionOptions = Object.keys(subscriptionList).map(
+    const subscriptionOptions = Object.keys(displayState).map(
         (origins: string, index: number) => {
-            const { name }: SourceData = subscriptionList[index];
             return (
-                <ListItemBox key={origins} onClick={changeDisplayFlag(name)}>
-                    <div>{name || `blog_${index}`}</div>
+                <ListItemBox
+                    key={origins}
+                    onClick={changeDisplayFlag(origins, !displayState[origins])}
+                >
+                    <div>{origins || `blog_${index}`}</div>
                     <label
                         htmlFor="checkDisplay"
                         className="w-5 h-5 border rounded p-0.5 cursor-pointer"
-                        onClick={changeDisplayFlag(name)}
+                        onClick={changeDisplayFlag(
+                            origins,
+                            !displayState[origins]
+                        )}
                     >
                         <div
                             className={`w-full h-full ${
-                                checkedState[name]
+                                displayState[origins]
                                     ? "bg-white"
                                     : "bg-transparent"
                             }`}
@@ -70,8 +53,8 @@ export default function FilterBySource({ sources, closeModal }: Props) {
                         type="checkbox"
                         name="checkDisplay"
                         className="hidden"
-                        value={name}
-                        checked={checkedState[name] ?? true}
+                        value={origins}
+                        checked={displayState[origins] ?? true}
                         onChange={() => {}}
                     />
                 </ListItemBox>
@@ -86,8 +69,18 @@ export default function FilterBySource({ sources, closeModal }: Props) {
                 listItems={subscriptionOptions}
             />
             <div className="flex justify-evenly w-full">
-                <Button type="button" customStyle="w-16" clickHandler={closeModal}>취소</Button>
-                <Button type="button" customStyle="w-16 bg-blue-600 dark:bg-sky-600" clickHandler={closeModal}>
+                <Button
+                    type="button"
+                    customStyle="w-16"
+                    clickHandler={closeModal}
+                >
+                    취소
+                </Button>
+                <Button
+                    type="button"
+                    customStyle="w-16 bg-blue-600 dark:bg-sky-600"
+                    clickHandler={closeModal}
+                >
                     저장
                 </Button>
             </div>

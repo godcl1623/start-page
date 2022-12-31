@@ -13,6 +13,7 @@ import SubscribeNew from "components/feeds/SubscribeNew";
 import CancelSubscription from "components/feeds/CancelSubscription";
 import { useQuery } from "@tanstack/react-query";
 import FilterBySource from "components/feeds/FilterBySource";
+import useSourceFilters from 'hooks/useSourceFilters';
 
 interface IndexProps {
     feeds: string;
@@ -36,6 +37,7 @@ export default function Index({ feeds, sources }: IndexProps) {
     const [isFilterFavorite, setIsFilterFavorite] =
         React.useState<boolean>(false);
     const [newFeeds, setNewFeeds] = React.useState<ParseResultType[]>([]);
+    const [sourceDisplayState, setSourceDisplayState] = useSourceFilters(sources, true);
     const startPageRef = React.useRef<HTMLElement | null>(null);
     const newFeedsRequestResult = useQuery<AxiosResponse<ParseResultType[]>>(
         ["/feeds/new"],
@@ -206,7 +208,8 @@ export default function Index({ feeds, sources }: IndexProps) {
                         closeModal={closeModal("filterBySource")}
                     >
                         <FilterBySource
-                            sources={sources}
+                            displayState={sourceDisplayState}
+                            setDisplayFlag={setSourceDisplayState}
                             closeModal={closeModal("filterBySource")}
                         />
                     </SubscriptionDialogBox>
