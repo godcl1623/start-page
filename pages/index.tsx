@@ -13,7 +13,7 @@ import SubscribeNew from "components/feeds/SubscribeNew";
 import CancelSubscription from "components/feeds/CancelSubscription";
 import { useQuery } from "@tanstack/react-query";
 import FilterBySource from "components/feeds/FilterBySource";
-import useSourceFilters from 'hooks/useSourceFilters';
+import useSourceFilters from "hooks/useSourceFilters";
 
 interface IndexProps {
     feeds: string;
@@ -37,7 +37,10 @@ export default function Index({ feeds, sources }: IndexProps) {
     const [isFilterFavorite, setIsFilterFavorite] =
         React.useState<boolean>(false);
     const [newFeeds, setNewFeeds] = React.useState<ParseResultType[]>([]);
-    const [sourceDisplayState, setSourceDisplayState] = useSourceFilters(sources, true);
+    const [sourceDisplayState, setSourceDisplayState] = useSourceFilters(
+        sources,
+        true
+    );
     const startPageRef = React.useRef<HTMLElement | null>(null);
     const newFeedsRequestResult = useQuery<AxiosResponse<ParseResultType[]>>(
         ["/feeds/new"],
@@ -45,7 +48,14 @@ export default function Index({ feeds, sources }: IndexProps) {
     )?.data?.data;
     const { data: storedFeed, refetch: refetchStoredFeeds } = useQuery<
         AxiosResponse<string>
-    >(["/feeds"], () => getDataFrom("/feeds"));
+    >(["/feeds"], () =>
+        getDataFrom("/feeds", {
+            params: {
+                favorites: isFilterFavorite,
+                displayOption: sourceDisplayState,
+            },
+        })
+    );
     const feedsFromServer = newFeedsRequestResult
         ? newFeedsRequestResult
         : newFeeds;
@@ -78,10 +88,6 @@ export default function Index({ feeds, sources }: IndexProps) {
                       checkShouldSortByReverse(currentSort)
                   )
               )
-              .filter((feed: ParsedFeedsDataType) => {
-                  if (isFilterFavorite) return feed.isFavorite;
-                  return feed;
-              })
               .map((feed: ParsedFeedsDataType) => (
                   <Card
                       cardData={feed}
@@ -107,7 +113,6 @@ export default function Index({ feeds, sources }: IndexProps) {
 
     const filterFavorites = () => {
         setIsFilterFavorite(!isFilterFavorite);
-        refetchStoredFeeds();
     };
 
     React.useEffect(() => {
@@ -137,6 +142,10 @@ export default function Index({ feeds, sources }: IndexProps) {
             document.documentElement.style.overflow = "auto";
         }
     }, [modalState, startPageRef]);
+
+    React.useEffect(() => {
+        refetchStoredFeeds();
+    }, [isFilterFavorite]);
 
     return (
         <article
