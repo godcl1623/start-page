@@ -14,6 +14,7 @@ import CancelSubscription from "components/feeds/CancelSubscription";
 import { useQuery } from "@tanstack/react-query";
 import FilterBySource from "components/feeds/FilterBySource";
 import useSourceFilters from "hooks/useSourceFilters";
+import FilterByText from 'components/feeds/FilterByText';
 
 interface IndexProps {
     feeds: string;
@@ -160,30 +161,31 @@ export default function Index({ feeds, sources }: IndexProps) {
                     <section className="flex justify-between h-8 mb-4">
                         <section>
                             <button
-                                className="mr-4 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
+                                className="mr-3 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
                                 onClick={handleClick("addSubscription")}
                             >
                                 구독 추가
                             </button>
                             <button
-                                className="mr-4 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
+                                className="mr-3 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
                                 onClick={handleClick("cancelSubscription")}
                             >
                                 구독 취소
                             </button>
                             <button
-                                className="mr-4 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
+                                className="mr-3 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
                                 onClick={filterFavorites}
                             >
                                 즐겨찾기
                             </button>
                             <button
-                                className="mr-4 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
+                                className="mr-3 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
                                 onClick={handleClick("filterBySource")}
                             >
                                 출처별 필터
                             </button>
                         </section>
+                        <FilterByText />
                         <SelectBox
                             optionValues={SORT_STANDARD}
                             customStyles="rounded-md shadow-md text-xs dark:shadow-zinc-600"
