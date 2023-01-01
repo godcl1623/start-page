@@ -25,6 +25,7 @@ export default async function feedsHandler(
                 displayOption != null && typeof displayOption === "string"
                     ? JSON.parse(displayOption)
                     : null;
+            let filteredContents: ParseResultType[] = parsedContents;
             if (isFavoriteFilterNeeded) {
                 const favoriteFilteredContents = parsedContents.map(
                     (parsedContent: ParseResultType) => {
@@ -38,13 +39,12 @@ export default async function feedsHandler(
                         };
                     }
                 );
-                const responseBody = {
-                    data: favoriteFilteredContents,
-                };
-                response.status(200).json(JSON.stringify(responseBody));
-                return;
+                filteredContents = filteredContents.slice(filteredContents.length).concat(favoriteFilteredContents);
             }
-            response.status(200).json(fileContents);
+            const responseBody = {
+                data: filteredContents,
+            };
+            response.status(200).json(JSON.stringify(responseBody));
         } catch (error) {
             response.status(400).send(error);
         }

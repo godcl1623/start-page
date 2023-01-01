@@ -8,12 +8,14 @@ interface Props {
     displayState?: SourceStateType;
     closeModal: () => void;
     setDisplayFlag: (target: string, value: boolean) => void;
+    test: () => void;
 }
 
 export default function FilterBySource({
     displayState,
     closeModal,
     setDisplayFlag,
+    test,
 }: Props) {
     if (displayState == null || Object.keys(displayState).length === 0) {
         return <></>;
@@ -23,6 +25,11 @@ export default function FilterBySource({
 
     const changeDisplayFlag = (target: string, value: boolean) => () => {
         setDisplayFlag(target, value);
+    };
+
+    const enableDisplayFilter = () => {
+        closeModal();
+        test();
     };
 
     const subscriptionOptions = Object.keys(displayState).map(
@@ -79,7 +86,7 @@ export default function FilterBySource({
                 <Button
                     type="button"
                     customStyle="w-16 bg-blue-600 dark:bg-sky-600"
-                    clickHandler={closeModal}
+                    clickHandler={enableDisplayFilter}
                 >
                     저장
                 </Button>

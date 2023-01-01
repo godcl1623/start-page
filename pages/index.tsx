@@ -220,6 +220,7 @@ export default function Index({ feeds, sources }: IndexProps) {
                             displayState={sourceDisplayState}
                             setDisplayFlag={setSourceDisplayState}
                             closeModal={closeModal("filterBySource")}
+                            test={refetchStoredFeeds}
                         />
                     </SubscriptionDialogBox>
                 </Modal>
