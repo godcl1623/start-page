@@ -2,7 +2,6 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
 import { JSON_DIRECTORY } from "common/constants";
-import { SourceStateType } from "hooks/useSourceFilters";
 import { ParseResultType, ParsedFeedsDataType } from "types/global";
 
 export default async function feedsHandler(
@@ -27,7 +26,7 @@ export default async function feedsHandler(
                     : null;
             let filteredContents: ParseResultType[] = parsedContents;
             if (isFavoriteFilterNeeded) {
-                const favoriteFilteredContents = parsedContents.map(
+                const favoriteFilteredContents = filteredContents.map(
                     (parsedContent: ParseResultType) => {
                         const originalFeeds = parsedContent.feeds;
                         const filteredFeeds = originalFeeds?.filter(
@@ -40,6 +39,14 @@ export default async function feedsHandler(
                     }
                 );
                 filteredContents = filteredContents.slice(filteredContents.length).concat(favoriteFilteredContents);
+            }
+            if (displayState != null && Object.keys(displayState).length > 0) {
+                const feedsToDisplay = Object.keys(displayState).filter((feedSource: string) => displayState[feedSource]);
+                const displayFilteredContents = filteredContents.filter((parsedContent: ParseResultType) => {
+                    const feedSource = parsedContent.originName ?? '';
+                    return feedsToDisplay.includes(feedSource);
+                });
+                filteredContents = filteredContents.slice(filteredContents.length).concat(displayFilteredContents);
             }
             const responseBody = {
                 data: filteredContents,
