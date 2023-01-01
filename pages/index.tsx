@@ -13,8 +13,9 @@ import SubscribeNew from "components/feeds/SubscribeNew";
 import CancelSubscription from "components/feeds/CancelSubscription";
 import { useQuery } from "@tanstack/react-query";
 import FilterBySource from "components/feeds/FilterBySource";
-import useSourceFilters from "hooks/useSourceFilters";
-import FilterByText from 'components/feeds/FilterByText';
+import useFilters from "hooks/useFilters";
+import FilterByText from "components/feeds/FilterByText";
+import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 
 interface IndexProps {
     feeds: string;
@@ -38,9 +39,13 @@ export default function Index({ feeds, sources }: IndexProps) {
     const [isFilterFavorite, setIsFilterFavorite] =
         React.useState<boolean>(false);
     const [newFeeds, setNewFeeds] = React.useState<ParseResultType[]>([]);
-    const [sourceDisplayState, setSourceDisplayState] = useSourceFilters(
+    const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
+    );
+    const [searchTexts, setSearchTexts] = useFilters(
+        JSON.stringify(Object.values(SEARCH_OPTIONS)),
+        ""
     );
     const startPageRef = React.useRef<HTMLElement | null>(null);
     const newFeedsRequestResult = useQuery<AxiosResponse<ParseResultType[]>>(
@@ -54,6 +59,7 @@ export default function Index({ feeds, sources }: IndexProps) {
             params: {
                 favorites: isFilterFavorite,
                 displayOption: sourceDisplayState,
+                textOption: searchTexts,
             },
         })
     );
@@ -146,7 +152,7 @@ export default function Index({ feeds, sources }: IndexProps) {
 
     React.useEffect(() => {
         refetchStoredFeeds();
-    }, [isFilterFavorite]);
+    }, [isFilterFavorite, searchTexts]);
 
     return (
         <article
@@ -185,7 +191,7 @@ export default function Index({ feeds, sources }: IndexProps) {
                                 출처별 필터
                             </button>
                         </section>
-                        <FilterByText />
+                        <FilterByText setTextFilter={setSearchTexts} />
                         <SelectBox
                             optionValues={SORT_STANDARD}
                             customStyles="rounded-md shadow-md text-xs dark:shadow-zinc-600"
@@ -222,7 +228,7 @@ export default function Index({ feeds, sources }: IndexProps) {
                             displayState={sourceDisplayState}
                             setDisplayFlag={setSourceDisplayState}
                             closeModal={closeModal("filterBySource")}
-                            test={refetchStoredFeeds}
+                            refetchFeeds={refetchStoredFeeds}
                         />
                     </SubscriptionDialogBox>
                 </Modal>

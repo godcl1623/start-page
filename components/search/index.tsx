@@ -6,7 +6,7 @@ import SelectBox from '../common/SelectBox';
 export default function Search() {
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const { selectedSearchEngine, inputValue } = extractFormValues(event);
+    const [selectedSearchEngine, inputValue] = extractFormValues(event);
     openSearchResult(selectedSearchEngine, inputValue);
   }
 

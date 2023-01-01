@@ -48,6 +48,7 @@ export default async function feedsHandler(
                 });
                 filteredContents = filteredContents.slice(filteredContents.length).concat(displayFilteredContents);
             }
+            console.log(request.query)
             const responseBody = {
                 data: filteredContents,
             };

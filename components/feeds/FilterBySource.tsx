@@ -2,20 +2,20 @@ import React from "react";
 import Button from "./common/Button";
 import ListItemBox from "./common/ListItemBox";
 import ModalTemplate from "./common/ModalTemplate";
-import { SourceStateType } from "hooks/useSourceFilters";
+import { FilterType } from "hooks/useFilters";
 
 interface Props {
-    displayState?: SourceStateType;
+    displayState?: FilterType<boolean>;
     closeModal: () => void;
     setDisplayFlag: (target: string, value: boolean) => void;
-    test: () => void;
+    refetchFeeds: () => void;
 }
 
 export default function FilterBySource({
     displayState,
     closeModal,
     setDisplayFlag,
-    test,
+    refetchFeeds,
 }: Props) {
     if (displayState == null || Object.keys(displayState).length === 0) {
         return <></>;
@@ -29,7 +29,7 @@ export default function FilterBySource({
 
     const enableDisplayFilter = () => {
         closeModal();
-        test();
+        refetchFeeds();
     };
 
     const subscriptionOptions = Object.keys(displayState).map(
