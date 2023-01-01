@@ -32,6 +32,10 @@ export default function FilterBySource({
         refetchFeeds();
     };
 
+    const initiateDisplayFilter = () => {
+        Object.keys(displayState).forEach((key: string) => setDisplayFlag(key, true));
+    };
+
     const subscriptionOptions = Object.keys(displayState).map(
         (origins: string, index: number) => {
             return (
@@ -78,10 +82,17 @@ export default function FilterBySource({
             <div className="flex justify-evenly w-full">
                 <Button
                     type="button"
-                    customStyle="w-16"
+                    customStyle="w-16 bg-red-600 dark:bg-red-700"
                     clickHandler={closeModal}
                 >
                     취소
+                </Button>
+                <Button
+                    type="button"
+                    customStyle="w-16"
+                    clickHandler={initiateDisplayFilter}
+                >
+                    초기화
                 </Button>
                 <Button
                     type="button"
