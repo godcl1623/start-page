@@ -21,10 +21,10 @@ export default async function feedsHandler(
         try {
             const { favorites, displayOption, textOption, page, per_page } =
                 request.query;
-            let pageValue = page != null && typeof page === "number" ? page : 1;
+            let pageValue = page != null && typeof page === "string" ? parseInt(page) : 1;
             let perPageValue =
-                per_page != null && typeof per_page === "number"
-                    ? per_page
+                per_page != null && typeof per_page === "string"
+                    ? parseInt(per_page)
                     : 10;
             const paginationStartIndex = perPageValue * (pageValue - 1);
             const paginationEndIndex = perPageValue * pageValue;
