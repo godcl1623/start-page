@@ -26,6 +26,10 @@ export default async function feedsHandler(
     }
     if (areEqual(request.method, "GET")) {
         try {
+            const pageValue = 1;
+            const perPageValue = 10;
+            const paginationStartIndex = perPageValue * (pageValue - 1);
+            const paginationEndIndex = perPageValue * pageValue;
             const { data } = await getDataFrom("/sources");
             const { sources }: FileContentsInterface = JSON.parse(data);
             const urlList = sources.map(
@@ -71,7 +75,9 @@ export default async function feedsHandler(
                             )
                         ) {
                             const result: ParseResultType = {
-                                id: sources[index].id ? sources[index].id : originId,
+                                id: sources[index].id
+                                    ? sources[index].id
+                                    : originId,
                                 originName: feedOriginName,
                                 originLink: feedOriginParsedLink,
                                 lastFeedsLength: parsedFeedsArray.length,
@@ -97,6 +103,30 @@ export default async function feedsHandler(
                         resultData.latestFeedTitle !==
                             storedFeeds[index]?.latestFeedTitle
                 );
+                const filteredFeeds = differentiateArray
+                    .reduce(
+                        (
+                            totalArray: ParsedFeedsDataType[],
+                            currenetData: ParseResultType
+                        ) => {
+                            if (currenetData.feeds) {
+                                return totalArray.concat(currenetData.feeds);
+                            } else {
+                                return totalArray;
+                            }
+                        },
+                        []
+                    )
+                    .sort((a, b) => {
+                        if (a.pubDate && b.pubDate) {
+                            const previousDate = new Date(a.pubDate);
+                            const nextDate = new Date(b.pubDate);
+                            return previousDate > nextDate ? -1 : 1;
+                        } else {
+                            return -1;
+                        }
+                    })
+                    .slice(paginationStartIndex, paginationEndIndex);
                 if (differentiateArray.length > 0) {
                     postDataTo("/feeds/new", parseResult);
                     response.status(200).json(parseResult);
@@ -107,7 +137,7 @@ export default async function feedsHandler(
                 response.status(408).send("new feeds request timeout");
             }
         } catch (error) {
-            console.log(error)
+            console.log(error);
             response.status(400).send(error);
         }
     } else if (areEqual(request.method, "POST")) {

@@ -3,6 +3,7 @@ import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
 import { JSON_DIRECTORY } from "common/constants";
 import { ParseResultType, ParsedFeedsDataType } from "types/global";
+import { handleSort } from "common/helpers";
 
 export default async function feedsHandler(
     request: NextApiRequest,
@@ -18,11 +19,15 @@ export default async function feedsHandler(
     if (areEqual(request.method, "GET")) {
         const parsedContents: ParseResultType[] = JSON.parse(fileContents).data;
         try {
-            const { favorites, displayOption, textOption, page, per_page } = request.query;
-            let pageValue = page != null && typeof page === 'number' ? page : 1;
-            let perPageValue = per_page != null && typeof per_page === 'number' ? per_page : 10;
+            const { favorites, displayOption, textOption, page, per_page } =
+                request.query;
+            let pageValue = page != null && typeof page === "number" ? page : 1;
+            let perPageValue =
+                per_page != null && typeof per_page === "number"
+                    ? per_page
+                    : 10;
             const paginationStartIndex = perPageValue * (pageValue - 1);
-            const paginationEndIndex = perPageValue * (pageValue - 1) + 9;
+            const paginationEndIndex = perPageValue * pageValue;
             const isFavoriteFilterNeeded = favorites === "true" ? true : false;
             const displayState =
                 displayOption != null && typeof displayOption === "string"
@@ -78,7 +83,9 @@ export default async function feedsHandler(
                                     if (standard === "title") {
                                         return feed.title?.includes(value);
                                     } else {
-                                        return feed.description?.includes(value);
+                                        return feed.description?.includes(
+                                            value
+                                        );
                                     }
                                 }
                             );
@@ -93,8 +100,32 @@ export default async function feedsHandler(
                         .concat(textFilteredContents);
                 }
             }
+            const paginatedContents = filteredContents
+                .reduce(
+                    (
+                        totalArray: ParsedFeedsDataType[],
+                        currentData: ParseResultType
+                    ) => {
+                        if (currentData.feeds) {
+                            return totalArray.concat(currentData.feeds);
+                        } else {
+                            return totalArray;
+                        }
+                    },
+                    []
+                )
+                .sort((a, b) => {
+                    if (a.pubDate && b.pubDate) {
+                        const previousDate = new Date(a.pubDate);
+                        const nextDate = new Date(b.pubDate);
+                        return previousDate > nextDate ? -1 : 1;
+                    } else {
+                        return -1;
+                    }
+                })
+                .slice(paginationStartIndex, paginationEndIndex);
             const responseBody = {
-                data: filteredContents,
+                data: paginatedContents,
             };
             response.status(200).json(JSON.stringify(responseBody));
         } catch (error) {

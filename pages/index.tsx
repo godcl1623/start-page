@@ -38,7 +38,7 @@ export default function Index({ feeds, sources }: IndexProps) {
     });
     const [isFilterFavorite, setIsFilterFavorite] =
         React.useState<boolean>(false);
-    const [newFeeds, setNewFeeds] = React.useState<ParseResultType[]>([]);
+    const [newFeeds, setNewFeeds] = React.useState<ParsedFeedsDataType[]>([]);
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
@@ -48,10 +48,9 @@ export default function Index({ feeds, sources }: IndexProps) {
         ""
     );
     const startPageRef = React.useRef<HTMLElement | null>(null);
-    const newFeedsRequestResult = useQuery<AxiosResponse<ParseResultType[]>>(
-        ["/feeds/new"],
-        () => getDataFrom("/feeds/new")
-    )?.data?.data;
+    const newFeedsRequestResult = useQuery<
+        AxiosResponse<ParsedFeedsDataType[]>
+    >(["/feeds/new"], () => getDataFrom("/feeds/new"))?.data?.data;
     const { data: storedFeed, refetch: refetchStoredFeeds } = useQuery<
         AxiosResponse<string>
     >(["/feeds"], () =>
@@ -80,17 +79,6 @@ export default function Index({ feeds, sources }: IndexProps) {
 
     const feedsToDisplay = feedsFromServer
         ? feedsFromServer
-              .map((feedData: ParseResultType) => feedData.feeds)
-              .reduce(
-                  (
-                      resultArray: ParsedFeedsDataType[] | undefined,
-                      currentArray: ParsedFeedsDataType[] | undefined
-                  ) => {
-                      if (currentArray) resultArray?.push(...currentArray);
-                      return resultArray;
-                  },
-                  []
-              )
               ?.sort(
                   handleSort(
                       SORT_STANDARD_STATE[currentSort],
@@ -126,7 +114,7 @@ export default function Index({ feeds, sources }: IndexProps) {
 
     React.useEffect(() => {
         if (feeds) {
-            const { data }: { data: ParseResultType[] } = JSON.parse(feeds);
+            const { data }: { data: ParsedFeedsDataType[] } = JSON.parse(feeds);
             setNewFeeds((previousArray) =>
                 previousArray.slice(previousArray.length).concat(data)
             );
@@ -135,7 +123,7 @@ export default function Index({ feeds, sources }: IndexProps) {
 
     React.useEffect(() => {
         if (storedFeed && storedFeed.data) {
-            const { data }: { data: ParseResultType[] } = JSON.parse(
+            const { data }: { data: ParsedFeedsDataType[] } = JSON.parse(
                 storedFeed.data
             );
             setNewFeeds((previousArray) =>
