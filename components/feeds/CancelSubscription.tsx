@@ -1,13 +1,15 @@
 import React from "react";
 import { SourceData } from "controllers/sources";
-import Button from "./Button";
+import Button from "./common/Button";
 import DeleteButtonWrapper from 'components/common/DeleteButtonWrapper';
+import ListItemBox from './common/ListItemBox';
+import ModalTemplate from './common/ModalTemplate';
 
 interface Props {
     sources: string;
 }
 
-interface SourcesList {
+export interface SourcesList {
     sources: SourceData[];
 }
 
@@ -16,6 +18,14 @@ export default function CancelSubscription({
 }: Props) {
     const [subscriptionList, setSubscriptionList] = React.useState<SourceData[]>(
         []
+    );
+
+    const title = (
+        <>
+            구독을 취소할 블로그 / 사이트를
+                <br />
+            선택해주세요.
+        </>
     );
 
     React.useEffect(() => {
@@ -29,9 +39,8 @@ export default function CancelSubscription({
         (origins: string, index: number) => {
             const { id, name }: SourceData = subscriptionList[index];
             return (
-                <li
+                <ListItemBox
                     key={origins}
-                    className="flex justify-between w-full py-2 px-4 list-none cursor-pointer select-none"
                 >
                     <div>
                         {name || `blog_${index}`}
@@ -39,25 +48,17 @@ export default function CancelSubscription({
                     <DeleteButtonWrapper deleteTarget={id}>
                         <Button type="button" customStyle='bg-red-600 dark:bg-red-700'>삭제</Button>
                     </DeleteButtonWrapper>
-                </li>
+                </ListItemBox>
             );
         }
     );
 
     return (
         <section className="h-full">
-            <div
-                className="w-full h-full"
-            >
-                <h1 className="mb-4 text-xl">
-                    구독을 취소할 블로그 / 사이트를
-                    <br />
-                    선택해주세요.
-                </h1>
-                <ul className="relative flex-center flex-col w-full h-full mb-4">
-                    {subscriptionOptions}
-                </ul>
-            </div>
+            <ModalTemplate
+                headingTitle={title}
+                listItems={subscriptionOptions}
+            />
         </section>
     );
 }

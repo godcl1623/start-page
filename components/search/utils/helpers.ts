@@ -2,15 +2,15 @@ import React from 'react';
 import { SEARCH_ADDRESS_BY_ENGINE } from './constants';
 
 export const extractFormValues = (event: React.FormEvent<HTMLFormElement>) => {
-  const searchEngineSelectBox = event.currentTarget[0];
+  const selectBox = event.currentTarget[0];
   const searchInput = event.currentTarget[1];
-  let selectedSearchEngine = '';
+  let selectBoxValue = '';
   let inputValue = '';
-  if (searchEngineSelectBox instanceof HTMLSelectElement)
-    selectedSearchEngine = searchEngineSelectBox.value;
+  if (selectBox instanceof HTMLSelectElement)
+    selectBoxValue = selectBox.value;
   if (searchInput instanceof HTMLInputElement) inputValue = searchInput.value;
 
-  return { selectedSearchEngine, inputValue };
+  return [selectBoxValue, inputValue] as const;
 };
 
 export const openSearchResult = (selectedSearchEngine: string, inputValue: string) => {
