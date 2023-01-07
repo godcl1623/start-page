@@ -2,7 +2,7 @@ import React from "react";
 import Search from "components/search";
 import RequestControllers from "controllers";
 import Card from "components/card";
-import { ParsedFeedsDataType, ParseResultType } from "types/global";
+import { ParsedFeedsDataType } from "types/global";
 import { handleSort } from "common/helpers";
 import { SORT_STANDARD, SORT_STANDARD_STATE } from "common/constants";
 import SelectBox from "components/common/SelectBox";
@@ -11,7 +11,7 @@ import Modal from "components/modal";
 import SubscriptionDialogBox from "components/feeds";
 import SubscribeNew from "components/feeds/SubscribeNew";
 import CancelSubscription from "components/feeds/CancelSubscription";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import FilterBySource from "components/feeds/FilterBySource";
 import useFilters from "hooks/useFilters";
 import FilterByText from "components/feeds/FilterByText";
@@ -36,6 +36,8 @@ export default function Index({ feeds, sources }: IndexProps) {
         cancelSubscription: false,
         filterBySource: false,
     });
+    const [observerElement, setObserverElement] =
+        React.useState<HTMLDivElement | null>(null);
     const [isFilterFavorite, setIsFilterFavorite] =
         React.useState<boolean>(false);
     const [newFeeds, setNewFeeds] = React.useState<ParsedFeedsDataType[]>([]);
@@ -51,19 +53,25 @@ export default function Index({ feeds, sources }: IndexProps) {
     const newFeedsRequestResult = useQuery<
         AxiosResponse<ParsedFeedsDataType[]>
     >(["/feeds/new"], () => getDataFrom("/feeds/new"))?.data?.data;
-    const { data: storedFeed, refetch: refetchStoredFeeds } = useQuery<
-        AxiosResponse<string>
-    >(["/feeds"], () =>
-        getDataFrom("/feeds", {
-            params: {
-                favorites: isFilterFavorite,
-                displayOption: sourceDisplayState,
-                textOption: searchTexts,
-                page: 1,
-                per_page: 10,
-            },
-        })
-    );
+    const {
+        data: storedFeed,
+        refetch: refetchStoredFeeds,
+        fetchNextPage,
+        hasNextPage,
+    } = useInfiniteQuery({
+        queryKey: ["/feeds"],
+        queryFn: ({ pageParam = 1 }) =>
+            getDataFrom("/feeds", {
+                params: {
+                    favorites: isFilterFavorite,
+                    displayOption: sourceDisplayState,
+                    textOption: searchTexts,
+                    page: pageParam,
+                },
+            }),
+        getNextPageParam: (lastPage, allPages) =>
+            lastPage.config.params.page + 1,
+    });
     const feedsFromServer = newFeedsRequestResult
         ? newFeedsRequestResult
         : newFeeds;
@@ -76,7 +84,6 @@ export default function Index({ feeds, sources }: IndexProps) {
             setCurrentSort(0);
         }
     };
-
     const feedsToDisplay = feedsFromServer
         ? feedsFromServer
               ?.sort(
@@ -122,12 +129,14 @@ export default function Index({ feeds, sources }: IndexProps) {
     }, [feeds]);
 
     React.useEffect(() => {
-        if (storedFeed && storedFeed.data) {
-            const { data }: { data: ParsedFeedsDataType[] } = JSON.parse(
-                storedFeed.data
+        if (storedFeed && storedFeed.pages) {
+            const dataArray = storedFeed.pages.reduce(
+                (totalArray: ParsedFeedsDataType[], rawData) =>
+                    totalArray.concat(JSON.parse(rawData.data).data),
+                []
             );
             setNewFeeds((previousArray) =>
-                previousArray.slice(previousArray.length).concat(data)
+                previousArray.slice(previousArray.length).concat(dataArray)
             );
         }
     }, [storedFeed]);
@@ -143,6 +152,29 @@ export default function Index({ feeds, sources }: IndexProps) {
     React.useEffect(() => {
         refetchStoredFeeds();
     }, [isFilterFavorite, searchTexts]);
+
+    React.useEffect(() => {
+        if (typeof window !== "undefined" && observerElement != null) {
+            const observerOption: IntersectionObserverInit = {
+                threshold: 0.5,
+            };
+            const observerCallback: IntersectionObserverCallback = (
+                entries: IntersectionObserverEntry[]
+            ) => {
+                entries.forEach((entry: IntersectionObserverEntry) => {
+                    if (entry.isIntersecting) {
+                        fetchNextPage();
+                    }
+                });
+            };
+            const observer = new IntersectionObserver(
+                observerCallback,
+                observerOption
+            );
+            observer.observe(observerElement);
+            return () => observer.unobserve(observerElement);
+        }
+    }, [observerElement]);
 
     return (
         <article
@@ -190,6 +222,7 @@ export default function Index({ feeds, sources }: IndexProps) {
                     </section>
                 </section>
                 <section>{feedsToDisplay}</section>
+                <div ref={setObserverElement} className="w-full h-[150px]" />
             </section>
             {modalState.addSubscription && (
                 <Modal closeModal={closeModal("addSubscription")}>
