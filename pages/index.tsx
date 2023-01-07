@@ -60,6 +60,8 @@ export default function Index({ feeds, sources }: IndexProps) {
                 favorites: isFilterFavorite,
                 displayOption: sourceDisplayState,
                 textOption: searchTexts,
+                page: 1,
+                per_page: 10,
             },
         })
     );
