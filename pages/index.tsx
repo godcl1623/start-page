@@ -51,6 +51,7 @@ export default function Index({ feeds, sources }: IndexProps) {
     >([]);
     const [totalCount, setTotalCount] = React.useState<number>(0);
     const [isMobileLayout, setIsMobileLayout] = React.useState<boolean>(false);
+    const [currentPage, setCurrentPage] = React.useState<number>(1);
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
@@ -69,9 +70,11 @@ export default function Index({ feeds, sources }: IndexProps) {
         refetch: refetchStoredFeeds,
         fetchNextPage,
         hasNextPage,
+        hasPreviousPage,
+        fetchPreviousPage,
     } = useInfiniteQuery({
         queryKey: ["/feeds"],
-        queryFn: ({ pageParam = 1 }) =>
+        queryFn: ({ pageParam = currentPage }) =>
             getDataFrom("/feeds", {
                 params: {
                     favorites: isFilterFavorite,
@@ -99,22 +102,6 @@ export default function Index({ feeds, sources }: IndexProps) {
             setCurrentSort(0);
         }
     };
-    const feedsToDisplay = feedsFromServer
-        ? feedsFromServer
-              ?.sort(
-                  handleSort(
-                      SORT_STANDARD_STATE[currentSort],
-                      checkShouldSortByReverse(currentSort)
-                  )
-              )
-              .map((feed: ParsedFeedsDataType) => (
-                  <Card
-                      cardData={feed}
-                      key={feed.id}
-                      refetchFeeds={refetchStoredFeeds}
-                  />
-              ))
-        : [];
 
     const handleClick = (target: ModalKeys) => () => {
         document.documentElement.scrollTo({ top: 0 });
@@ -164,19 +151,25 @@ export default function Index({ feeds, sources }: IndexProps) {
 
     React.useEffect(() => {
         if (storedFeed && storedFeed.pages) {
-            const dataArray = storedFeed.pages.reduce(
-                (totalArray: ParsedFeedsDataType[], rawData) =>
-                    totalArray.concat(JSON.parse(rawData.data).data),
-                []
-            );
+            const dataArray = isMobileLayout
+                ? storedFeed.pages.reduce(
+                      (totalArray: ParsedFeedsDataType[], rawData) =>
+                          totalArray.concat(JSON.parse(rawData.data).data),
+                      []
+                  )
+                : JSON.parse(storedFeed.pages[storedFeed.pages.length - 1].data)
+                      .data;
             setNewFeeds((previousArray) =>
                 previousArray.slice(previousArray.length).concat(dataArray)
             );
         }
-    }, [storedFeed]);
+    }, [storedFeed, isMobileLayout]);
 
     React.useEffect(() => {
-        if (newFeedsRequestResult != null) {
+        if (
+            newFeedsRequestResult != null &&
+            typeof newFeedsRequestResult !== "string"
+        ) {
             const { data, count } = newFeedsRequestResult;
             if (count !== totalCount) setTotalCount(count);
             setRenewedFeeds((previousArray) =>
@@ -194,8 +187,10 @@ export default function Index({ feeds, sources }: IndexProps) {
     }, [modalState, startPageRef]);
 
     React.useEffect(() => {
-        refetchStoredFeeds();
-    }, [isFilterFavorite, searchTexts]);
+        if (!isMobileLayout) {
+            refetchStoredFeeds();
+        }
+    }, [isFilterFavorite, searchTexts, currentPage, isMobileLayout]);
 
     React.useEffect(() => {
         if (typeof window !== "undefined" && observerElement != null) {
@@ -207,7 +202,10 @@ export default function Index({ feeds, sources }: IndexProps) {
             ) => {
                 entries.forEach((entry: IntersectionObserverEntry) => {
                     if (entry.isIntersecting) {
-                        hasNextPage && fetchNextPage();
+                        if (hasNextPage) {
+                            fetchNextPage();
+                            setCurrentPage((previousValue) => previousValue + 1);
+                        }
                     }
                 });
             };
@@ -220,6 +218,41 @@ export default function Index({ feeds, sources }: IndexProps) {
         }
     }, [observerElement, hasNextPage]);
 
+    const feedsToDisplay = feedsFromServer
+        ? feedsFromServer
+              ?.sort(
+                  handleSort(
+                      SORT_STANDARD_STATE[currentSort],
+                      checkShouldSortByReverse(currentSort)
+                  )
+              )
+              .map((feed: ParsedFeedsDataType) => (
+                  <Card
+                      cardData={feed}
+                      key={feed.id}
+                      refetchFeeds={refetchStoredFeeds}
+                  />
+              ))
+        : [];
+
+    const pageIndicator = Array.from(
+        { length: Math.ceil(totalCount / 10) },
+        (v, k) => k + 1
+    ).map((pageIndex: number) => (
+        <li key={`page_${pageIndex}`} className="list-none" onClick={() => {
+            console.log(pageIndex)
+            setCurrentPage(pageIndex);
+        }}>
+            <button
+                className={`${
+                    currentPage === pageIndex ? "text-blue-500 font-bold" : ""
+                }`}
+            >
+                {pageIndex}
+            </button>
+        </li>
+    ));
+
     return (
         <article
             className="flex-center flex-col w-full h-max min-h-full bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
@@ -228,7 +261,7 @@ export default function Index({ feeds, sources }: IndexProps) {
             <section className="flex-center w-full h-1/3 my-32 md:w-[768px]">
                 <Search />
             </section>
-            <section className="w-full h-max md:w-[768px]">
+            <section className="flex flex-col items-center w-full h-max md:w-[768px]">
                 <section>
                     <section className="flex justify-between h-8 mb-4">
                         <section>
@@ -272,7 +305,29 @@ export default function Index({ feeds, sources }: IndexProps) {
                         className="w-full h-[150px]"
                     />
                 ) : (
-                    <></>
+                    <ul className="flex justify-evenly items-center w-1/2 mt-10 mb-20">
+                        <button onClick={() => {
+                            if (currentPage !== 1) {
+                                fetchPreviousPage();
+                                setCurrentPage(
+                                    (previousValue) => previousValue - 1
+                                );
+                            }
+                        }}>&lt;</button>
+                        {pageIndicator}
+                        <button
+                            onClick={() => {
+                                if (Math.ceil(totalCount / 10) !== currentPage) {
+                                    fetchNextPage();
+                                    setCurrentPage(
+                                        (previousValue) => previousValue + 1
+                                    );
+                                }
+                            }}
+                        >
+                            &gt;
+                        </button>
+                    </ul>
                 )}
             </section>
             {modalState.addSubscription && (
