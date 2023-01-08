@@ -23,7 +23,7 @@ interface IndexProps {
 }
 
 interface RenewedFeedsData {
-    data: ParsedFeedsDataType[],
+    data: ParsedFeedsDataType[];
     count: number;
 }
 
@@ -46,8 +46,11 @@ export default function Index({ feeds, sources }: IndexProps) {
     const [isFilterFavorite, setIsFilterFavorite] =
         React.useState<boolean>(false);
     const [newFeeds, setNewFeeds] = React.useState<ParsedFeedsDataType[]>([]);
-    const [renewedFeeds, setRenewedFeeds] = React.useState<ParsedFeedsDataType[]>([]);
+    const [renewedFeeds, setRenewedFeeds] = React.useState<
+        ParsedFeedsDataType[]
+    >([]);
     const [totalCount, setTotalCount] = React.useState<number>(0);
+    const [isMobileLayout, setIsMobileLayout] = React.useState<boolean>(false);
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
@@ -57,9 +60,10 @@ export default function Index({ feeds, sources }: IndexProps) {
         ""
     );
     const startPageRef = React.useRef<HTMLElement | null>(null);
-    const newFeedsRequestResult = useQuery<
-        AxiosResponse<RenewedFeedsData>
-    >(["/feeds/new"], () => getDataFrom("/feeds/new"))?.data?.data;
+    const newFeedsRequestResult = useQuery<AxiosResponse<RenewedFeedsData>>(
+        ["/feeds/new"],
+        () => getDataFrom("/feeds/new")
+    )?.data?.data;
     const {
         data: storedFeed,
         refetch: refetchStoredFeeds,
@@ -85,9 +89,7 @@ export default function Index({ feeds, sources }: IndexProps) {
             }
         },
     });
-    const feedsFromServer = newFeedsRequestResult
-        ? renewedFeeds
-        : newFeeds;
+    const feedsFromServer = newFeedsRequestResult ? renewedFeeds : newFeeds;
 
     const checkShouldSortByReverse = (sortState: number) => sortState === 1;
     const setSortState = (stateString: string, stateStringArray: string[]) => {
@@ -133,8 +135,26 @@ export default function Index({ feeds, sources }: IndexProps) {
     };
 
     React.useEffect(() => {
+        if (typeof window !== "undefined") {
+            const callback = () => {
+                if (window.innerWidth > 768) {
+                    setIsMobileLayout(false);
+                } else {
+                    setIsMobileLayout(true);
+                }
+            };
+            window.addEventListener("resize", callback);
+            return () => window.removeEventListener("resize", callback);
+        }
+    }, []);
+
+    React.useEffect(() => {
         if (feeds) {
-            const { data, count }: { data: ParsedFeedsDataType[], count: number; } = JSON.parse(feeds);
+            const {
+                data,
+                count,
+            }: { data: ParsedFeedsDataType[]; count: number } =
+                JSON.parse(feeds);
             setTotalCount(count);
             setNewFeeds((previousArray) =>
                 previousArray.slice(previousArray.length).concat(data)
@@ -205,10 +225,10 @@ export default function Index({ feeds, sources }: IndexProps) {
             className="flex-center flex-col w-full h-max min-h-full bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
             ref={startPageRef}
         >
-            <section className="flex-center w-1/2 h-1/3 my-[10%]">
+            <section className="flex-center w-full h-1/3 my-32 md:w-[768px]">
                 <Search />
             </section>
-            <section className="w-1/2 h-max">
+            <section className="w-full h-max md:w-[768px]">
                 <section>
                     <section className="flex justify-between h-8 mb-4">
                         <section>
@@ -246,7 +266,14 @@ export default function Index({ feeds, sources }: IndexProps) {
                     </section>
                 </section>
                 <section>{feedsToDisplay}</section>
-                <div ref={setObserverElement} className="w-full h-[150px]" />
+                {isMobileLayout ? (
+                    <div
+                        ref={setObserverElement}
+                        className="w-full h-[150px]"
+                    />
+                ) : (
+                    <></>
+                )}
             </section>
             {modalState.addSubscription && (
                 <Modal closeModal={closeModal("addSubscription")}>
