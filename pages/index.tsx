@@ -76,8 +76,14 @@ export default function Index({ feeds, sources }: IndexProps) {
                     page: pageParam,
                 },
             }),
-        getNextPageParam: (lastPage, allPages) =>
-            lastPage.config.params.page + 1,
+        getNextPageParam: (lastPage, allPages) => {
+            const totalCount = JSON.parse(lastPage.data).count;
+            if (Math.ceil(totalCount / 10) !== allPages.length) {
+                return lastPage.config.params.page + 1;
+            } else {
+                return;
+            }
+        },
     });
     const feedsFromServer = newFeedsRequestResult
         ? renewedFeeds
@@ -181,7 +187,7 @@ export default function Index({ feeds, sources }: IndexProps) {
             ) => {
                 entries.forEach((entry: IntersectionObserverEntry) => {
                     if (entry.isIntersecting) {
-                        fetchNextPage();
+                        hasNextPage && fetchNextPage();
                     }
                 });
             };
@@ -192,7 +198,7 @@ export default function Index({ feeds, sources }: IndexProps) {
             observer.observe(observerElement);
             return () => observer.unobserve(observerElement);
         }
-    }, [observerElement]);
+    }, [observerElement, hasNextPage]);
 
     return (
         <article
