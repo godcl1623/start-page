@@ -22,6 +22,11 @@ interface IndexProps {
     sources: string;
 }
 
+interface RenewedFeedsData {
+    data: ParsedFeedsDataType[],
+    count: number;
+}
+
 type ModalKeys = "addSubscription" | "cancelSubscription" | "filterBySource";
 
 type ModalStateType = {
@@ -41,6 +46,8 @@ export default function Index({ feeds, sources }: IndexProps) {
     const [isFilterFavorite, setIsFilterFavorite] =
         React.useState<boolean>(false);
     const [newFeeds, setNewFeeds] = React.useState<ParsedFeedsDataType[]>([]);
+    const [renewedFeeds, setRenewedFeeds] = React.useState<ParsedFeedsDataType[]>([]);
+    const [totalCount, setTotalCount] = React.useState<number>(0);
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
@@ -51,7 +58,7 @@ export default function Index({ feeds, sources }: IndexProps) {
     );
     const startPageRef = React.useRef<HTMLElement | null>(null);
     const newFeedsRequestResult = useQuery<
-        AxiosResponse<ParsedFeedsDataType[]>
+        AxiosResponse<RenewedFeedsData>
     >(["/feeds/new"], () => getDataFrom("/feeds/new"))?.data?.data;
     const {
         data: storedFeed,
@@ -73,7 +80,7 @@ export default function Index({ feeds, sources }: IndexProps) {
             lastPage.config.params.page + 1,
     });
     const feedsFromServer = newFeedsRequestResult
-        ? newFeedsRequestResult
+        ? renewedFeeds
         : newFeeds;
 
     const checkShouldSortByReverse = (sortState: number) => sortState === 1;
@@ -121,7 +128,8 @@ export default function Index({ feeds, sources }: IndexProps) {
 
     React.useEffect(() => {
         if (feeds) {
-            const { data }: { data: ParsedFeedsDataType[] } = JSON.parse(feeds);
+            const { data, count }: { data: ParsedFeedsDataType[], count: number; } = JSON.parse(feeds);
+            setTotalCount(count);
             setNewFeeds((previousArray) =>
                 previousArray.slice(previousArray.length).concat(data)
             );
@@ -140,6 +148,16 @@ export default function Index({ feeds, sources }: IndexProps) {
             );
         }
     }, [storedFeed]);
+
+    React.useEffect(() => {
+        if (newFeedsRequestResult != null) {
+            const { data, count } = newFeedsRequestResult;
+            if (count !== totalCount) setTotalCount(count);
+            setRenewedFeeds((previousArray) =>
+                previousArray.slice(previousArray.length).concat(data)
+            );
+        }
+    }, [newFeedsRequestResult]);
 
     React.useEffect(() => {
         if (modalState.addSubscription || modalState.cancelSubscription) {

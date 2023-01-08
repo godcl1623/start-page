@@ -21,7 +21,8 @@ export default async function feedsHandler(
         try {
             const { favorites, displayOption, textOption, page, per_page } =
                 request.query;
-            let pageValue = page != null && typeof page === "string" ? parseInt(page) : 1;
+            let pageValue =
+                page != null && typeof page === "string" ? parseInt(page) : 1;
             let perPageValue =
                 per_page != null && typeof per_page === "string"
                     ? parseInt(per_page)
@@ -100,7 +101,7 @@ export default async function feedsHandler(
                         .concat(textFilteredContents);
                 }
             }
-            const paginatedContents = filteredContents
+            const totalFeedsList = filteredContents
                 .reduce(
                     (
                         totalArray: ParsedFeedsDataType[],
@@ -122,10 +123,13 @@ export default async function feedsHandler(
                     } else {
                         return -1;
                     }
-                })
-                .slice(paginationStartIndex, paginationEndIndex);
+                });
             const responseBody = {
-                data: paginatedContents,
+                data: totalFeedsList.slice(
+                    paginationStartIndex,
+                    paginationEndIndex
+                ),
+                count: totalFeedsList.length,
             };
             response.status(200).json(JSON.stringify(responseBody));
         } catch (error) {

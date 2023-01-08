@@ -103,7 +103,7 @@ export default async function feedsHandler(
                         resultData.latestFeedTitle !==
                             storedFeeds[index]?.latestFeedTitle
                 );
-                const filteredFeeds = differentiateArray
+                const totalFeedsList = parseResult
                     .reduce(
                         (
                             totalArray: ParsedFeedsDataType[],
@@ -125,11 +125,17 @@ export default async function feedsHandler(
                         } else {
                             return -1;
                         }
-                    })
-                    .slice(paginationStartIndex, paginationEndIndex);
+                    });
+                const responseBody = {
+                    data: totalFeedsList.slice(
+                        paginationStartIndex,
+                        paginationEndIndex
+                    ),
+                    count: totalFeedsList.length,
+                };
                 if (differentiateArray.length > 0) {
                     postDataTo("/feeds/new", parseResult);
-                    response.status(200).json(parseResult);
+                    response.status(200).json(responseBody);
                 } else {
                     response.status(204).send("no new feeds available");
                 }
