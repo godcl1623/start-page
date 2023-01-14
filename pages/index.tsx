@@ -70,10 +70,8 @@ export default function Index({ feeds, sources }: IndexProps) {
         refetch: refetchStoredFeeds,
         fetchNextPage,
         hasNextPage,
-        hasPreviousPage,
-        fetchPreviousPage,
     } = useInfiniteQuery({
-        queryKey: ["/feeds"],
+        queryKey: ["/feeds", { isMobileLayout }],
         queryFn: ({ pageParam = currentPage }) =>
             getDataFrom("/feeds", {
                 params: {
@@ -83,13 +81,14 @@ export default function Index({ feeds, sources }: IndexProps) {
                     page: pageParam,
                 },
             }),
-        getNextPageParam: (lastPage, allPages) => {
+        getNextPageParam: (lastPage) => {
             const totalCount = JSON.parse(lastPage.data).count;
-            if (Math.ceil(totalCount / 10) !== allPages.length) {
-                return lastPage.config.params.page + 1;
-            } else {
-                return;
-            }
+            if (currentPage >= Math.ceil(totalCount / 10)) return;
+            return currentPage + 1;
+        },
+        getPreviousPageParam: () => {
+            if (currentPage <= 0) return;
+            return currentPage - 1;
         },
     });
     const feedsFromServer = newFeedsRequestResult ? renewedFeeds : newFeeds;
@@ -130,6 +129,7 @@ export default function Index({ feeds, sources }: IndexProps) {
                     setIsMobileLayout(true);
                 }
             };
+            callback();
             window.addEventListener("resize", callback);
             return () => window.removeEventListener("resize", callback);
         }
@@ -204,7 +204,9 @@ export default function Index({ feeds, sources }: IndexProps) {
                     if (entry.isIntersecting) {
                         if (hasNextPage) {
                             fetchNextPage();
-                            setCurrentPage((previousValue) => previousValue + 1);
+                            setCurrentPage(
+                                (previousValue) => previousValue + 1
+                            );
                         }
                     }
                 });
@@ -239,10 +241,13 @@ export default function Index({ feeds, sources }: IndexProps) {
         { length: Math.ceil(totalCount / 10) },
         (v, k) => k + 1
     ).map((pageIndex: number) => (
-        <li key={`page_${pageIndex}`} className="list-none" onClick={() => {
-            console.log(pageIndex)
-            setCurrentPage(pageIndex);
-        }}>
+        <li
+            key={`page_${pageIndex}`}
+            className="list-none"
+            onClick={() => {
+                setCurrentPage(pageIndex);
+            }}
+        >
             <button
                 className={`${
                     currentPage === pageIndex ? "text-blue-500 font-bold" : ""
@@ -306,19 +311,23 @@ export default function Index({ feeds, sources }: IndexProps) {
                     />
                 ) : (
                     <ul className="flex justify-evenly items-center w-1/2 mt-10 mb-20">
-                        <button onClick={() => {
-                            if (currentPage !== 1) {
-                                fetchPreviousPage();
-                                setCurrentPage(
-                                    (previousValue) => previousValue - 1
-                                );
-                            }
-                        }}>&lt;</button>
+                        <button
+                            onClick={() => {
+                                if (currentPage !== 1) {
+                                    setCurrentPage(
+                                        (previousValue) => previousValue - 1
+                                    );
+                                }
+                            }}
+                        >
+                            &lt;
+                        </button>
                         {pageIndicator}
                         <button
                             onClick={() => {
-                                if (Math.ceil(totalCount / 10) !== currentPage) {
-                                    fetchNextPage();
+                                if (
+                                    Math.ceil(totalCount / 10) !== currentPage
+                                ) {
                                     setCurrentPage(
                                         (previousValue) => previousValue + 1
                                     );
