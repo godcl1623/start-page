@@ -46,12 +46,12 @@ export default function Index({ feeds, sources }: IndexProps) {
     const [isFilterFavorite, setIsFilterFavorite] =
         React.useState<boolean>(false);
     const [newFeeds, setNewFeeds] = React.useState<ParsedFeedsDataType[]>([]);
-    const [renewedFeeds, setRenewedFeeds] = React.useState<
-        ParsedFeedsDataType[]
-    >([]);
     const [totalCount, setTotalCount] = React.useState<number>(0);
     const [isMobileLayout, setIsMobileLayout] = React.useState<boolean>(false);
     const [currentPage, setCurrentPage] = React.useState<number>(1);
+    const currentCount = React.useRef<number>(0);
+    // const formerFeedsList = React.useRef<any[]>([]);
+    const [formerFeedsList, setFormerFeedsList] = React.useState<any[]>([]);
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
@@ -72,7 +72,8 @@ export default function Index({ feeds, sources }: IndexProps) {
         hasNextPage,
     } = useInfiniteQuery({
         queryKey: ["/feeds", { isMobileLayout }],
-        queryFn: ({ pageParam = currentPage }) =>
+        // queryFn: ({ pageParam = currentPage }) =>
+        queryFn: ({ pageParam = Math.ceil(formerFeedsList.length / 10) }) =>
             getDataFrom("/feeds", {
                 params: {
                     favorites: isFilterFavorite,
@@ -84,14 +85,17 @@ export default function Index({ feeds, sources }: IndexProps) {
         getNextPageParam: (lastPage) => {
             const totalCount = JSON.parse(lastPage.data).count;
             if (currentPage >= Math.ceil(totalCount / 10)) return;
-            return currentPage + 1;
+            return Math.ceil(formerFeedsList.length / 10) + 1;
         },
         getPreviousPageParam: () => {
             if (currentPage <= 0) return;
-            return currentPage - 1;
+            return Math.ceil(formerFeedsList.length / 10) - 1;
         },
     });
-    const feedsFromServer = newFeedsRequestResult ? renewedFeeds : newFeeds;
+    // const feedsFromServer = newFeedsRequestResult
+    //     ? newFeedsRequestResult?.data
+    //     : newFeeds;
+    const feedsFromServer = isMobileLayout ? formerFeedsList : formerFeedsList.slice(10 * (currentPage - 1), 10 * (currentPage - 1) + 10);
 
     const checkShouldSortByReverse = (sortState: number) => sortState === 1;
     const setSortState = (stateString: string, stateStringArray: string[]) => {
@@ -159,6 +163,7 @@ export default function Index({ feeds, sources }: IndexProps) {
                   )
                 : JSON.parse(storedFeed.pages[storedFeed.pages.length - 1].data)
                       .data;
+            currentCount.current = feedsFromServer.length;
             setNewFeeds((previousArray) =>
                 previousArray.slice(previousArray.length).concat(dataArray)
             );
@@ -170,11 +175,8 @@ export default function Index({ feeds, sources }: IndexProps) {
             newFeedsRequestResult != null &&
             typeof newFeedsRequestResult !== "string"
         ) {
-            const { data, count } = newFeedsRequestResult;
+            const { count } = newFeedsRequestResult;
             if (count !== totalCount) setTotalCount(count);
-            setRenewedFeeds((previousArray) =>
-                previousArray.slice(previousArray.length).concat(data)
-            );
         }
     }, [newFeedsRequestResult]);
 
@@ -191,7 +193,18 @@ export default function Index({ feeds, sources }: IndexProps) {
             refetchStoredFeeds();
         }
     }, [isFilterFavorite, searchTexts, currentPage, isMobileLayout]);
-
+    React.useEffect(() => {
+        const doh = newFeedsRequestResult
+            ? newFeedsRequestResult?.data
+            : newFeeds;
+        setFormerFeedsList((previousList) => previousList.concat(
+            doh.filter(
+                (foo) =>
+                    !previousList.some((bar) => foo.id === bar.id)
+            )
+        ));
+        console.log(formerFeedsList);
+    }, [isMobileLayout, currentPage, newFeedsRequestResult, newFeeds]);
     React.useEffect(() => {
         if (typeof window !== "undefined" && observerElement != null) {
             const observerOption: IntersectionObserverInit = {
