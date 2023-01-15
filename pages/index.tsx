@@ -191,17 +191,22 @@ export default function Index({ feeds, sources }: IndexProps) {
             refetchStoredFeeds();
         }
     }, [isFilterFavorite, searchTexts, currentPage, isMobileLayout]);
+
     React.useEffect(() => {
         if (isMobileLayout) {
-            setCurrentPage(1);
+            const firstEmptyPageIndex = (Object.values(formerFeedsList) as any[]).findIndex((value: any[]) => value.length === 0);
+            setCurrentPage(firstEmptyPageIndex);
             Object.keys(formerFeedsList).forEach((key: string, index) => {
-                if (index > 0) {
+                if (index > firstEmptyPageIndex) {
                     setFormerFeedsList((previousObject: any) => ({
                         ...previousObject,
                         [key]: [],
                     }));
                 }
             });
+        } else {
+            const fetchedPages = (Object.values(formerFeedsList) as any[]).reduce((totalNumber: number, currentDataArray: any[]) => currentDataArray.length > 0 ? totalNumber += 1 : totalNumber, 0);
+            setCurrentPage(fetchedPages > 0 ? fetchedPages : 1);
         }
     }, [isMobileLayout]);
 
