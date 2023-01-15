@@ -72,8 +72,7 @@ export default function Index({ feeds, sources }: IndexProps) {
         hasNextPage,
     } = useInfiniteQuery({
         queryKey: ["/feeds", { isMobileLayout }],
-        // queryFn: ({ pageParam = currentPage }) =>
-        queryFn: ({ pageParam = Math.ceil(formerFeedsList.length / 10) }) =>
+        queryFn: ({ pageParam = currentPage }) =>
             getDataFrom("/feeds", {
                 params: {
                     favorites: isFilterFavorite,
@@ -92,10 +91,12 @@ export default function Index({ feeds, sources }: IndexProps) {
             return Math.ceil(formerFeedsList.length / 10) - 1;
         },
     });
-    // const feedsFromServer = newFeedsRequestResult
-    //     ? newFeedsRequestResult?.data
-    //     : newFeeds;
-    const feedsFromServer = isMobileLayout ? formerFeedsList : formerFeedsList.slice(10 * (currentPage - 1), 10 * (currentPage - 1) + 10);
+    const feedsFromServer = isMobileLayout
+        ? formerFeedsList
+        : formerFeedsList.slice(
+              10 * (currentPage - 1),
+              10 * (currentPage - 1) + 10
+          );
 
     const checkShouldSortByReverse = (sortState: number) => sortState === 1;
     const setSortState = (stateString: string, stateStringArray: string[]) => {
@@ -194,15 +195,23 @@ export default function Index({ feeds, sources }: IndexProps) {
         }
     }, [isFilterFavorite, searchTexts, currentPage, isMobileLayout]);
     React.useEffect(() => {
+        setCurrentPage(
+            Math.ceil(formerFeedsList.length / 10) === 0
+                ? 1
+                : Math.ceil(formerFeedsList.length / 10)
+        );
+    }, [isMobileLayout]);
+    React.useEffect(() => {
         const doh = newFeedsRequestResult
             ? newFeedsRequestResult?.data
             : newFeeds;
-        setFormerFeedsList((previousList) => previousList.concat(
-            doh.filter(
-                (foo) =>
-                    !previousList.some((bar) => foo.id === bar.id)
+        setFormerFeedsList((previousList) =>
+            previousList.concat(
+                doh.filter(
+                    (foo) => !previousList.some((bar) => foo.id === bar.id)
+                )
             )
-        ));
+        );
         console.log(formerFeedsList);
     }, [isMobileLayout, currentPage, newFeedsRequestResult, newFeeds]);
     React.useEffect(() => {
