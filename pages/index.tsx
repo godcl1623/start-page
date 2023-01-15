@@ -49,9 +49,7 @@ export default function Index({ feeds, sources }: IndexProps) {
     const [totalCount, setTotalCount] = React.useState<number>(0);
     const [isMobileLayout, setIsMobileLayout] = React.useState<boolean>(false);
     const [currentPage, setCurrentPage] = React.useState<number>(1);
-    const currentCount = React.useRef<number>(0);
-    // const formerFeedsList = React.useRef<any[]>([]);
-    const [formerFeedsList, setFormerFeedsList] = React.useState<any[]>([]);
+    const [formerFeedsList, setFormerFeedsList] = React.useState<any>({});
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
@@ -84,19 +82,18 @@ export default function Index({ feeds, sources }: IndexProps) {
         getNextPageParam: (lastPage) => {
             const totalCount = JSON.parse(lastPage.data).count;
             if (currentPage >= Math.ceil(totalCount / 10)) return;
-            return Math.ceil(formerFeedsList.length / 10) + 1;
+            return currentPage + 1;
         },
         getPreviousPageParam: () => {
             if (currentPage <= 0) return;
-            return Math.ceil(formerFeedsList.length / 10) - 1;
+            return currentPage - 1;
         },
     });
     const feedsFromServer = isMobileLayout
-        ? formerFeedsList
-        : formerFeedsList.slice(
-              10 * (currentPage - 1),
-              10 * (currentPage - 1) + 10
-          );
+        ? (Object.values(formerFeedsList) as any[])
+              .filter((foo: any[]) => foo?.length > 0)
+              .reduce((acc, x) => acc?.concat(x), [])
+        : formerFeedsList[currentPage];
 
     const checkShouldSortByReverse = (sortState: number) => sortState === 1;
     const setSortState = (stateString: string, stateStringArray: string[]) => {
@@ -148,6 +145,12 @@ export default function Index({ feeds, sources }: IndexProps) {
             }: { data: ParsedFeedsDataType[]; count: number } =
                 JSON.parse(feeds);
             setTotalCount(count);
+            Array.from({ length: Math.ceil(count / 10) }, (v, k) =>
+                setFormerFeedsList((previousObject: any) => ({
+                    ...previousObject,
+                    [k + 1]: [],
+                }))
+            );
             setNewFeeds((previousArray) =>
                 previousArray.slice(previousArray.length).concat(data)
             );
@@ -156,15 +159,9 @@ export default function Index({ feeds, sources }: IndexProps) {
 
     React.useEffect(() => {
         if (storedFeed && storedFeed.pages) {
-            const dataArray = isMobileLayout
-                ? storedFeed.pages.reduce(
-                      (totalArray: ParsedFeedsDataType[], rawData) =>
-                          totalArray.concat(JSON.parse(rawData.data).data),
-                      []
-                  )
-                : JSON.parse(storedFeed.pages[storedFeed.pages.length - 1].data)
-                      .data;
-            currentCount.current = feedsFromServer.length;
+            const dataArray = JSON.parse(
+                storedFeed.pages[storedFeed.pages.length - 1].data
+            ).data;
             setNewFeeds((previousArray) =>
                 previousArray.slice(previousArray.length).concat(dataArray)
             );
@@ -195,25 +192,34 @@ export default function Index({ feeds, sources }: IndexProps) {
         }
     }, [isFilterFavorite, searchTexts, currentPage, isMobileLayout]);
     React.useEffect(() => {
-        setCurrentPage(
-            Math.ceil(formerFeedsList.length / 10) === 0
-                ? 1
-                : Math.ceil(formerFeedsList.length / 10)
-        );
+        if (isMobileLayout) {
+            setCurrentPage(1);
+            Object.keys(formerFeedsList).forEach((key: string, index) => {
+                if (index > 0) {
+                    setFormerFeedsList((previousObject: any) => ({
+                        ...previousObject,
+                        [key]: [],
+                    }));
+                }
+            });
+        }
     }, [isMobileLayout]);
+
     React.useEffect(() => {
         const doh = newFeedsRequestResult
             ? newFeedsRequestResult?.data
             : newFeeds;
-        setFormerFeedsList((previousList) =>
-            previousList.concat(
-                doh.filter(
-                    (foo) => !previousList.some((bar) => foo.id === bar.id)
-                )
-            )
-        );
-        console.log(formerFeedsList);
-    }, [isMobileLayout, currentPage, newFeedsRequestResult, newFeeds]);
+        setFormerFeedsList((previousObject: any) => ({
+            ...previousObject,
+            [currentPage]:
+                previousObject[currentPage].length === 0
+                    ? previousObject[currentPage]
+                          ?.slice(previousObject[currentPage].length)
+                          .concat(doh)
+                    : previousObject[currentPage],
+        }));
+    }, [newFeedsRequestResult, newFeeds]);
+
     React.useEffect(() => {
         if (typeof window !== "undefined" && observerElement != null) {
             const observerOption: IntersectionObserverInit = {
