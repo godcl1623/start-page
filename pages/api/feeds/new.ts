@@ -10,7 +10,7 @@ import {
     makeFeedDataArray,
 } from "controllers/feeds/new";
 import { AxiosResponse } from "axios";
-import { ParsedFeedsDataType, ParseResultType } from "types/global";
+import { ParsedFeedsDataType, ParseResultType } from "pages";
 
 export default async function feedsHandler(
     request: NextApiRequest,

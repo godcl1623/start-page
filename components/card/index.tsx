@@ -5,7 +5,7 @@ import {
     AiFillRead as CheckIcon,
 } from "react-icons/ai";
 
-import { ParsedFeedsDataType } from "types/global";
+import { ParsedFeedsDataType } from 'pages'; 
 
 import { isTodayLessThanExtraDay } from "common/helpers";
 import RequestControllers from "controllers";

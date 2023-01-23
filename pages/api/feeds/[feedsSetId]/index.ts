@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
-import { JSON_DIRECTORY } from 'common/constants';
-import { checkIfDataExists, CustomError } from 'controllers/sources';
-import { ParseResultType } from 'types/global';
+import { JSON_DIRECTORY } from "common/constants";
+import { checkIfDataExists, CustomError } from "controllers/sources";
+import { ParseResultType } from "pages";
 
 export default async function feedsSetIdHandler(
     request: NextApiRequest,
@@ -29,10 +29,13 @@ export default async function feedsSetIdHandler(
             const { feedsSetId } = request.query;
             const { data } = JSON.parse(fileContents);
             const idList = data.map((feedsSet: ParseResultType) => feedsSet.id);
-            if(!checkIfDataExists(idList, Number(feedsSetId))) {
-                throw new CustomError(404, 'feedsSet not exists');
+            if (!checkIfDataExists(idList, Number(feedsSetId))) {
+                throw new CustomError(404, "feedsSet not exists");
             }
-            const filteredList = data.filter((feedsSet: ParseResultType) => feedsSet.id !== Number(feedsSetId));
+            const filteredList = data.filter(
+                (feedsSet: ParseResultType) =>
+                    feedsSet.id !== Number(feedsSetId)
+            );
             const body = {
                 data: filteredList,
             };

@@ -1,7 +1,7 @@
 import { AxiosResponse } from "axios";
 import { JSDOM } from "jsdom";
 
-import { ParsedFeedsDataType } from "types/global";
+import { ParsedFeedsDataType } from 'pages'; 
 
 import RequestControllers from "controllers";
 import { areEqual } from "common/capsuledConditions";

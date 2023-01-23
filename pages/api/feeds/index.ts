@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
 import { JSON_DIRECTORY } from "common/constants";
-import { ParseResultType, ParsedFeedsDataType } from "types/global";
+import { ParseResultType, ParsedFeedsDataType } from "pages";
 import { handleSort } from "common/helpers";
 
 export default async function feedsHandler(

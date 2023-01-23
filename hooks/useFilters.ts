@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { SourceData } from "controllers/sources";
 import { SourcesList } from "components/feeds/CancelSubscription";

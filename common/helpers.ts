@@ -1,4 +1,4 @@
-import { ParsedFeedsDataType } from "types/global";
+import { ParsedFeedsDataType } from 'pages'; 
 
 import {
     areEqual,
