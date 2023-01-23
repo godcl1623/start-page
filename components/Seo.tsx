@@ -1,13 +1,13 @@
-import Head from 'next/head';
+import Head from "next/head";
 
 interface SeoInterface {
-  title: string;
+    title: string;
 }
 
 export default function Seo({ title }: SeoInterface) {
-  return (
-    <Head>
-      <title>{title}</title>
-    </Head>
-  );
+    return (
+        <Head>
+            <title>{title}</title>
+        </Head>
+    );
 }

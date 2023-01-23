@@ -1,8 +1,14 @@
-export const isFrontBiggerThanRear = <T>(front: T, rear: T, shouldContainEqual = false) =>
-  shouldContainEqual ? front >= rear : front > rear;
+export const isFrontBiggerThanRear = <T>(
+    front: T,
+    rear: T,
+    shouldContainEqual = false
+) => (shouldContainEqual ? front >= rear : front > rear);
 
-export const isRearBiggerThanFront = <T>(front: T, rear: T, shouldContainEqual = false) =>
-  shouldContainEqual ? front <= rear : front < rear;
+export const isRearBiggerThanFront = <T>(
+    front: T,
+    rear: T,
+    shouldContainEqual = false
+) => (shouldContainEqual ? front <= rear : front < rear);
 
 export const areEqual = <T>(front: T, rear: T) => front === rear;
 

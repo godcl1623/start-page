@@ -1,14 +1,14 @@
-import { Html, Head, Main, NextScript } from 'next/document'
+import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
-  return (
-    <Html>
-      <Head />
-      <body>
-        <Main />
-        <NextScript />
-        <div id="modal_root" />
-      </body>
-    </Html>
-  )
+    return (
+        <Html>
+            <Head />
+            <body>
+                <Main />
+                <NextScript />
+                <div id="modal_root" />
+            </body>
+        </Html>
+    );
 }
