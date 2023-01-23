@@ -1,11 +1,12 @@
-import React from 'react';
+import { cloneElement, ReactElement } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import RequestControllers from 'controllers';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 
+import RequestControllers from 'controllers';
+
 interface Props {
-    children: React.ReactElement;
+    children: ReactElement;
     deleteTarget: number;
 }
 
@@ -27,6 +28,8 @@ export default function DeleteButtonWrapper({ children, deleteTarget }: Props) {
         onError,
         onSuccess,
     });
-    const ClonedChildren = React.cloneElement(children, { clickHandler: () => mutate() });
+
+    const ClonedChildren = cloneElement(children, { clickHandler: () => mutate() });
+
     return <>{ClonedChildren}</>
 }

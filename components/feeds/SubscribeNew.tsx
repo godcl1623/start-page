@@ -1,11 +1,8 @@
-import React from "react";
-import {
-    extractInputValue,
-    checkIfStringPassesRule,
-} from "./utils/helpers";
+import { useRouter } from "next/router";
 import axios from "axios";
-import RequestControllers from 'controllers';
-import { useRouter } from 'next/router';
+
+import { extractInputValue, checkIfStringPassesRule } from "./utils/helpers";
+import RequestControllers from "controllers";
 
 export default function SubscribeNew() {
     const router = useRouter();
@@ -16,55 +13,56 @@ export default function SubscribeNew() {
 
         const input = event.currentTarget["0"];
         const url = extractInputValue(input);
-        if (url != null) {
-            const ruleCheckResult = checkIfStringPassesRule(url);
+        if (url == null) {
+            alert("URL을 입력해주세요.");
+            return;
+        }
 
-            if (!ruleCheckResult) {
-                alert("URL 형식을 확인해주세요.");
-                return;
-            }
-            const { data: urlCheckResult } = await axios.post(
-                "/api/sources/check",
-                { url }
-            );
+        const ruleCheckResult = checkIfStringPassesRule(url);
+        if (!ruleCheckResult) {
+            alert("URL 형식을 확인해주세요.");
+            return;
+        }
 
-            if (urlCheckResult == null) {
+        const { data: urlCheckResult } = await axios.post(
+            "/api/sources/check",
+            { url }
+        );
+        if (urlCheckResult == null) {
+            alert("유효하지 않은 주소입니다.");
+            return;
+        } else if (typeof urlCheckResult === "string") {
+            const documentHeadString = urlCheckResult.substring(0, 5);
+            if (documentHeadString !== "<?xml") {
                 alert("유효하지 않은 주소입니다.");
                 return;
-            } else if (typeof urlCheckResult === 'string') {
-                const documentHeadString = urlCheckResult.substring(0, 5);
-                if (documentHeadString !== '<?xml') {
-                    alert("유효하지 않은 주소입니다.");
-                    return;
-                }
             }
-            const parser = new DOMParser();
-            const xml = parser.parseFromString(urlCheckResult, 'text/xml');
-            const feedOriginTitle = xml.querySelector('title')?.textContent;
+        }
 
-            try {
-                const { data } = await getDataFrom('/sources');
-                const { sources } = JSON.parse(data);
-                const id = sources.length;
-                const postResult = await postDataTo('/sources', {
-                    id,
-                    name: feedOriginTitle,
-                    url,
-                });
-                if (postResult != null && postResult.status === 201) {
-                    window.alert('저장되었습니다.');
-                    router.reload();
-                }
-            } catch (error) {
-                if (axios.isAxiosError(error)) {
-                    if (error.response && error.response.status === 409) {
-                        alert('이미 등록된 URL입니다.');
-                        return Promise.reject(error);
-                    }
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(urlCheckResult, "text/xml");
+        const feedOriginTitle = xml.querySelector("title")?.textContent;
+
+        try {
+            const { data } = await getDataFrom("/sources");
+            const { sources } = JSON.parse(data);
+            const id = sources.length;
+            const postResult = await postDataTo("/sources", {
+                id,
+                name: feedOriginTitle,
+                url,
+            });
+            if (postResult != null && postResult.status === 201) {
+                window.alert("저장되었습니다.");
+                router.reload();
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (error.response && error.response.status === 409) {
+                    alert("이미 등록된 URL입니다.");
+                    return Promise.reject(error);
                 }
             }
-        } else {
-            alert("URL을 입력해주세요.");
         }
     };
 

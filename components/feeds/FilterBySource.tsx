@@ -1,8 +1,8 @@
-import React from "react";
+import { FilterType } from "hooks/useFilters";
+
 import Button from "./common/Button";
 import ListItemBox from "./common/ListItemBox";
 import ModalTemplate from "./common/ModalTemplate";
-import { FilterType } from "hooks/useFilters";
 
 interface Props {
     displayState?: FilterType<boolean>;

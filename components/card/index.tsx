@@ -1,13 +1,16 @@
-import React from "react";
+import { MouseEvent, useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
     AiFillStar as FavoriteIcon,
     AiFillRead as CheckIcon,
 } from "react-icons/ai";
+
 import { ParsedFeedsDataType } from "types/global";
+
 import { isTodayLessThanExtraDay } from "common/helpers";
 import RequestControllers from "controllers";
 import useDerivedStateFromProps from "./hooks/useDerivedStateFromProps";
+
 import Checkbox from "./Checkbox";
 
 interface CardProps {
@@ -28,11 +31,15 @@ export default function Card({ cardData, refetchFeeds }: CardProps) {
         isFavorite,
         id,
     } = cardData;
-    const parsedPubDate = new Date(pubDate as string).toDateString();
-    const [readState, setReadState] = useDerivedStateFromProps<boolean>(isRead);
-    const [favoriteState, setFavoriteState] =
-        useDerivedStateFromProps<boolean>(isFavorite);
-    const [dateState, setDateState] = React.useState(false);
+    const [readState, setReadState] = useDerivedStateFromProps<boolean>(
+        isRead ?? false
+    );
+    const [favoriteState, setFavoriteState] = useDerivedStateFromProps<boolean>(
+        isFavorite ?? false
+    );
+    const [pubDateState] = useDerivedStateFromProps<string>(pubDate ?? '');
+    const [dateState, setDateState] = useState(false);
+    const parsedPubDate = new Date(pubDateState).toDateString();
     const { patchDataTo } = new RequestControllers();
     const mutationFn = (newData: ParsedFeedsDataType) =>
         patchDataTo(`/feeds/${origin}/${id}`, newData);
@@ -40,7 +47,7 @@ export default function Card({ cardData, refetchFeeds }: CardProps) {
         mutationFn,
     });
 
-    function handleCard(event: React.MouseEvent) {
+    const handleCard = (event: MouseEvent) => {
         if (!(event.target instanceof SVGElement)) {
             const newData = {
                 ...cardData,
@@ -50,10 +57,10 @@ export default function Card({ cardData, refetchFeeds }: CardProps) {
             mutate(newData);
             if (link) window.location.assign(link);
         }
-    }
+    };
 
-    function handleFavorite<T>(originalState: boolean, callback: CallbackType) {
-        return function (event: React.MouseEvent<T>) {
+    const handleFavorite =
+        (originalState: boolean, callback: CallbackType) => () => {
             callback(!originalState);
             const newData = {
                 ...cardData,
@@ -62,10 +69,9 @@ export default function Card({ cardData, refetchFeeds }: CardProps) {
             };
             mutate(newData);
         };
-    }
 
-    function handleRead<T>(originalState: boolean, callback: CallbackType) {
-        return function (event: React.MouseEvent<T>) {
+    const handleRead =
+        (originalState: boolean, callback: CallbackType) => () => {
             callback(!originalState);
             const newData = {
                 ...cardData,
@@ -74,29 +80,21 @@ export default function Card({ cardData, refetchFeeds }: CardProps) {
             };
             mutate(newData);
         };
-    }
 
-    const returnReadStyle = (booleanA: boolean, booleanB: boolean) => {
-        const flagA = booleanA;
-        const flagB = booleanB;
-        if (flagA) {
-            if (flagB) return "brightness-75 dark:opacity-50";
-            else return "brightness-100 dark:opacity-100";
-        } else {
-            if (flagB) return "brightness-75 dark:opacity-50";
-            else return "brightness-100 dark:opacity-100";
-        }
+    const returnReadStyle = (flag: boolean) => {
+        if (flag) return "brightness-75 dark:opacity-50";
+        return "brightness-100 dark:opacity-100";
     };
 
     // hydration 오류 수정용
-    React.useEffect(() => {
+    useEffect(() => {
         const dateFlag = isTodayLessThanExtraDay(pubDate);
         if (dateFlag) {
             setDateState(dateFlag);
         }
     }, [pubDate]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (isSuccess && favoriteState) {
             refetchFeeds();
         }
@@ -105,7 +103,6 @@ export default function Card({ cardData, refetchFeeds }: CardProps) {
     return (
         <section
             className={`flex rounded-md shadow-lg mb-8 px-6 py-4 bg-neutral-100 text-neutral-700 cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${returnReadStyle(
-                isRead,
                 readState
             )}`}
             onClick={handleCard}

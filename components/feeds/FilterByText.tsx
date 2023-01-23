@@ -1,6 +1,8 @@
-import SelectBox from "components/common/SelectBox";
-import React from "react";
+import { ChangeEvent, FormEvent, useRef, useState } from "react";
+
 import { extractFormValues } from "components/search/utils/helpers";
+
+import SelectBox from "components/common/SelectBox";
 
 interface Props {
     setTextFilter: (target: string, value: string) => void;
@@ -16,10 +18,10 @@ export const SEARCH_OPTIONS: SearchOptions = {
 };
 
 export default function FilterByText({ setTextFilter }: Props) {
-    const [isInputFilled, setIsInputFilled] = React.useState<boolean>(false);
-    const inputElement = React.useRef<HTMLInputElement>(null);
+    const [isInputFilled, setIsInputFilled] = useState<boolean>(false);
+    const inputElement = useRef<HTMLInputElement>(null);
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const [searchOptionKey, inputValue] = extractFormValues(event);
         const otherOption = searchOptionKey === "제목" ? "본문" : "제목";
@@ -27,7 +29,7 @@ export default function FilterByText({ setTextFilter }: Props) {
         setTextFilter(SEARCH_OPTIONS[otherOption], "");
     };
 
-    const checkIfInputFilled = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checkIfInputFilled = (event: ChangeEvent<HTMLInputElement>) => {
         if (event.currentTarget.value.length > 0) {
             setIsInputFilled(true);
         } else {

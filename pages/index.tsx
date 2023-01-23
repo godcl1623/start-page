@@ -1,3 +1,6 @@
+// FIXME: 즐겨찾기, 출처별 필터 등 필터링 기능 작동 안함
+// TODO: 이 컴포넌트는 데이터 가공용으로 사용, 뷰는 별도 컴포넌트로 분리
+// TODO: 페이지 네비게이터는 5개까지 + 맨 처음, 맨 마지막 페이지만 표시, 그 외는 줄임표로
 import React from "react";
 import Search from "components/search";
 import RequestControllers from "controllers";

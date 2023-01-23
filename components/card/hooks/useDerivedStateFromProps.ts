@@ -1,20 +1,22 @@
-import React from "react";
+import { useEffect, useState } from "react";
+
 import { areEqual } from "common/capsuledConditions";
 
 const useDerivedStateFromProps = <T>(
     propsToMakeState: T
-): [T, React.Dispatch<React.SetStateAction<T>>] => {
-    const [stateToDifferentiate, setState] = React.useState<T | null>(null);
+): [T, (value: T) => void] => {
+    const [stateToDifferentiate, setStateToDifferentiate] = useState<T | null>(null);
 
-    React.useEffect(() => {
+    const updateState = (value: T) => {
+        setStateToDifferentiate(value);
+    };
+
+    useEffect(() => {
         if (!areEqual(propsToMakeState, stateToDifferentiate))
-            setState(propsToMakeState);
+            setStateToDifferentiate(propsToMakeState);
     }, []);
 
-    return [
-        stateToDifferentiate as T,
-        setState as React.Dispatch<React.SetStateAction<T>>,
-    ];
+    return [stateToDifferentiate as T, updateState];
 };
 
 export default useDerivedStateFromProps;

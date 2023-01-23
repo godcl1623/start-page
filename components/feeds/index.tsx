@@ -1,13 +1,13 @@
-import React from "react";
+import { ReactNode, useCallback } from "react";
 import { IoClose as CloseIcon } from "react-icons/io5";
 
 interface Props {
-    children: React.ReactNode;
+    children: ReactNode;
     closeModal?: (value: boolean) => void;
 }
 
 export default function SubscriptionDialogBox({ children, closeModal }: Props) {
-    const handleModal = React.useCallback(() => {
+    const handleModal = useCallback(() => {
         if (closeModal) closeModal(false);
     }, [closeModal]);
 

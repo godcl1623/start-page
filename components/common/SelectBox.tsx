@@ -1,4 +1,5 @@
-import React from "react";
+import { ChangeEvent } from "react";
+
 import { SORT_STANDARD } from "common/constants";
 
 type ObjectType = {
@@ -41,7 +42,7 @@ export default function SelectBox({
             );
     }
 
-    const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
         if (setSortState)
             setSortState(event.currentTarget.value, SORT_STANDARD);
     };

@@ -13,4 +13,5 @@ export const SEARCH_ADDRESS_BY_ENGINE: AddressValues = {
     GitHub: "https://github.com/search?q=",
 };
 
+// TODO: env로 수정
 export const BASE_URL = "http://localhost:3000";

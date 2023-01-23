@@ -1,19 +1,22 @@
-import React from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+
 import { SEARCH_ADDRESS_BY_ENGINE } from "./utils/constants";
+
 import { extractFormValues, openSearchResult } from "./utils/helpers";
+
 import SelectBox from "../common/SelectBox";
 
 export default function Search() {
-    const [inputValue, setInputValue] = React.useState<string>("");
-    const [isInputFilled, setIsInputFilled] = React.useState<boolean>(false);
+    const [inputValue, setInputValue] = useState<string>("");
+    const [isInputFilled, setIsInputFilled] = useState<boolean>(false);
 
-    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const [selectedSearchEngine, inputValue] = extractFormValues(event);
         openSearchResult(selectedSearchEngine, inputValue);
-    }
+    };
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
         setInputValue(event.currentTarget.value);
     };
 
@@ -21,7 +24,7 @@ export default function Search() {
         setInputValue("");
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (inputValue.length > 0) setIsInputFilled(true);
         else setIsInputFilled(false);
     }, [inputValue]);

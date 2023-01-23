@@ -1,10 +1,11 @@
-import React from "react";
+import { MouseEvent, useState } from "react";
+
 import { IconType } from "react-icons";
 
 interface CheckboxProps {
     targetState: boolean;
     buttonIcon: IconType;
-    handleCheckbox: (event: React.MouseEvent<HTMLLabelElement>) => void;
+    handleCheckbox: (event: MouseEvent<HTMLLabelElement>) => void;
 }
 
 export default function Checkbox({
@@ -13,11 +14,11 @@ export default function Checkbox({
     handleCheckbox,
 }: CheckboxProps) {
     const ButtonIcon = buttonIcon;
-    const [checkedState, setCheckedState] = React.useState<boolean>(false);
+    const [checkedState, setCheckedState] = useState<boolean>(false);
 
-    function handleChange() {
+    const handleChange = () => {
         setCheckedState(targetState);
-    }
+    };
 
     return (
         <label htmlFor="checkbox" onClick={handleCheckbox}>

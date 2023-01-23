@@ -1,24 +1,19 @@
-import React from "react";
+import { ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 interface ModalProps {
-    children: React.ReactNode;
+    children: ReactNode;
     closeModal: (value: boolean) => void;
-}
-
-interface WindowSize {
-    width: number;
-    height: number;
 }
 
 export default function Modal({ children, closeModal }: ModalProps) {
     const modalRoot = document.querySelector("#modal_root");
+    if (!modalRoot) return <></>;
 
     const handleModal = () => {
         closeModal(false);
     };
 
-    if (!modalRoot) return <></>;
     return createPortal(
         <div className="absolute top-0 w-full h-full">
             <div

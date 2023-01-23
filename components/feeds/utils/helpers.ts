@@ -1,8 +1,6 @@
 import Router from "next/router";
-import RequestControllers from "controllers";
-import { URLS_RULE } from "./constants";
 
-const { postDataTo } = new RequestControllers();
+const URLS_RULE = /^http/;
 
 export const extractInputValue = (element: Element) => {
     if (element instanceof HTMLInputElement) return element.value;

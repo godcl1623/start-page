@@ -1,4 +1,5 @@
 import { promises as fs } from "fs";
+
 import { JSON_DIRECTORY } from "common/constants";
 
 export interface SourceDataInput {
@@ -34,21 +35,19 @@ export const checkIfDataValid = (
     valuesCount: number,
     typeStandard: string
 ) => {
-    if (dataToCheck && typeof dataToCheck === "object") {
-        if (
-            Object.values(dataToCheck).length < valuesCount ||
-            Object.values(dataToCheck).some(
-                (objectValue: unknown) =>
-                    typeof objectValue !== typeStandard || objectValue === ""
-            )
-        ) {
-            return false;
-        } else {
-            return true;
-        }
-    } else {
+    if (!dataToCheck || typeof dataToCheck !== "object") {
         return false;
     }
+    if (
+        Object.values(dataToCheck).length < valuesCount ||
+        Object.values(dataToCheck).some(
+            (objectValue: unknown) =>
+                typeof objectValue !== typeStandard || objectValue === ""
+        )
+    ) {
+        return false;
+    }
+    return true;
 };
 
 export const checkIfDataExists = (
@@ -75,8 +74,8 @@ export const updateData = <T extends object>(
     const updatedSources =
         originalId != null
             ? storedList
-                .filter((_, index: number) => index !== originalId)
-                .concat([newSource])
+                  .filter((_, index: number) => index !== originalId)
+                  .concat([newSource])
             : [...storedList, newSource];
     const body = {
         sources: updatedSources,

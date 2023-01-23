@@ -1,7 +1,8 @@
-import React from "react";
+import { FormEvent } from "react";
+
 import { SEARCH_ADDRESS_BY_ENGINE } from "./constants";
 
-export const extractFormValues = (event: React.FormEvent<HTMLFormElement>) => {
+export const extractFormValues = (event: FormEvent<HTMLFormElement>) => {
     const selectBox = event.currentTarget[0];
     const searchInput = event.currentTarget[1];
     let selectBoxValue = "";
