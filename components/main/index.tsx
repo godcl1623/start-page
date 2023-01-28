@@ -16,6 +16,7 @@ import CancelSubscription from "components/feeds/CancelSubscription";
 import FilterBySource from "components/feeds/FilterBySource";
 import FilterByText from "components/feeds/FilterByText";
 import { FilterType } from "hooks/useFilters";
+import Button from "components/feeds/common/Button";
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
@@ -79,6 +80,13 @@ export default function MainPage({
             }));
         };
 
+    const buttonData = {
+        "구독 추가": handleClick("addSubscription"),
+        "구독 취소": handleClick("cancelSubscription"),
+        "즐겨찾기": filterFavorites,
+        "출처별 필터": handleClick("filterBySource"),
+    };
+
     useEffect(() => {
         if (modalState.addSubscription || modalState.cancelSubscription) {
             document.documentElement.style.overflow = "hidden";
@@ -125,6 +133,22 @@ export default function MainPage({
         </li>
     ));
 
+    const optionButtonsList = Object.entries(buttonData).map(
+        (buttonData: [string, () => void], index: number) => {
+            const [buttonText, clickHandler] = buttonData;
+            return (
+                <Button
+                    key={`${buttonText}_${index}`}
+                    type="button"
+                    customStyle="mr-3"
+                    clickHandler={clickHandler}
+                >
+                    {buttonText}
+                </Button>
+            );
+        }
+    );
+
     return (
         <article
             className="flex-center flex-col w-full h-max min-h-full bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
@@ -137,30 +161,7 @@ export default function MainPage({
                 <section>
                     <section className="flex justify-between h-8 mb-4">
                         <section>
-                            <button
-                                className="mr-3 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
-                                onClick={handleClick("addSubscription")}
-                            >
-                                구독 추가
-                            </button>
-                            <button
-                                className="mr-3 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
-                                onClick={handleClick("cancelSubscription")}
-                            >
-                                구독 취소
-                            </button>
-                            <button
-                                className="mr-3 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
-                                onClick={filterFavorites}
-                            >
-                                즐겨찾기
-                            </button>
-                            <button
-                                className="mr-3 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
-                                onClick={handleClick("filterBySource")}
-                            >
-                                출처별 필터
-                            </button>
+                            {optionButtonsList}
                         </section>
                         <FilterByText setTextFilter={setSearchTexts} />
                         <SelectBox

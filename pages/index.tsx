@@ -212,7 +212,7 @@ export default function Index({ feeds, sources }: IndexProps) {
         setFormerFeedsList((previousObject: any) => ({
             ...previousObject,
             [currentPage]:
-                previousObject[currentPage].length === 0
+                previousObject[currentPage]?.length === 0
                     ? previousObject[currentPage]
                           ?.slice(previousObject[currentPage].length)
                           .concat(fetchedNewFeeds)

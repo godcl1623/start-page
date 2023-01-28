@@ -11,6 +11,15 @@ interface Props {
     refetchFeeds: () => void;
 }
 
+interface ButtonsDataValue {
+    customStyle: string;
+    clickHandler: () => void;
+}
+
+interface ButtonsData {
+    [key: string]: ButtonsDataValue;
+}
+
 export default function FilterBySource({
     displayState,
     closeModal,
@@ -33,7 +42,9 @@ export default function FilterBySource({
     };
 
     const initiateDisplayFilter = () => {
-        Object.keys(displayState).forEach((key: string) => setDisplayFlag(key, true));
+        Object.keys(displayState).forEach((key: string) =>
+            setDisplayFlag(key, true)
+        );
     };
 
     const subscriptionOptions = Object.keys(displayState).map(
@@ -73,6 +84,37 @@ export default function FilterBySource({
         }
     );
 
+    const buttonsData: ButtonsData = {
+        취소: {
+            customStyle: "w-16 bg-red-600 dark:bg-red-700",
+            clickHandler: closeModal,
+        },
+        초기화: {
+            customStyle: "w-16",
+            clickHandler: initiateDisplayFilter,
+        },
+        저장: {
+            customStyle: "w-16 bg-blue-600 dark:bg-sky-600",
+            clickHandler: enableDisplayFilter,
+        },
+    };
+    const filterHandlersList = Object.entries(buttonsData).map(
+        (buttonData: [string, ButtonsDataValue], index: number) => {
+            const [buttonText, buttonDataValue] = buttonData;
+            const { customStyle, clickHandler } = buttonDataValue;
+            return (
+                <Button
+                    key={`${buttonText}_${index}`}
+                    type="button"
+                    customStyle={customStyle}
+                    clickHandler={clickHandler}
+                >
+                    {buttonText}
+                </Button>
+            );
+        }
+    );
+
     return (
         <section className="h-full">
             <ModalTemplate
@@ -80,27 +122,7 @@ export default function FilterBySource({
                 listItems={subscriptionOptions}
             />
             <div className="flex justify-evenly w-full">
-                <Button
-                    type="button"
-                    customStyle="w-16 bg-red-600 dark:bg-red-700"
-                    clickHandler={closeModal}
-                >
-                    취소
-                </Button>
-                <Button
-                    type="button"
-                    customStyle="w-16"
-                    clickHandler={initiateDisplayFilter}
-                >
-                    초기화
-                </Button>
-                <Button
-                    type="button"
-                    customStyle="w-16 bg-blue-600 dark:bg-sky-600"
-                    clickHandler={enableDisplayFilter}
-                >
-                    저장
-                </Button>
+                {filterHandlersList}
             </div>
         </section>
     );
