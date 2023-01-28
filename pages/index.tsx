@@ -7,6 +7,7 @@ import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import useFilters from "hooks/useFilters";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import MainPage from "components/main";
+import { SORT_STANDARD } from 'common/constants';
 
 export interface ParsedFeedsDataType {
     id: string;
@@ -95,7 +96,7 @@ export default function Index({ feeds, sources }: IndexProps) {
         : formerFeedsList[currentPage];
 
     const checkShouldSortByReverse = (sortState: number) => sortState === 1;
-    const setSortState = (stateString: string, stateStringArray: string[]) => {
+    const setSortState = (stateStringArray: string[]) => (stateString: string) => {
         if (stateStringArray.includes(stateString)) {
             setCurrentSort(stateStringArray.indexOf(stateString));
         } else {
@@ -255,7 +256,7 @@ export default function Index({ feeds, sources }: IndexProps) {
             setCurrentPage={updateCurrentPage}
             currentSort={currentSort}
             checkShouldSortByReverse={checkShouldSortByReverse}
-            setSortState={setSortState}
+            setSortState={setSortState(SORT_STANDARD)}
             totalCount={totalCount}
             isMobileLayout={isMobileLayout}
             sources={sources}

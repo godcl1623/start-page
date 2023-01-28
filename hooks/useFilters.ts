@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { SourceData } from "controllers/sources";
-import { SourcesList } from "components/feeds/CancelSubscription";
+import { SourcesList } from 'components/main'; 
 
 export type FilterType<T> = {
     [key in string]: T;

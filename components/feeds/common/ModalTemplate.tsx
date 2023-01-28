@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 
 interface Props {
     headingTitle: string | ReactNode;
-    listItems: ReactNode[];
+    listItems: ReactNode | ReactNode[];
 }
 
 export default function ModalTemplate({ headingTitle, listItems }: Props) {

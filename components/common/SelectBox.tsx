@@ -2,14 +2,10 @@ import { ChangeEvent } from "react";
 
 import { SORT_STANDARD } from "common/constants";
 
-type ObjectType = {
-    [key in string]: string;
-};
-
 interface Props {
-    optionValues: string[] | ObjectType;
+    optionValues: string[];
     customStyles?: string;
-    setSortState?: (stateString: string, stateStringArray: string[]) => void;
+    setSortState?: (stateString: string) => void;
 }
 
 export default function SelectBox({
@@ -17,34 +13,16 @@ export default function SelectBox({
     customStyles,
     setSortState,
 }: Props) {
-    let options: JSX.Element[] = [];
-    if (Array.isArray(optionValues)) {
-        options = options
-            .slice()
-            .concat(
-                optionValues.map((optionValue: string, index: number) => (
-                    <option key={`${optionValue}_${index}`}>
-                        {optionValue}
-                    </option>
-                ))
-            );
-    } else if (optionValues instanceof Object) {
-        options = options
-            .slice()
-            .concat(
-                Object.keys(optionValues).map(
-                    (searchEngine: string, index: number) => (
-                        <option key={`${searchEngine[0]}_${index}`}>
-                            {searchEngine}
-                        </option>
-                    )
-                )
-            );
-    }
+    const options = Array.isArray(optionValues) ? (
+        optionValues?.map((optionValue: string, index: number) => (
+            <option key={`${optionValue}_${index}`}>{optionValue}</option>
+        ))
+    ) : (
+        <></>
+    );
 
     const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
-        if (setSortState)
-            setSortState(event.currentTarget.value, SORT_STANDARD);
+        if (setSortState) setSortState(event.currentTarget.value);
     };
 
     return (

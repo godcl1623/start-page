@@ -20,6 +20,7 @@ export const SEARCH_OPTIONS: SearchOptions = {
 export default function FilterByText({ setTextFilter }: Props) {
     const [isInputFilled, setIsInputFilled] = useState<boolean>(false);
     const inputElement = useRef<HTMLInputElement>(null);
+    const searchOptions = Object.keys(SEARCH_OPTIONS);
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -53,7 +54,7 @@ export default function FilterByText({ setTextFilter }: Props) {
             onSubmit={handleSubmit}
         >
             <SelectBox
-                optionValues={SEARCH_OPTIONS}
+                optionValues={searchOptions}
                 customStyles="h-full rounded-l-md"
             />
             <input

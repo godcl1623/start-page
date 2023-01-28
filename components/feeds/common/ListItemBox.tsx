@@ -10,6 +10,7 @@ export default function ListItemBox({ children, onClick }: Props) {
         if (onClick == null) return;
         onClick();
     };
+
     return (
         <li
             className="flex justify-between w-full py-2 px-4 list-none cursor-pointer select-none"

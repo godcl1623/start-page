@@ -17,6 +17,7 @@ import FilterBySource from "components/feeds/FilterBySource";
 import FilterByText from "components/feeds/FilterByText";
 import { FilterType } from "hooks/useFilters";
 import Button from "components/feeds/common/Button";
+import { SourceData } from 'controllers/sources';
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
@@ -24,7 +25,7 @@ interface Props {
     setCurrentPage: (value: number | ((value: number) => number)) => void;
     currentSort: number;
     checkShouldSortByReverse: (sortState: number) => boolean;
-    setSortState: (stateString: string, stateStringArray: string[]) => void;
+    setSortState: (stateString: string) => void;
     totalCount: number;
     isMobileLayout: boolean;
     sources: string;
@@ -41,6 +42,10 @@ type ModalKeys = "addSubscription" | "cancelSubscription" | "filterBySource";
 type ModalStateType = {
     [key in ModalKeys]: boolean;
 };
+
+export interface SourcesList {
+    sources: SourceData[];
+}
 
 export default function MainPage({
     feedsFromServer,
@@ -65,6 +70,7 @@ export default function MainPage({
         filterBySource: false,
     });
     const startPageRef = useRef<HTMLElement | null>(null);
+    const { sources: sourcesList }: SourcesList = JSON.parse(sources);
 
     const handleClick = (target: ModalKeys) => () => {
         document.documentElement.scrollTo({ top: 0 });
@@ -221,7 +227,7 @@ export default function MainPage({
                     <SubscriptionDialogBox
                         closeModal={closeModal("cancelSubscription")}
                     >
-                        <CancelSubscription sources={sources} />
+                        <CancelSubscription sources={sourcesList} />
                     </SubscriptionDialogBox>
                 </Modal>
             )}

@@ -9,6 +9,7 @@ import SelectBox from "../common/SelectBox";
 export default function Search() {
     const [inputValue, setInputValue] = useState<string>("");
     const [isInputFilled, setIsInputFilled] = useState<boolean>(false);
+    const searchEngines = Object.keys(SEARCH_ADDRESS_BY_ENGINE);
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -35,7 +36,7 @@ export default function Search() {
             onSubmit={handleSubmit}
         >
             <SelectBox
-                optionValues={SEARCH_ADDRESS_BY_ENGINE}
+                optionValues={searchEngines}
                 customStyles="rounded-l-md"
             />
             <input
