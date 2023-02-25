@@ -1,6 +1,6 @@
 import React from "react";
 import Search from "components/search";
-import RequestControllers from "controllers";
+import RequestControllers, { getUserId } from "controllers";
 import Card from "components/card";
 import { ParsedFeedsDataType } from "types/global";
 import { handleSort } from "common/helpers";
@@ -16,6 +16,9 @@ import FilterBySource from "components/feeds/FilterBySource";
 import useFilters from "hooks/useFilters";
 import FilterByText from "components/feeds/FilterByText";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
+import { GetServerSidePropsContext } from "next";
+import { encryptCookie, checkIfCookieExists } from "controllers";
+import { setCookie } from "cookies-next";
 
 interface IndexProps {
     feeds: string;
@@ -194,7 +197,9 @@ export default function Index({ feeds, sources }: IndexProps) {
 
     React.useEffect(() => {
         if (isMobileLayout) {
-            const firstEmptyPageIndex = (Object.values(formerFeedsList) as any[]).findIndex((value: any[]) => value.length === 0);
+            const firstEmptyPageIndex = (
+                Object.values(formerFeedsList) as any[]
+            ).findIndex((value: any[]) => value.length === 0);
             setCurrentPage(firstEmptyPageIndex);
             Object.keys(formerFeedsList).forEach((key: string, index) => {
                 if (index > firstEmptyPageIndex) {
@@ -205,7 +210,15 @@ export default function Index({ feeds, sources }: IndexProps) {
                 }
             });
         } else {
-            const fetchedPages = (Object.values(formerFeedsList) as any[]).reduce((totalNumber: number, currentDataArray: any[]) => currentDataArray.length > 0 ? totalNumber += 1 : totalNumber, 0);
+            const fetchedPages = (
+                Object.values(formerFeedsList) as any[]
+            ).reduce(
+                (totalNumber: number, currentDataArray: any[]) =>
+                    currentDataArray.length > 0
+                        ? (totalNumber += 1)
+                        : totalNumber,
+                0
+            );
             setCurrentPage(fetchedPages > 0 ? fetchedPages : 1);
         }
     }, [isMobileLayout]);
@@ -408,9 +421,18 @@ export default function Index({ feeds, sources }: IndexProps) {
     );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
     const { getDataFrom } = new RequestControllers();
     try {
+        const userId = getUserId(context);
+        if (!checkIfCookieExists(context)) {
+            const encryptedId = encryptCookie({ userId });
+            setCookie("mw", encryptedId, {
+                req: context.req,
+                res: context.res,
+                maxAge: 60 * 6 * 24,
+            });
+        }
         const { data: feeds } = await getDataFrom("/feeds");
         const { data: sources } = await getDataFrom("/sources");
 

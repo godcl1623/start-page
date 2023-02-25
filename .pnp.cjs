@@ -29,6 +29,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",\
           "packageDependencies": [\
             ["@tanstack/react-query", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:4.16.1"],\
+            ["@types/crypto-js", "npm:4.1.1"],\
             ["@types/jsdom", "npm:20.0.1"],\
             ["@types/mongoose", "npm:5.11.97"],\
             ["@types/node", "npm:18.7.15"],\
@@ -37,6 +38,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@yarnpkg/sdks", "npm:3.0.0-rc.30"],\
             ["autoprefixer", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:10.4.8"],\
             ["axios", "npm:0.27.2"],\
+            ["cookies-next", "npm:2.1.1"],\
+            ["crypto-js", "npm:4.1.1"],\
             ["eslint", "npm:8.23.0"],\
             ["eslint-config-next", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:12.2.5"],\
             ["jsdom", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:20.0.3"],\
@@ -1383,6 +1386,24 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["@types/cookie", [\
+        ["npm:0.4.1", {\
+          "packageLocation": "./.yarn/cache/@types-cookie-npm-0.4.1-274a704dc6-3275534ed6.zip/node_modules/@types/cookie/",\
+          "packageDependencies": [\
+            ["@types/cookie", "npm:0.4.1"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@types/crypto-js", [\
+        ["npm:4.1.1", {\
+          "packageLocation": "./.yarn/cache/@types-crypto-js-npm-4.1.1-1c4ce3312a-ea3d6a67b6.zip/node_modules/@types/crypto-js/",\
+          "packageDependencies": [\
+            ["@types/crypto-js", "npm:4.1.1"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["@types/emscripten", [\
         ["npm:1.39.6", {\
           "packageLocation": "./.yarn/cache/@types-emscripten-npm-1.39.6-c9c4021365-437f2f9cdf.zip/node_modules/@types/emscripten/",\
@@ -1443,6 +1464,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["@types/node", [\
+        ["npm:16.18.12", {\
+          "packageLocation": "./.yarn/cache/@types-node-npm-16.18.12-74fb2c13d9-fc32711824.zip/node_modules/@types/node/",\
+          "packageDependencies": [\
+            ["@types/node", "npm:16.18.12"]\
+          ],\
+          "linkType": "HARD"\
+        }],\
         ["npm:18.11.9", {\
           "packageLocation": "./.yarn/cache/@types-node-npm-18.11.9-d21dd6ec05-cc0aae109e.zip/node_modules/@types/node/",\
           "packageDependencies": [\
@@ -2486,6 +2514,27 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["cookie", [\
+        ["npm:0.4.2", {\
+          "packageLocation": "./.yarn/cache/cookie-npm-0.4.2-7761894d5f-a00833c998.zip/node_modules/cookie/",\
+          "packageDependencies": [\
+            ["cookie", "npm:0.4.2"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["cookies-next", [\
+        ["npm:2.1.1", {\
+          "packageLocation": "./.yarn/cache/cookies-next-npm-2.1.1-b220fa0499-c5fc2c72cf.zip/node_modules/cookies-next/",\
+          "packageDependencies": [\
+            ["cookies-next", "npm:2.1.1"],\
+            ["@types/cookie", "npm:0.4.1"],\
+            ["@types/node", "npm:16.18.12"],\
+            ["cookie", "npm:0.4.2"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["core-js-pure", [\
         ["npm:3.25.0", {\
           "packageLocation": "./.yarn/unplugged/core-js-pure-npm-3.25.0-1e98dfe1be/node_modules/core-js-pure/",\
@@ -2512,6 +2561,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["path-key", "npm:3.1.1"],\
             ["shebang-command", "npm:2.0.0"],\
             ["which", "npm:2.0.2"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["crypto-js", [\
+        ["npm:4.1.1", {\
+          "packageLocation": "./.yarn/cache/crypto-js-npm-4.1.1-38a3b8c19d-b3747c12ee.zip/node_modules/crypto-js/",\
+          "packageDependencies": [\
+            ["crypto-js", "npm:4.1.1"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -5922,6 +5980,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["start-page", "workspace:."],\
             ["@tanstack/react-query", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:4.16.1"],\
+            ["@types/crypto-js", "npm:4.1.1"],\
             ["@types/jsdom", "npm:20.0.1"],\
             ["@types/mongoose", "npm:5.11.97"],\
             ["@types/node", "npm:18.7.15"],\
@@ -5930,6 +5989,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@yarnpkg/sdks", "npm:3.0.0-rc.30"],\
             ["autoprefixer", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:10.4.8"],\
             ["axios", "npm:0.27.2"],\
+            ["cookies-next", "npm:2.1.1"],\
+            ["crypto-js", "npm:4.1.1"],\
             ["eslint", "npm:8.23.0"],\
             ["eslint-config-next", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:12.2.5"],\
             ["jsdom", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:20.0.3"],\
