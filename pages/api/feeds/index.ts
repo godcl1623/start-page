@@ -4,21 +4,26 @@ import { areEqual } from "common/capsuledConditions";
 import { JSON_DIRECTORY } from "common/constants";
 import { ParseResultType, ParsedFeedsDataType } from "types/global";
 import { handleSort } from "common/helpers";
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 export default async function feedsHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
+    const main = async () => {
+        await mongoose.connect(
+            `mongodb+srv://${process.env.MONGO_DB_USER}:${process.env.MONGO_DB_KEY}@${process.env.MONGO_DB_URI}/?retryWrites=true&w=majority`
+        );
+        const Feeds = mongoose.models.Feeds || mongoose.model("Feeds", feedsSchema);
+        return await Feeds.find();
+    }
+    main()
+        .then((res) => console.log(res))
+        .catch((err) => console.log(err));
     const fileContents = await fs.readFile(
         `${JSON_DIRECTORY}/feeds.json`,
         "utf8"
     );
-    const main = async () =>
-        await mongoose.connect(
-            `mongodb+srv://${process.env.MONGO_DB_USER}:${process.env.MONGO_DB_KEY}@${process.env.MONGO_DB_URI}/?retryWrites=true&w=majority`
-        );
-    main().then(res => console.log(res)).catch(err => console.log('error'))
     if (fileContents == null) {
         response.status(404).send("file not exists.");
     }
@@ -151,3 +156,35 @@ export default async function feedsHandler(
         response.status(405).send("Method Not Allowed");
     }
 }
+
+const sourcesSchema = new Schema({
+    id: Number,
+    name: String,
+    url: String,
+});
+
+const feedsSchema = new Schema({
+    id: String,
+    title: {
+        type: String,
+        required: true,
+    },
+    description: {
+        type: String,
+        required: true,
+    },
+    link: {
+        type: String,
+        required: true,
+    },
+    pubDate: {
+        type: String,
+        required: true,
+    },
+    origin: {
+        type: String,
+        required: true,
+    },
+    isRead: Boolean,
+    isFavorite: Boolean,
+});
