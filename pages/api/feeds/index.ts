@@ -4,6 +4,7 @@ import { areEqual } from "common/capsuledConditions";
 import { JSON_DIRECTORY } from "common/constants";
 import { ParseResultType, ParsedFeedsDataType } from "types/global";
 import { handleSort } from "common/helpers";
+import mongoose from "mongoose";
 
 export default async function feedsHandler(
     request: NextApiRequest,
@@ -13,6 +14,11 @@ export default async function feedsHandler(
         `${JSON_DIRECTORY}/feeds.json`,
         "utf8"
     );
+    const main = async () =>
+        await mongoose.connect(
+            `mongodb+srv://${process.env.MONGO_DB_USER}:${process.env.MONGO_DB_KEY}@${process.env.MONGO_DB_URI}/?retryWrites=true&w=majority`
+        );
+    main().then(res => console.log(res)).catch(err => console.log('error'))
     if (fileContents == null) {
         response.status(404).send("file not exists.");
     }
