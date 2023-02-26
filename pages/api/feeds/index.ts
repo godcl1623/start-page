@@ -1,15 +1,19 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
-import { JSON_DIRECTORY } from "common/constants";
 import { ParseResultType, ParsedFeedsDataType } from "types/global";
-import { handleSort } from "common/helpers";
 import mongoose, { Schema } from "mongoose";
+import { decryptCookie } from 'controllers';
 
 export default async function feedsHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
+    const { userId, mw } = request.query;
+    let id = userId;
+    if (userId == null && typeof mw === "string" && mw.length > 0) {
+        const { userId } = JSON.parse(decryptCookie(mw.replaceAll(" ", "+")));
+        id = userId;
+    }
     await mongoose.connect(
         `mongodb+srv://${process.env.MONGO_DB_USER}:${process.env.MONGO_DB_KEY}@${process.env.MONGO_DB_URI}/?retryWrites=true&w=majority`,
         {
@@ -17,17 +21,17 @@ export default async function feedsHandler(
         }
     );
     const Feeds = mongoose.models.Feeds || mongoose.model("Feeds", feedsSchema);
+    const remoteData = await Feeds.find({ _uuid: id });
 
-    const fileContents = await fs.readFile(
-        `${JSON_DIRECTORY}/feeds.json`,
-        "utf8"
-    );
-    if (fileContents == null) {
-        response.status(404).send("file not exists.");
+    if (
+        remoteData.length === 0 &&
+        typeof id === "string" &&
+        id.length > 0
+    ) {
+        await Feeds.insertMany({ _uuid: id, data: [] });
     }
     if (areEqual(request.method, "GET")) {
-        const remoteData = await Feeds.find();
-        const parsedContents: ParseResultType[] = JSON.parse(fileContents).data;
+        const parsedContents: ParseResultType[] = remoteData[0]?.data;
         try {
             const { favorites, displayOption, textOption, page, per_page } =
                 request.query;
@@ -112,7 +116,7 @@ export default async function feedsHandler(
                 }
             }
             const totalFeedsList = filteredContents
-                .reduce(
+                ?.reduce(
                     (
                         totalArray: ParsedFeedsDataType[],
                         currentData: ParseResultType
@@ -127,26 +131,21 @@ export default async function feedsHandler(
                 )
                 .sort((a, b) => {
                     if (a.pubDate && b.pubDate) {
-                        const previousDate = new Date(a.pubDate);
+                        const previousDate: Date = new Date(a.pubDate);
                         const nextDate = new Date(b.pubDate);
                         return previousDate > nextDate ? -1 : 1;
                     } else {
                         return -1;
                     }
                 });
+                console.log(totalFeedsList.map((foo) => foo.title))
             const responseBody = {
-                data: totalFeedsList.slice(
-                    paginationStartIndex,
-                    paginationEndIndex
-                ),
-                count: totalFeedsList.length,
+                data: totalFeedsList?.slice(paginationStartIndex, paginationEndIndex),
+                count: totalFeedsList?.length,
             };
-            const testBody = {
-                data: remoteData.slice(paginationStartIndex, paginationEndIndex),
-                count: remoteData.length,
-            };
-            response.status(200).json(JSON.stringify(testBody));
+            response.status(200).json(JSON.stringify(responseBody));
         } catch (error) {
+            console.log(error)
             response.status(400).send(error);
         }
     } else if (areEqual(request.method, "POST")) {
@@ -161,27 +160,37 @@ export default async function feedsHandler(
 }
 
 export const feedsSchema = new Schema({
-    id: String,
-    title: {
-        type: String,
-        required: true,
-    },
-    description: {
-        type: String,
-        required: true,
-    },
-    link: {
-        type: String,
-        required: true,
-    },
-    pubDate: {
-        type: String,
-        required: true,
-    },
-    origin: {
-        type: String,
-        required: true,
-    },
-    isRead: Boolean,
-    isFavorite: Boolean,
+    _uuid: String,
+    data: [{
+        id: Number,
+        originName: String,
+        originLink: String,
+        lastFeedsLength: Number,
+        latestFeedTitle: String,
+        feeds: [{
+            id: String,
+            title: {
+                type: String,
+                required: true,
+            },
+            description: {
+                type: String,
+                required: true,
+            },
+            link: {
+                type: String,
+                required: true,
+            },
+            pubDate: {
+                type: String,
+                required: true,
+            },
+            origin: {
+                type: String,
+                required: true,
+            },
+            isRead: Boolean,
+            isFavorite: Boolean,
+        }],
+    }],
 });

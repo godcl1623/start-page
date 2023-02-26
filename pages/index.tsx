@@ -19,8 +19,8 @@ import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import { GetServerSidePropsContext } from "next";
 import { encryptCookie, checkIfCookieExists } from "controllers";
 import { setCookie, getCookie } from "cookies-next";
-import { decryptCookie } from 'controllers';
-import CryptoJS from 'crypto-js';
+import { decryptCookie } from "controllers";
+import CryptoJS from "crypto-js";
 
 interface IndexProps {
     feeds: string;
@@ -55,7 +55,7 @@ export default function Index({ feeds, sources }: IndexProps) {
     const [isMobileLayout, setIsMobileLayout] = React.useState<boolean>(false);
     const [currentPage, setCurrentPage] = React.useState<number>(1);
     const [formerFeedsList, setFormerFeedsList] = React.useState<any>({});
-    const [rawCookie, setRawCookie] = React.useState('');
+    const [rawCookie, setRawCookie] = React.useState("");
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
@@ -75,9 +75,9 @@ export default function Index({ feeds, sources }: IndexProps) {
         fetchNextPage,
         hasNextPage,
     } = useInfiniteQuery({
-        queryKey: ["/feeds", { isMobileLayout }],
+        queryKey: [`/feeds?mw=${rawCookie}`, { isMobileLayout }],
         queryFn: ({ pageParam = currentPage }) =>
-            getDataFrom("/feeds", {
+            getDataFrom(`/feeds?mw=${rawCookie}`, {
                 params: {
                     favorites: isFilterFavorite,
                     displayOption: sourceDisplayState,
@@ -230,15 +230,23 @@ export default function Index({ feeds, sources }: IndexProps) {
         const doh = newFeedsRequestResult
             ? newFeedsRequestResult?.data
             : newFeeds;
-        setFormerFeedsList((previousObject: any) => ({
-            ...previousObject,
-            [currentPage]:
-                previousObject[currentPage]?.length === 0
-                    ? previousObject[currentPage]
-                          ?.slice(previousObject[currentPage].length)
-                          .concat(doh)
-                    : previousObject[currentPage],
-        }));
+        setFormerFeedsList((previousObject: any) => {
+            if (previousObject[currentPage] != null) {
+                return {
+                    ...previousObject,
+                    [currentPage]:
+                        previousObject[currentPage]?.length === 0
+                            ? previousObject[currentPage]
+                                  ?.slice(previousObject[currentPage].length)
+                                  .concat(doh)
+                            : previousObject[currentPage],
+                };
+            } else {
+                return {
+                    [currentPage]: doh,
+                };
+            }
+        });
     }, [newFeedsRequestResult, newFeeds]);
 
     React.useEffect(() => {
@@ -270,30 +278,32 @@ export default function Index({ feeds, sources }: IndexProps) {
     }, [observerElement, hasNextPage]);
 
     React.useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const userCookie = getCookie('mw');
-            if (userCookie && typeof userCookie === 'string') {
+        if (typeof window !== "undefined") {
+            const userCookie = getCookie("mw");
+            if (userCookie && typeof userCookie === "string") {
                 setRawCookie(userCookie);
             }
         }
     }, []);
 
-    const feedsToDisplay = feedsFromServer
-        ? feedsFromServer
-              ?.sort(
-                  handleSort(
-                      SORT_STANDARD_STATE[currentSort],
-                      checkShouldSortByReverse(currentSort)
+    // FIXME: 조건 수정 필요 - 0으로 설정하면 최초 접속시 오류 발생
+    const feedsToDisplay =
+        feedsFromServer != null && feedsFromServer.length > 1
+            ? feedsFromServer
+                  ?.sort(
+                      handleSort(
+                          SORT_STANDARD_STATE[currentSort],
+                          checkShouldSortByReverse(currentSort)
+                      )
                   )
-              )
-              .map((feed: ParsedFeedsDataType) => (
-                  <Card
-                      cardData={feed}
-                      key={feed.id}
-                      refetchFeeds={refetchStoredFeeds}
-                  />
-              ))
-        : [];
+                  .map((feed: ParsedFeedsDataType) => (
+                      <Card
+                          cardData={feed}
+                          key={feed?.id}
+                          refetchFeeds={refetchStoredFeeds}
+                      />
+                  ))
+            : [];
 
     const pageIndicator = Array.from(
         { length: Math.ceil(totalCount / 10) },
@@ -445,8 +455,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
                 maxAge: 60 * 6 * 24,
             });
         }
-        const { data: feeds } = await getDataFrom("/feeds");
-        const { data: sources } = await getDataFrom(`/sources?userId=${userId}`);
+        const { data: feeds } = await getDataFrom(`/feeds?userId=${userId}`);
+        const { data: sources } = await getDataFrom(
+            `/sources?userId=${userId}`
+        );
 
         return {
             props: {

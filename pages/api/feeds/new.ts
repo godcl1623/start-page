@@ -3,7 +3,11 @@ import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
 import { JSON_DIRECTORY } from "common/constants";
 import RequestControllers, { decryptCookie } from "controllers";
-import { SourceData, FileContentsInterface } from "controllers/sources";
+import {
+    SourceData,
+    FileContentsInterface,
+    CustomError,
+} from "controllers/sources";
 import {
     getRssResponses,
     parseXml,
@@ -11,17 +15,27 @@ import {
 } from "controllers/feeds/new";
 import { AxiosResponse } from "axios";
 import { ParsedFeedsDataType, ParseResultType } from "types/global";
+import mongoose from "mongoose";
+import { feedsSchema } from ".";
 
 export default async function feedsHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    const { mw } = request.query;
-    let id = "";
-    if (typeof mw === "string" && mw.length > 0) {
+    const { userId, mw } = request.query;
+    let id = userId;
+    if (userId == null && typeof mw === "string" && mw.length > 0) {
         const { userId } = JSON.parse(decryptCookie(mw.replaceAll(" ", "+")));
         id = userId;
     }
+    await mongoose.connect(
+        `mongodb+srv://${process.env.MONGO_DB_USER}:${process.env.MONGO_DB_KEY}@${process.env.MONGO_DB_URI}/?retryWrites=true&w=majority`,
+        {
+            dbName: "start-page",
+        }
+    );
+    const Feeds = mongoose.models.Feeds || mongoose.model("Feeds", feedsSchema);
+    const remoteData = await Feeds.find({ _uuid: id });
     const { getDataFrom, postDataTo } = new RequestControllers();
     const fileContents = await fs.readFile(
         `${JSON_DIRECTORY}/feeds.json`,
@@ -37,11 +51,10 @@ export default async function feedsHandler(
             const paginationStartIndex = perPageValue * (pageValue - 1);
             const paginationEndIndex = perPageValue * pageValue;
             const { data } = await getDataFrom(`/sources?userId=${id}`);
-            const { sources }: FileContentsInterface =
-                typeof data === "object" ? JSON.parse(data) : {};
-            const urlList = sources ? sources.map(
-                (sourceData: SourceData) => sourceData.url
-            ) : [];
+            const { sources }: FileContentsInterface = JSON.parse(data);
+            const urlList = sources
+                ? sources.map((sourceData: SourceData) => sourceData.url)
+                : [];
             const result: PromiseSettledResult<AxiosResponse>[] | undefined =
                 await getRssResponses(urlList);
             if (result != null) {
@@ -52,8 +65,8 @@ export default async function feedsHandler(
                         }
                     }
                 );
-                const storedFeeds: ParseResultType[] = fileContents
-                    ? JSON.parse(fileContents).data
+                const storedFeeds: ParseResultType[] = remoteData[0]
+                    ? remoteData[0].data
                     : [];
                 let originId = sources?.length > 0 ? storedFeeds.length + 1 : 0;
                 const parseResult = totalFeedsFromSources.map(
@@ -126,7 +139,7 @@ export default async function feedsHandler(
                     )
                     .sort((a, b) => {
                         if (a.pubDate && b.pubDate) {
-                            const previousDate = new Date(a.pubDate);
+                            const previousDate: Date = new Date(a.pubDate);
                             const nextDate = new Date(b.pubDate);
                             return previousDate > nextDate ? -1 : 1;
                         } else {
@@ -141,7 +154,7 @@ export default async function feedsHandler(
                     count: totalFeedsList.length,
                 };
                 if (differentiateArray.length > 0) {
-                    postDataTo("/feeds/new", parseResult);
+                    postDataTo(`/feeds/new?userId=${id}`, parseResult);
                     response.status(200).json(responseBody);
                 } else {
                     response.status(204).send("no new feeds available");
@@ -156,8 +169,8 @@ export default async function feedsHandler(
     } else if (areEqual(request.method, "POST")) {
         try {
             const dataToWrite: ParseResultType[] = request.body;
-            const storedFeeds: ParseResultType[] = fileContents
-                ? JSON.parse(fileContents).data
+            const storedFeeds: ParseResultType[] = remoteData[0]
+                ? remoteData[0].data
                 : [];
             const newFeedSets = dataToWrite.map(
                 (newFeedSet: ParseResultType, feedSetIndex: number) => {
@@ -184,14 +197,15 @@ export default async function feedsHandler(
                     };
                 }
             );
-            const newData = {
-                data: newFeedSets,
-            };
-            fs.writeFile(
-                `${JSON_DIRECTORY}/feeds.json`,
-                JSON.stringify(newData)
+            const updateResult = await Feeds.updateOne(
+                { _uuid: id },
+                { $set: { data: newFeedSets } }
             );
-            response.status(201).send("success");
+            if (updateResult.acknowledged) {
+                response.status(201).send("success");
+            } else {
+                throw new CustomError(400, "update failed");
+            }
         } catch (error) {
             response.status(400).send(error);
         }
