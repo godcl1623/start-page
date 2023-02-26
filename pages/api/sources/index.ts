@@ -1,15 +1,12 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
 import {
     CustomError,
     checkIfDataExists,
-    updateData,
     SourceDataInput,
     FileContentsInterface,
     SourceData,
 } from "controllers/sources";
-import { JSON_DIRECTORY } from "common/constants";
 import mongoose, { Schema } from "mongoose";
 import { decryptCookie } from "controllers";
 
@@ -32,13 +29,6 @@ export default async function sourceHandler(
     const Sources =
         mongoose.models.Sources || mongoose.model("Sources", sourcesSchema);
     const remoteContents = await Sources.find({ _uuid: id });
-    const fileContents = await fs.readFile(
-        `${JSON_DIRECTORY}/sources.json`,
-        "utf8"
-    );
-    if (fileContents == null) {
-        response.status(404).send("file not exists.");
-    }
     if (
         remoteContents.length === 0 &&
         typeof id === "string" &&
