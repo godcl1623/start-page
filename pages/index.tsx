@@ -18,7 +18,9 @@ import FilterByText from "components/feeds/FilterByText";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import { GetServerSidePropsContext } from "next";
 import { encryptCookie, checkIfCookieExists } from "controllers";
-import { setCookie } from "cookies-next";
+import { setCookie, getCookie } from "cookies-next";
+import { decryptCookie } from 'controllers';
+import CryptoJS from 'crypto-js';
 
 interface IndexProps {
     feeds: string;
@@ -53,6 +55,7 @@ export default function Index({ feeds, sources }: IndexProps) {
     const [isMobileLayout, setIsMobileLayout] = React.useState<boolean>(false);
     const [currentPage, setCurrentPage] = React.useState<number>(1);
     const [formerFeedsList, setFormerFeedsList] = React.useState<any>({});
+    const [rawCookie, setRawCookie] = React.useState('');
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
@@ -63,8 +66,8 @@ export default function Index({ feeds, sources }: IndexProps) {
     );
     const startPageRef = React.useRef<HTMLElement | null>(null);
     const newFeedsRequestResult = useQuery<AxiosResponse<RenewedFeedsData>>(
-        ["/feeds/new"],
-        () => getDataFrom("/feeds/new")
+        [`/feeds/new?mw=${rawCookie}`],
+        () => getDataFrom(`/feeds/new?mw=${rawCookie}`)
     )?.data?.data;
     const {
         data: storedFeed,
@@ -214,7 +217,7 @@ export default function Index({ feeds, sources }: IndexProps) {
                 Object.values(formerFeedsList) as any[]
             ).reduce(
                 (totalNumber: number, currentDataArray: any[]) =>
-                    currentDataArray.length > 0
+                    currentDataArray?.length > 0
                         ? (totalNumber += 1)
                         : totalNumber,
                 0
@@ -230,7 +233,7 @@ export default function Index({ feeds, sources }: IndexProps) {
         setFormerFeedsList((previousObject: any) => ({
             ...previousObject,
             [currentPage]:
-                previousObject[currentPage].length === 0
+                previousObject[currentPage]?.length === 0
                     ? previousObject[currentPage]
                           ?.slice(previousObject[currentPage].length)
                           .concat(doh)
@@ -265,6 +268,15 @@ export default function Index({ feeds, sources }: IndexProps) {
             return () => observer.unobserve(observerElement);
         }
     }, [observerElement, hasNextPage]);
+
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const userCookie = getCookie('mw');
+            if (userCookie && typeof userCookie === 'string') {
+                setRawCookie(userCookie);
+            }
+        }
+    }, []);
 
     const feedsToDisplay = feedsFromServer
         ? feedsFromServer
@@ -390,7 +402,7 @@ export default function Index({ feeds, sources }: IndexProps) {
                     <SubscriptionDialogBox
                         closeModal={closeModal("addSubscription")}
                     >
-                        <SubscribeNew />
+                        <SubscribeNew userCookie={rawCookie} />
                     </SubscriptionDialogBox>
                 </Modal>
             )}
@@ -434,7 +446,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
             });
         }
         const { data: feeds } = await getDataFrom("/feeds");
-        const { data: sources } = await getDataFrom("/sources");
+        const { data: sources } = await getDataFrom(`/sources?userId=${userId}`);
 
         return {
             props: {

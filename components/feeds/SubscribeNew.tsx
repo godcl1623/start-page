@@ -7,7 +7,11 @@ import axios from "axios";
 import RequestControllers from 'controllers';
 import { useRouter } from 'next/router';
 
-export default function SubscribeNew() {
+interface Props {
+    userCookie: string;
+}
+
+export default function SubscribeNew({ userCookie }: Props) {
     const router = useRouter();
     const { getDataFrom, postDataTo } = new RequestControllers();
 
@@ -43,10 +47,10 @@ export default function SubscribeNew() {
             const feedOriginTitle = xml.querySelector('title')?.textContent;
 
             try {
-                const { data } = await getDataFrom('/sources');
+                const { data } = await getDataFrom(`/sources?mw=${userCookie}`);
                 const { sources } = JSON.parse(data);
                 const id = sources.length;
-                const postResult = await postDataTo('/sources', {
+                const postResult = await postDataTo(`/sources?mw=${userCookie}`, {
                     id,
                     name: feedOriginTitle,
                     url,

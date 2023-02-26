@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
 import { JSON_DIRECTORY } from "common/constants";
-import RequestControllers from "controllers";
+import RequestControllers, { decryptCookie } from "controllers";
 import { SourceData, FileContentsInterface } from "controllers/sources";
 import {
     getRssResponses,
@@ -16,6 +16,12 @@ export default async function feedsHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
+    const { mw } = request.query;
+    let id = "";
+    if (typeof mw === "string" && mw.length > 0) {
+        const { userId } = JSON.parse(decryptCookie(mw.replaceAll(" ", "+")));
+        id = userId;
+    }
     const { getDataFrom, postDataTo } = new RequestControllers();
     const fileContents = await fs.readFile(
         `${JSON_DIRECTORY}/feeds.json`,
@@ -30,11 +36,12 @@ export default async function feedsHandler(
             const perPageValue = 10;
             const paginationStartIndex = perPageValue * (pageValue - 1);
             const paginationEndIndex = perPageValue * pageValue;
-            const { data } = await getDataFrom("/sources");
-            const { sources }: FileContentsInterface = JSON.parse(data);
-            const urlList = sources.map(
+            const { data } = await getDataFrom(`/sources?userId=${id}`);
+            const { sources }: FileContentsInterface =
+                typeof data === "object" ? JSON.parse(data) : {};
+            const urlList = sources ? sources.map(
                 (sourceData: SourceData) => sourceData.url
-            );
+            ) : [];
             const result: PromiseSettledResult<AxiosResponse>[] | undefined =
                 await getRssResponses(urlList);
             if (result != null) {
@@ -48,7 +55,7 @@ export default async function feedsHandler(
                 const storedFeeds: ParseResultType[] = fileContents
                     ? JSON.parse(fileContents).data
                     : [];
-                let originId = sources.length > 0 ? storedFeeds.length + 1 : 0;
+                let originId = sources?.length > 0 ? storedFeeds.length + 1 : 0;
                 const parseResult = totalFeedsFromSources.map(
                     (rawRss: string, index: number) => {
                         const indexedFeed =

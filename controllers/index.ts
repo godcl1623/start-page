@@ -62,16 +62,18 @@ export const checkIfCookieExists = (context: GetServerSidePropsContext) => {
 };
 
 export const encryptCookie = (target: { userId: string }) => {
+    const magicWord = typeof window === 'undefined' ? process.env.MAGIC_WORD : process.env.NEXT_PUBLIC_MAGIC_WORD;
     return CryptoJS.AES.encrypt(
         JSON.stringify(target),
-        process.env.MAGIC_WORD as string
+        magicWord as string
     ).toString();
 };
 
 export const decryptCookie = (target: string) => {
+    const magicWord = typeof window === 'undefined' ? process.env.MAGIC_WORD : process.env.NEXT_PUBLIC_MAGIC_WORD;
     const decryptedTarget = CryptoJS.AES.decrypt(
         target,
-        process.env.MAGIC_WORD as string
+        magicWord as string
     );
     return decryptedTarget.toString(CryptoJS.enc.Utf8);
 };

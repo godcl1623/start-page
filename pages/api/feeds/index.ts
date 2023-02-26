@@ -10,16 +10,14 @@ export default async function feedsHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    const main = async () => {
-        await mongoose.connect(
-            `mongodb+srv://${process.env.MONGO_DB_USER}:${process.env.MONGO_DB_KEY}@${process.env.MONGO_DB_URI}/?retryWrites=true&w=majority`
-        );
-        const Feeds = mongoose.models.Feeds || mongoose.model("Feeds", feedsSchema);
-        return await Feeds.find();
-    }
-    main()
-        .then((res) => console.log(res))
-        .catch((err) => console.log(err));
+    await mongoose.connect(
+        `mongodb+srv://${process.env.MONGO_DB_USER}:${process.env.MONGO_DB_KEY}@${process.env.MONGO_DB_URI}/?retryWrites=true&w=majority`,
+        {
+            dbName: "start-page",
+        }
+    );
+    const Feeds = mongoose.models.Feeds || mongoose.model("Feeds", feedsSchema);
+
     const fileContents = await fs.readFile(
         `${JSON_DIRECTORY}/feeds.json`,
         "utf8"
@@ -28,6 +26,7 @@ export default async function feedsHandler(
         response.status(404).send("file not exists.");
     }
     if (areEqual(request.method, "GET")) {
+        const remoteData = await Feeds.find();
         const parsedContents: ParseResultType[] = JSON.parse(fileContents).data;
         try {
             const { favorites, displayOption, textOption, page, per_page } =
@@ -142,7 +141,11 @@ export default async function feedsHandler(
                 ),
                 count: totalFeedsList.length,
             };
-            response.status(200).json(JSON.stringify(responseBody));
+            const testBody = {
+                data: remoteData.slice(paginationStartIndex, paginationEndIndex),
+                count: remoteData.length,
+            };
+            response.status(200).json(JSON.stringify(testBody));
         } catch (error) {
             response.status(400).send(error);
         }
@@ -157,13 +160,7 @@ export default async function feedsHandler(
     }
 }
 
-const sourcesSchema = new Schema({
-    id: Number,
-    name: String,
-    url: String,
-});
-
-const feedsSchema = new Schema({
+export const feedsSchema = new Schema({
     id: String,
     title: {
         type: String,
