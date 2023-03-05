@@ -50,7 +50,6 @@ export default function Index({ feeds, sources }: IndexProps) {
         React.useState<HTMLDivElement | null>(null);
     const [isFilterFavorite, setIsFilterFavorite] =
         React.useState<boolean>(false);
-    const [newFeeds, setNewFeeds] = React.useState<ParsedFeedsDataType[]>([]);
     const [totalCount, setTotalCount] = React.useState<number>(0);
     const [isMobileLayout, setIsMobileLayout] = React.useState<boolean>(false);
     const [currentPage, setCurrentPage] = React.useState<number>(1);
@@ -74,6 +73,8 @@ export default function Index({ feeds, sources }: IndexProps) {
         refetch: refetchStoredFeeds,
         fetchNextPage,
         hasNextPage,
+        isFetchingNextPage,
+        isFetched,
     } = useInfiniteQuery({
         queryKey: [`/feeds?mw=${rawCookie}`, { isMobileLayout }],
         queryFn: ({ pageParam = currentPage }) =>
@@ -100,6 +101,26 @@ export default function Index({ feeds, sources }: IndexProps) {
               .filter((foo: any[]) => foo?.length > 0)
               .reduce((acc, x) => acc?.concat(x), [])
         : formerFeedsList[currentPage];
+
+    const updateFormerFeedsList = (feedsList: ParsedFeedsDataType[]) => {
+        setFormerFeedsList((previousObject: any) => {
+            if (previousObject[currentPage] != null) {
+                if (previousObject[currentPage][0] && !Object.values(previousObject[currentPage][0]).includes(feedsList?.[0].id)) {
+                    return previousObject;
+                }
+                return {
+                    ...previousObject,
+                    [currentPage]: previousObject[currentPage]
+                        ?.slice(previousObject[currentPage].length)
+                        .concat(feedsList),
+                };
+            } else {
+                return {
+                    [currentPage]: feedsList,
+                };
+            }
+        });
+    };
 
     const checkShouldSortByReverse = (sortState: number) => sortState === 1;
     const setSortState = (stateString: string, stateStringArray: string[]) => {
@@ -157,9 +178,7 @@ export default function Index({ feeds, sources }: IndexProps) {
                     [k + 1]: [],
                 }))
             );
-            setNewFeeds((previousArray) =>
-                previousArray.slice(previousArray.length).concat(data)
-            );
+            updateFormerFeedsList(data);
         }
     }, [feeds]);
 
@@ -168,9 +187,7 @@ export default function Index({ feeds, sources }: IndexProps) {
             const dataArray = JSON.parse(
                 storedFeed.pages[storedFeed.pages.length - 1].data
             ).data;
-            setNewFeeds((previousArray) =>
-                previousArray.slice(previousArray.length).concat(dataArray)
-            );
+            updateFormerFeedsList(dataArray);
         }
     }, [storedFeed, isMobileLayout]);
 
@@ -179,8 +196,9 @@ export default function Index({ feeds, sources }: IndexProps) {
             newFeedsRequestResult != null &&
             typeof newFeedsRequestResult !== "string"
         ) {
-            const { count } = newFeedsRequestResult;
+            const { count, data } = newFeedsRequestResult;
             if (count !== totalCount) setTotalCount(count);
+            updateFormerFeedsList(data);
         }
     }, [newFeedsRequestResult]);
 
@@ -225,26 +243,6 @@ export default function Index({ feeds, sources }: IndexProps) {
             setCurrentPage(fetchedPages > 0 ? fetchedPages : 1);
         }
     }, [isMobileLayout]);
-
-    React.useEffect(() => {
-        const doh = newFeedsRequestResult?.data
-            ? newFeedsRequestResult?.data
-            : newFeeds;
-        setFormerFeedsList((previousObject: any) => {
-            if (previousObject[currentPage] != null) {
-                return {
-                    ...previousObject,
-                    [currentPage]: previousObject[currentPage]
-                        ?.slice(previousObject[currentPage].length)
-                        .concat(doh),
-                };
-            } else {
-                return {
-                    [currentPage]: doh,
-                };
-            }
-        });
-    }, [newFeedsRequestResult, newFeeds]);
 
     React.useEffect(() => {
         if (typeof window !== "undefined" && observerElement != null) {
