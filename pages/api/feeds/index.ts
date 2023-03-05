@@ -138,7 +138,6 @@ export default async function feedsHandler(
                         return -1;
                     }
                 });
-                console.log(totalFeedsList.map((foo) => foo.title))
             const responseBody = {
                 data: totalFeedsList?.slice(paginationStartIndex, paginationEndIndex),
                 count: totalFeedsList?.length,

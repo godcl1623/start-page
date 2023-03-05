@@ -227,19 +227,16 @@ export default function Index({ feeds, sources }: IndexProps) {
     }, [isMobileLayout]);
 
     React.useEffect(() => {
-        const doh = newFeedsRequestResult
+        const doh = newFeedsRequestResult?.data
             ? newFeedsRequestResult?.data
             : newFeeds;
         setFormerFeedsList((previousObject: any) => {
             if (previousObject[currentPage] != null) {
                 return {
                     ...previousObject,
-                    [currentPage]:
-                        previousObject[currentPage]?.length === 0
-                            ? previousObject[currentPage]
-                                  ?.slice(previousObject[currentPage].length)
-                                  .concat(doh)
-                            : previousObject[currentPage],
+                    [currentPage]: previousObject[currentPage]
+                        ?.slice(previousObject[currentPage].length)
+                        .concat(doh),
                 };
             } else {
                 return {

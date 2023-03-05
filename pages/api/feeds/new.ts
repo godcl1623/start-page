@@ -35,7 +35,7 @@ export default async function feedsHandler(
         }
     );
     const Feeds = mongoose.models.Feeds || mongoose.model("Feeds", feedsSchema);
-    const remoteData = await Feeds.find({ _uuid: id });
+    const remoteData = await Feeds.find({ _uuid: id }).lean();
     const { getDataFrom, postDataTo } = new RequestControllers();
     const fileContents = await fs.readFile(
         `${JSON_DIRECTORY}/feeds.json`,
