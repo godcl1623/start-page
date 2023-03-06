@@ -103,23 +103,33 @@ export default function Index({ feeds, sources }: IndexProps) {
         : formerFeedsList[currentPage];
 
     const updateFormerFeedsList = (feedsList: ParsedFeedsDataType[]) => {
-        setFormerFeedsList((previousObject: any) => {
-            if (previousObject[currentPage] != null) {
-                if (previousObject[currentPage][0] && !Object.values(previousObject[currentPage][0]).includes(feedsList?.[0].id)) {
-                    return previousObject;
+        setFormerFeedsList(
+            (previousObject: { [key in number]: ParsedFeedsDataType[] }) => {
+                if (previousObject[currentPage] != null) {
+                    if (
+                        Object.values(previousObject).some(
+                            (feeds: ParsedFeedsDataType[]) =>
+                                feeds.find(
+                                    (feedData: ParsedFeedsDataType) =>
+                                        feedData.id === feedsList?.[0]?.id
+                                )
+                        )
+                    ) {
+                        return previousObject;
+                    }
+                    return {
+                        ...previousObject,
+                        [currentPage]: previousObject[currentPage]
+                            ?.slice(previousObject[currentPage].length)
+                            .concat(feedsList),
+                    };
+                } else {
+                    return {
+                        [currentPage]: feedsList,
+                    };
                 }
-                return {
-                    ...previousObject,
-                    [currentPage]: previousObject[currentPage]
-                        ?.slice(previousObject[currentPage].length)
-                        .concat(feedsList),
-                };
-            } else {
-                return {
-                    [currentPage]: feedsList,
-                };
             }
-        });
+        );
     };
 
     const checkShouldSortByReverse = (sortState: number) => sortState === 1;
@@ -447,7 +457,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
             setCookie("mw", encryptedId, {
                 req: context.req,
                 res: context.res,
-                maxAge: 60 * 6 * 24,
+                maxAge: 60 * 60 * 24 * 30,
             });
         }
         const { data: feeds } = await getDataFrom(`/feeds?userId=${userId}`);
