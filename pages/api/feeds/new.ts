@@ -15,8 +15,7 @@ import {
 } from "controllers/feeds/new";
 import { AxiosResponse } from "axios";
 import { ParsedFeedsDataType, ParseResultType } from "types/global";
-import mongoose from "mongoose";
-import { feedsSchema } from ".";
+import MongoDB from 'controllers/mongodb';
 
 export default async function feedsHandler(
     request: NextApiRequest,
@@ -28,13 +27,7 @@ export default async function feedsHandler(
         const { userId } = JSON.parse(decryptCookie(mw.replaceAll(" ", "+")));
         id = userId;
     }
-    await mongoose.connect(
-        `mongodb+srv://${process.env.MONGO_DB_USER}:${process.env.MONGO_DB_KEY}@${process.env.MONGO_DB_URI}/?retryWrites=true&w=majority`,
-        {
-            dbName: "start-page",
-        }
-    );
-    const Feeds = mongoose.models.Feeds || mongoose.model("Feeds", feedsSchema);
+    const Feeds = MongoDB.getFeedsModel();
     const remoteData = await Feeds.find({ _uuid: id }).lean();
     const { getDataFrom, postDataTo } = new RequestControllers();
     const fileContents = await fs.readFile(

@@ -18,7 +18,7 @@ import FilterByText from "components/feeds/FilterByText";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import { GetServerSidePropsContext } from "next";
 import { encryptCookie, checkIfCookieExists } from "controllers";
-import { setCookie, getCookie } from "cookies-next";
+import { setCookie } from "cookies-next";
 import useGetRawCookie from 'hooks/useGetRawCookie';
 
 interface IndexProps {

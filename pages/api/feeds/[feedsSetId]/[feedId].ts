@@ -3,11 +3,14 @@ import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
 import { JSON_DIRECTORY } from "common/constants";
 import { ParsedFeedsDataType, ParseResultType } from "types/global";
+import MongoDB from 'controllers/mongodb';
 
 export default async function feedsSetIdHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
+    const Feeds = MongoDB.getFeedsModel();
+    // const remoteData = await Feeds.find({ _uuid: id });
     const fileContents = await fs.readFile(
         `${JSON_DIRECTORY}/feeds.json`,
         "utf8"

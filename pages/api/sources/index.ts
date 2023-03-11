@@ -7,8 +7,8 @@ import {
     FileContentsInterface,
     SourceData,
 } from "controllers/sources";
-import mongoose, { Schema } from "mongoose";
 import { decryptCookie } from "controllers";
+import MongoDB from 'controllers/mongodb';
 
 export default async function sourceHandler(
     request: NextApiRequest,
@@ -20,14 +20,7 @@ export default async function sourceHandler(
         const { userId } = JSON.parse(decryptCookie(mw.replaceAll(" ", "+")));
         id = userId;
     }
-    await mongoose.connect(
-        `mongodb+srv://${process.env.MONGO_DB_USER}:${process.env.MONGO_DB_KEY}@${process.env.MONGO_DB_URI}/?retryWrites=true&w=majority`,
-        {
-            dbName: "start-page",
-        }
-    );
-    const Sources =
-        mongoose.models.Sources || mongoose.model("Sources", sourcesSchema);
+    const Sources = MongoDB.getSourcesModel();
     const remoteContents = await Sources.find({ _uuid: id });
     if (
         remoteContents.length === 0 &&
@@ -79,14 +72,3 @@ export default async function sourceHandler(
         response.status(404).send("Not Found");
     }
 }
-
-const sourcesSchema = new Schema({
-    _uuid: String,
-    sources: [
-        {
-            id: Number,
-            name: String,
-            url: String,
-        },
-    ],
-});

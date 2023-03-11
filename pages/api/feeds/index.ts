@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { areEqual } from "common/capsuledConditions";
 import { ParseResultType, ParsedFeedsDataType } from "types/global";
-import mongoose, { Schema } from "mongoose";
 import { decryptCookie } from 'controllers';
+import MongoDB from 'controllers/mongodb';
 
 export default async function feedsHandler(
     request: NextApiRequest,
@@ -14,13 +14,7 @@ export default async function feedsHandler(
         const { userId } = JSON.parse(decryptCookie(mw.replaceAll(" ", "+")));
         id = userId;
     }
-    await mongoose.connect(
-        `mongodb+srv://${process.env.MONGO_DB_USER}:${process.env.MONGO_DB_KEY}@${process.env.MONGO_DB_URI}/?retryWrites=true&w=majority`,
-        {
-            dbName: "start-page",
-        }
-    );
-    const Feeds = mongoose.models.Feeds || mongoose.model("Feeds", feedsSchema);
+    const Feeds = MongoDB.getFeedsModel();
     const remoteData = await Feeds.find({ _uuid: id });
 
     if (
@@ -157,39 +151,3 @@ export default async function feedsHandler(
         response.status(405).send("Method Not Allowed");
     }
 }
-
-export const feedsSchema = new Schema({
-    _uuid: String,
-    data: [{
-        id: Number,
-        originName: String,
-        originLink: String,
-        lastFeedsLength: Number,
-        latestFeedTitle: String,
-        feeds: [{
-            id: String,
-            title: {
-                type: String,
-                required: true,
-            },
-            description: {
-                type: String,
-                required: true,
-            },
-            link: {
-                type: String,
-                required: true,
-            },
-            pubDate: {
-                type: String,
-                required: true,
-            },
-            origin: {
-                type: String,
-                required: true,
-            },
-            isRead: Boolean,
-            isFavorite: Boolean,
-        }],
-    }],
-});
