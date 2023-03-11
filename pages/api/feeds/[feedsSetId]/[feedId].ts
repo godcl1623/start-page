@@ -12,9 +12,9 @@ export default async function feedsSetIdHandler(
     response: NextApiResponse
 ) {
     const { mw } = request.query;
-    const id = parseCookie(mw);
+    const userId = parseCookie(mw);
     const Feeds = MongoDB.getFeedsModel();
-    const remoteData = await Feeds.find({ _uuid: id }).lean();
+    const remoteData = await Feeds.find({ _uuid: userId }).lean();
     const fileContents = await fs.readFile(
         `${JSON_DIRECTORY}/feeds.json`,
         "utf8"
@@ -58,13 +58,11 @@ export default async function feedsSetIdHandler(
                     ...feedsSetRelatedToRequest,
                     feeds: totalFeeds,
                 };
-                console.log(newFeedsSetRelatedToRequest.feeds[0])
                 storedFeeds[feedSetIndex] = newFeedsSetRelatedToRequest;
                 const updateResult = await Feeds.updateOne(
-                    { _uuid: id },
+                    { _uuid: userId },
                     { $set: { data: storedFeeds } }
                 );
-                console.log(updateResult.acknowledged)
                 if (updateResult.acknowledged) {
                     response.status(200).send("success");
                 } else {
