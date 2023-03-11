@@ -19,8 +19,7 @@ import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import { GetServerSidePropsContext } from "next";
 import { encryptCookie, checkIfCookieExists } from "controllers";
 import { setCookie, getCookie } from "cookies-next";
-import { decryptCookie } from "controllers";
-import CryptoJS from "crypto-js";
+import useGetRawCookie from 'hooks/useGetRawCookie';
 
 interface IndexProps {
     feeds: string;
@@ -54,7 +53,7 @@ export default function Index({ feeds, sources }: IndexProps) {
     const [isMobileLayout, setIsMobileLayout] = React.useState<boolean>(false);
     const [currentPage, setCurrentPage] = React.useState<number>(1);
     const [formerFeedsList, setFormerFeedsList] = React.useState<any>({});
-    const [rawCookie, setRawCookie] = React.useState("");
+    const rawCookie = useGetRawCookie();
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
@@ -281,15 +280,6 @@ export default function Index({ feeds, sources }: IndexProps) {
             return () => observer.unobserve(observerElement);
         }
     }, [observerElement, hasNextPage]);
-
-    React.useEffect(() => {
-        if (typeof window !== "undefined") {
-            const userCookie = getCookie("mw");
-            if (userCookie && typeof userCookie === "string") {
-                setRawCookie(userCookie);
-            }
-        }
-    }, []);
 
     // FIXME: 조건 수정 필요 - 0으로 설정하면 최초 접속시 오류 발생
     const feedsToDisplay =
