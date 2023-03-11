@@ -1,6 +1,6 @@
 import React from "react";
 import Search from "components/search";
-import RequestControllers, { getUserId } from "controllers";
+import RequestControllers from "controllers";
 import Card from "components/card";
 import { ParsedFeedsDataType } from "types/global";
 import { handleSort } from "common/helpers";
@@ -17,7 +17,7 @@ import useFilters from "hooks/useFilters";
 import FilterByText from "components/feeds/FilterByText";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import { GetServerSidePropsContext } from "next";
-import { encryptCookie, checkIfCookieExists } from "controllers";
+import { encryptCookie, checkIfCookieExists, getUserId } from "controllers/utils";
 import { setCookie } from "cookies-next";
 import useGetRawCookie from 'hooks/useGetRawCookie';
 
@@ -110,7 +110,7 @@ export default function Index({ feeds, sources }: IndexProps) {
                             (feeds: ParsedFeedsDataType[]) =>
                                 feeds.find(
                                     (feedData: ParsedFeedsDataType) =>
-                                        feedData.id === feedsList?.[0]?.id
+                                        feedData?.id === feedsList?.[0]?.id
                                 )
                         )
                     ) {

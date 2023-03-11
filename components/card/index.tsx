@@ -9,6 +9,7 @@ import { isTodayLessThanExtraDay } from "common/helpers";
 import RequestControllers from "controllers";
 import useDerivedStateFromProps from "./hooks/useDerivedStateFromProps";
 import Checkbox from "./Checkbox";
+import useGetRawCookie from 'hooks/useGetRawCookie';
 
 interface CardProps {
     cardData: ParsedFeedsDataType;
@@ -34,8 +35,9 @@ export default function Card({ cardData, refetchFeeds }: CardProps) {
         useDerivedStateFromProps<boolean>(isFavorite);
     const [dateState, setDateState] = React.useState(false);
     const { patchDataTo } = new RequestControllers();
+    const rawCookie = useGetRawCookie();
     const mutationFn = (newData: ParsedFeedsDataType) =>
-        patchDataTo(`/feeds/${origin}/${id}`, newData);
+        patchDataTo(`/feeds/${origin}/${id}?mw=${rawCookie}`, newData);
     const { mutate, isSuccess } = useMutation({
         mutationFn,
     });

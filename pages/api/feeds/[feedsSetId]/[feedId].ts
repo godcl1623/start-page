@@ -4,13 +4,17 @@ import { areEqual } from "common/capsuledConditions";
 import { JSON_DIRECTORY } from "common/constants";
 import { ParsedFeedsDataType, ParseResultType } from "types/global";
 import MongoDB from 'controllers/mongodb';
+import { parseCookie } from 'controllers/utils';
+import { CustomError } from 'controllers/sources';
 
 export default async function feedsSetIdHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
+    const { mw } = request.query;
+    const id = parseCookie(mw);
     const Feeds = MongoDB.getFeedsModel();
-    // const remoteData = await Feeds.find({ _uuid: id });
+    const remoteData = await Feeds.find({ _uuid: id }).lean();
     const fileContents = await fs.readFile(
         `${JSON_DIRECTORY}/feeds.json`,
         "utf8"
@@ -26,12 +30,12 @@ export default async function feedsSetIdHandler(
         response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "PATCH")) {
         try {
-            const parsedFile: ParseResultType[] = fileContents
-                ? JSON.parse(fileContents).data
+            const storedFeeds: ParseResultType[] = remoteData[0]
+                ? remoteData[0].data
                 : [];
             const dataToChange: ParsedFeedsDataType = request.body;
             const { id, origin } = dataToChange;
-            const feedsSetRelatedToRequest = parsedFile.find(
+            const feedsSetRelatedToRequest = storedFeeds.find(
                 (storedFeed: ParseResultType) =>
                     storedFeed.originName === origin
             );
@@ -39,7 +43,7 @@ export default async function feedsSetIdHandler(
                 feedsSetRelatedToRequest != null &&
                 feedsSetRelatedToRequest.feeds
             ) {
-                const feedSetIndex = parsedFile.indexOf(
+                const feedSetIndex = storedFeeds.indexOf(
                     feedsSetRelatedToRequest
                 );
                 const totalFeeds = [...feedsSetRelatedToRequest.feeds];
@@ -54,18 +58,21 @@ export default async function feedsSetIdHandler(
                     ...feedsSetRelatedToRequest,
                     feeds: totalFeeds,
                 };
-                parsedFile[feedSetIndex] = newFeedsSetRelatedToRequest;
-                const newData = {
-                    data: parsedFile,
-                };
-                fs.writeFile(
-                    `${JSON_DIRECTORY}/feeds.json`,
-                    JSON.stringify(newData)
+                console.log(newFeedsSetRelatedToRequest.feeds[0])
+                storedFeeds[feedSetIndex] = newFeedsSetRelatedToRequest;
+                const updateResult = await Feeds.updateOne(
+                    { _uuid: id },
+                    { $set: { data: storedFeeds } }
                 );
+                console.log(updateResult.acknowledged)
+                if (updateResult.acknowledged) {
+                    response.status(200).send("success");
+                } else {
+                    throw new CustomError(400, "update failed");
+                }
             } else {
                 response.status(404).send("feed not found");
             }
-            response.status(200).send("success");
         } catch (error) {
             response.status(400).send(error);
         }

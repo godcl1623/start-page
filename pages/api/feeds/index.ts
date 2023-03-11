@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { areEqual } from "common/capsuledConditions";
 import { ParseResultType, ParsedFeedsDataType } from "types/global";
-import { decryptCookie } from 'controllers';
+import { decryptCookie, parseCookie } from 'controllers/utils';
 import MongoDB from 'controllers/mongodb';
 
 export default async function feedsHandler(
@@ -9,13 +9,9 @@ export default async function feedsHandler(
     response: NextApiResponse
 ) {
     const { userId, mw } = request.query;
-    let id = userId;
-    if (userId == null && typeof mw === "string" && mw.length > 0) {
-        const { userId } = JSON.parse(decryptCookie(mw.replaceAll(" ", "+")));
-        id = userId;
-    }
+    const id = userId ?? parseCookie(mw);
     const Feeds = MongoDB.getFeedsModel();
-    const remoteData = await Feeds.find({ _uuid: id });
+    const remoteData = await Feeds.find({ _uuid: id }).lean();
 
     if (
         remoteData.length === 0 &&

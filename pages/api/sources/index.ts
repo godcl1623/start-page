@@ -7,7 +7,7 @@ import {
     FileContentsInterface,
     SourceData,
 } from "controllers/sources";
-import { decryptCookie } from "controllers";
+import { decryptCookie, parseCookie } from "controllers/utils";
 import MongoDB from 'controllers/mongodb';
 
 export default async function sourceHandler(
@@ -15,13 +15,9 @@ export default async function sourceHandler(
     response: NextApiResponse
 ) {
     const { userId, mw } = request.query;
-    let id = userId;
-    if (userId == null && typeof mw === "string" && mw.length > 0) {
-        const { userId } = JSON.parse(decryptCookie(mw.replaceAll(" ", "+")));
-        id = userId;
-    }
+    const id = userId ?? parseCookie(mw);
     const Sources = MongoDB.getSourcesModel();
-    const remoteContents = await Sources.find({ _uuid: id });
+    const remoteContents = await Sources.find({ _uuid: id }).lean();
     if (
         remoteContents.length === 0 &&
         typeof id === "string" &&
