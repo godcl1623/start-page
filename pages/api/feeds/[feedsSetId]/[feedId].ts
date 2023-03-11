@@ -1,7 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
-import { JSON_DIRECTORY } from "common/constants";
 import { ParsedFeedsDataType, ParseResultType } from "types/global";
 import MongoDB from 'controllers/mongodb';
 import { parseCookie } from 'controllers/utils';
@@ -15,13 +13,6 @@ export default async function feedsSetIdHandler(
     const userId = parseCookie(mw);
     const Feeds = MongoDB.getFeedsModel();
     const remoteData = await Feeds.find({ _uuid: userId }).lean();
-    const fileContents = await fs.readFile(
-        `${JSON_DIRECTORY}/feeds.json`,
-        "utf8"
-    );
-    if (fileContents == null) {
-        response.status(404).send("file not exists.");
-    }
     if (areEqual(request.method, "GET")) {
         response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "POST")) {

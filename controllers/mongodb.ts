@@ -21,33 +21,36 @@ class MongoConnect {
                     originLink: String,
                     lastFeedsLength: Number,
                     latestFeedTitle: String,
-                    feeds: [
-                        {
-                            id: String,
-                            title: {
-                                type: String,
-                                required: true,
+                    feeds: {
+                        type: [
+                            {
+                                id: String,
+                                title: {
+                                    type: String,
+                                    required: true,
+                                },
+                                description: {
+                                    type: String,
+                                    required: true,
+                                },
+                                link: {
+                                    type: String,
+                                    required: true,
+                                },
+                                pubDate: {
+                                    type: String,
+                                    required: true,
+                                },
+                                origin: {
+                                    type: String,
+                                    required: true,
+                                },
+                                isRead: Boolean,
+                                isFavorite: Boolean,
                             },
-                            description: {
-                                type: String,
-                                required: true,
-                            },
-                            link: {
-                                type: String,
-                                required: true,
-                            },
-                            pubDate: {
-                                type: String,
-                                required: true,
-                            },
-                            origin: {
-                                type: String,
-                                required: true,
-                            },
-                            isRead: Boolean,
-                            isFavorite: Boolean,
-                        },
-                    ],
+                        ],
+                        required: true,
+                    },
                 },
             ],
         });
@@ -64,9 +67,12 @@ class MongoConnect {
         });
     }
 
-    getFeedsModel = () => mongoose.models.Feeds || mongoose.model("Feeds", this.feedsSchema);
+    getFeedsModel = () =>
+        mongoose.models.Feeds || mongoose.model("Feeds", this.feedsSchema);
 
-    getSourcesModel = () => mongoose.models.Sources || mongoose.model("Sources", this.sourcesSchema);
+    getSourcesModel = () =>
+        mongoose.models.Sources ||
+        mongoose.model("Sources", this.sourcesSchema);
 }
 
 export default new MongoConnect();

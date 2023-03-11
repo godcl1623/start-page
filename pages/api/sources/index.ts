@@ -8,7 +8,7 @@ import {
     SourceData,
 } from "controllers/sources";
 import { decryptCookie, parseCookie } from "controllers/utils";
-import MongoDB from 'controllers/mongodb';
+import MongoDB from "controllers/mongodb";
 
 export default async function sourceHandler(
     request: NextApiRequest,
@@ -34,8 +34,7 @@ export default async function sourceHandler(
     } else if (areEqual(request.method, "POST")) {
         try {
             const sourceDataInput: SourceDataInput = request.body;
-            const { sources }: FileContentsInterface =
-                remoteContents[0]["_doc"];
+            const { sources } = remoteContents[0];
             const urlsList = sources.map(
                 (sourceData: SourceData) => sourceData.url
             );

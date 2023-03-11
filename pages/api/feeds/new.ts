@@ -58,7 +58,7 @@ export default async function feedsHandler(
                 const storedFeeds: ParseResultType[] = remoteData[0]
                     ? remoteData[0].data
                     : [];
-                let originId = sources?.length > 0 ? storedFeeds.length + 1 : 0;
+                let originId = sources?.length > 0 ? storedFeeds.length : 0;
                 const parseResult = totalFeedsFromSources.map(
                     (rawRss: string, index: number) => {
                         const indexedFeed =
