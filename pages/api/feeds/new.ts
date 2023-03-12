@@ -1,9 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
-import { JSON_DIRECTORY } from "common/constants";
 import RequestControllers from 'controllers';
-import { decryptCookie, parseCookie } from "controllers/utils";
+import { parseCookie } from "controllers/utils";
 import {
     SourceData,
     FileContentsInterface,
@@ -27,13 +25,6 @@ export default async function feedsHandler(
     const Feeds = MongoDB.getFeedsModel();
     const remoteData = await Feeds.find({ _uuid: id }).lean();
     const { getDataFrom, postDataTo } = new RequestControllers();
-    const fileContents = await fs.readFile(
-        `${JSON_DIRECTORY}/feeds.json`,
-        "utf8"
-    );
-    if (fileContents == null) {
-        response.status(404).send("file not exists.");
-    }
     if (areEqual(request.method, "GET")) {
         try {
             const pageValue = 1;

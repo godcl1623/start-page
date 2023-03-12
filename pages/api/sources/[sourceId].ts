@@ -1,17 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
 import {
     CustomError,
-    checkIfDataValid,
     checkIfDataExists,
-    updateData,
-    FileContentsInterface,
     SourceData,
-    SourceDataToModify,
-    deleteData,
 } from "controllers/sources";
-import { JSON_DIRECTORY } from 'common/constants';
 import RequestControllers from 'controllers';
 import { parseCookie } from 'controllers/utils';
 import MongoDB from 'controllers/mongodb';
@@ -24,10 +17,6 @@ export default async function sourceNameHandler(
     const id = userId ?? parseCookie(mw);
     const Sources = MongoDB.getSourcesModel();
     const remoteContents = await Sources.find({ _uuid: id }).lean();
-    const fileContents = await fs.readFile(
-        `${JSON_DIRECTORY}/sources.json`,
-        "utf8"
-    );
     const { sources } = remoteContents[0];
     const idList = sources?.map((sourceData: SourceData) => sourceData.id);
     const { deleteDataOf } = new RequestControllers();
