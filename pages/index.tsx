@@ -83,9 +83,14 @@ export default function Index({ feeds, sources }: IndexProps) {
         queryFn: ({ pageParam = currentPage }) =>
             getDataFrom(`/feeds?mw=${rawCookie}`, {
                 params: {
-                    favorites: isFilterFavorite,
-                    displayOption: sourceDisplayState,
-                    textOption: searchTexts,
+                    ...(isFilterFavorite && { favorites: isFilterFavorite }),
+                    ...(Object.values(sourceDisplayState).includes(false) && {
+                        displayOption: sourceDisplayState,
+                    }),
+                    ...(Object.values(searchTexts).some(
+                        (searchText: string) => searchText.length >= 2
+                    ) && { textOption: searchTexts }),
+                    ...(currentSort > 0 && { sortOption: currentSort }),
                     page: pageParam,
                 },
             }),
@@ -133,7 +138,6 @@ export default function Index({ feeds, sources }: IndexProps) {
         );
     };
 
-    const checkShouldSortByReverse = (sortState: number) => sortState === 1;
     const setSortState = (stateString: string, stateStringArray: string[]) => {
         if (stateStringArray.includes(stateString)) {
             setCurrentSort(stateStringArray.indexOf(stateString));
@@ -227,7 +231,13 @@ export default function Index({ feeds, sources }: IndexProps) {
         if (!isMobileLayout) {
             refetchStoredFeeds();
         }
-    }, [isFilterFavorite, searchTexts, currentPage, isMobileLayout]);
+    }, [
+        isFilterFavorite,
+        searchTexts,
+        currentPage,
+        isMobileLayout,
+        currentSort,
+    ]);
 
     React.useEffect(() => {
         if (isMobileLayout) {
@@ -285,23 +295,15 @@ export default function Index({ feeds, sources }: IndexProps) {
         }
     }, [observerElement, hasNextPage]);
 
-    // FIXME: 조건 수정 필요 - 0으로 설정하면 최초 접속시 오류 발생
     const feedsToDisplay =
-        feedsFromServer != null && feedsFromServer.length > 1
-            ? feedsFromServer
-                  ?.sort(
-                      handleSort(
-                          SORT_STANDARD_STATE[currentSort],
-                          checkShouldSortByReverse(currentSort)
-                      )
-                  )
-                  .map((feed: ParsedFeedsDataType) => (
-                      <Card
-                          cardData={feed}
-                          key={feed?.id}
-                          refetchFeeds={refetchStoredFeeds}
-                      />
-                  ))
+        feedsFromServer != null && feedsFromServer.length > 0
+            ? feedsFromServer?.map((feed: ParsedFeedsDataType) => (
+                  <Card
+                      cardData={feed}
+                      key={feed?.id}
+                      refetchFeeds={refetchStoredFeeds}
+                  />
+              ))
             : [];
 
     const pageIndicator = Array.from(

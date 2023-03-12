@@ -1,8 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { areEqual } from "common/capsuledConditions";
 import { ParseResultType, ParsedFeedsDataType } from "types/global";
-import { decryptCookie, parseCookie } from 'controllers/utils';
-import MongoDB from 'controllers/mongodb';
+import { decryptCookie, parseCookie } from "controllers/utils";
+import MongoDB from "controllers/mongodb";
+import { handleSort, checkShouldSortByReverse } from "common/helpers";
+import { SORT_STANDARD_STATE } from "common/constants";
 
 export default async function feedsHandler(
     request: NextApiRequest,
@@ -13,24 +15,30 @@ export default async function feedsHandler(
     const Feeds = MongoDB.getFeedsModel();
     const remoteData = await Feeds.find({ _uuid: id }).lean();
 
-    if (
-        remoteData.length === 0 &&
-        typeof id === "string" &&
-        id.length > 0
-    ) {
+    if (remoteData.length === 0 && typeof id === "string" && id.length > 0) {
         await Feeds.insertMany({ _uuid: id, data: [] });
     }
     if (areEqual(request.method, "GET")) {
         const parsedContents: ParseResultType[] = remoteData[0]?.data;
         try {
-            const { favorites, displayOption, textOption, page, per_page } =
-                request.query;
+            const {
+                favorites,
+                displayOption,
+                textOption,
+                page,
+                per_page,
+                sortOption,
+            } = request.query;
             let pageValue =
                 page != null && typeof page === "string" ? parseInt(page) : 1;
             let perPageValue =
                 per_page != null && typeof per_page === "string"
                     ? parseInt(per_page)
                     : 10;
+            let sortIndex =
+                sortOption != null && typeof sortOption === "string"
+                    ? parseInt(sortOption)
+                    : 0;
             const paginationStartIndex = perPageValue * (pageValue - 1);
             const paginationEndIndex = perPageValue * pageValue;
             const isFavoriteFilterNeeded = favorites === "true" ? true : false;
@@ -129,12 +137,19 @@ export default async function feedsHandler(
                     }
                 });
             const responseBody = {
-                data: totalFeedsList?.slice(paginationStartIndex, paginationEndIndex),
+                data: totalFeedsList
+                    ?.sort(
+                        handleSort(
+                            SORT_STANDARD_STATE[sortIndex],
+                            checkShouldSortByReverse(sortIndex)
+                        )
+                    )
+                    .slice(paginationStartIndex, paginationEndIndex),
                 count: totalFeedsList?.length,
             };
             response.status(200).json(JSON.stringify(responseBody));
         } catch (error) {
-            console.log(error)
+            console.log(error);
             response.status(400).send(error);
         }
     } else if (areEqual(request.method, "POST")) {

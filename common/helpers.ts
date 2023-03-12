@@ -1,60 +1,71 @@
-import { ParsedFeedsDataType } from 'types/global';
+import { ParsedFeedsDataType } from "types/global";
 import {
-  areEqual,
-  isSatisfyingBothAAndB,
-  isFrontBiggerThanRear,
-  isNull,
-} from './capsuledConditions';
+    areEqual,
+    isSatisfyingBothAAndB,
+    isFrontBiggerThanRear,
+    isNull,
+} from "./capsuledConditions";
 
 const extractObjectData = <T extends ParsedFeedsDataType>(
-  targetObject: T,
-  targetProperty: string
+    targetObject: T,
+    targetProperty: string
 ) => {
-  if (areEqual(targetProperty, 'pubDate') && targetObject['pubDate'])
-    return new Date(targetObject['pubDate']);
-  else return targetObject[targetProperty];
+    if (areEqual(targetProperty, "pubDate") && targetObject["pubDate"])
+        return new Date(targetObject["pubDate"]);
+    else return targetObject[targetProperty];
 };
 
 export const handleSort = <T extends ParsedFeedsDataType>(
-  targetProperty: string,
-  reverse = false
+    targetProperty: string,
+    reverse = false
 ) => {
-  return (prev: T, next: T) => {
-    if (
-      isSatisfyingBothAAndB(
-        isFrontBiggerThanRear(Object.keys(prev).length, 0),
-        isFrontBiggerThanRear(Object.keys(next).length, 0)
-      )
-    ) {
-      const prevData = extractObjectData(prev, targetProperty);
-      const nextData = extractObjectData(next, targetProperty);
-      if (isSatisfyingBothAAndB(prevData && nextData, isFrontBiggerThanRear(prevData, nextData)))
-        return reverse ? 1 : -1;
-      else return reverse ? -1 : 1;
-    } else {
-      return reverse ? -1 : 1;
-    }
-  };
+    return (prev: T, next: T) => {
+        if (
+            isSatisfyingBothAAndB(
+                isFrontBiggerThanRear(Object.keys(prev).length, 0),
+                isFrontBiggerThanRear(Object.keys(next).length, 0)
+            )
+        ) {
+            const prevData = extractObjectData(prev, targetProperty);
+            const nextData = extractObjectData(next, targetProperty);
+            if (
+                isSatisfyingBothAAndB(
+                    prevData && nextData,
+                    isFrontBiggerThanRear(prevData, nextData)
+                )
+            )
+                return reverse ? 1 : -1;
+            else return reverse ? -1 : 1;
+        } else {
+            return reverse ? -1 : 1;
+        }
+    };
 };
+
+export const checkShouldSortByReverse = (sortState: number) => sortState === 1;
 
 const returnDaysAddedDate = (dateString: string, daysToAdd: number) => {
-  const dateToAddDays = new Date(Date.parse(dateString));
-  dateToAddDays.setHours(0);
-  dateToAddDays.setDate(dateToAddDays.getDate() + daysToAdd);
-  return dateToAddDays;
+    const dateToAddDays = new Date(Date.parse(dateString));
+    dateToAddDays.setHours(0);
+    dateToAddDays.setDate(dateToAddDays.getDate() + daysToAdd);
+    return dateToAddDays;
 };
 
-export const isTodayLessThanExtraDay = (pubDateString: string | null, extraDay = 3) => {
-  if (pubDateString) {
-    const pubDate = new Date(Date.parse(pubDateString));
-    pubDate.setHours(0);
-    const pubDateWithExtraDay = returnDaysAddedDate(pubDateString, extraDay);
-    pubDateWithExtraDay.setHours(0);
-    const today = new Date();
-    const isTodayMoreThanPubDate = pubDate <= today;
-    const isTodayLessThanExtraDay = today <= pubDateWithExtraDay;
-    return isTodayLessThanExtraDay && isTodayMoreThanPubDate;
-  }
+export const isTodayLessThanExtraDay = (
+    pubDateString: string | null,
+    extraDay = 3
+) => {
+    if (pubDateString) {
+        const pubDate = new Date(Date.parse(pubDateString));
+        pubDate.setHours(0);
+        const pubDateWithExtraDay = returnDaysAddedDate(
+            pubDateString,
+            extraDay
+        );
+        pubDateWithExtraDay.setHours(0);
+        const today = new Date();
+        const isTodayMoreThanPubDate = pubDate <= today;
+        const isTodayLessThanExtraDay = today <= pubDateWithExtraDay;
+        return isTodayLessThanExtraDay && isTodayMoreThanPubDate;
+    }
 };
-
-
