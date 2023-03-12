@@ -110,14 +110,11 @@ export default function Index({ feeds, sources }: IndexProps) {
             (previousObject: { [key in number]: ParsedFeedsDataType[] }) => {
                 if (previousObject[currentPage] != null) {
                     if (
-                        Object.values(previousObject).some(
-                            (feeds: ParsedFeedsDataType[]) =>
-                                feeds.find(
-                                    (feedData: ParsedFeedsDataType) =>
-                                        feedData?.id === feedsList?.[0]?.id
-                                )
-                        ) &&
-                        previousObject[currentPage].length === feedsList.length
+                        currentPage > 1 &&
+                        previousObject[currentPage - 1].every(
+                            (feed: ParsedFeedsDataType, index: number) =>
+                                feed.id === feedsList[index]?.id
+                        )
                     ) {
                         return previousObject;
                     }
