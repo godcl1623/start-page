@@ -1,32 +1,44 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
-import { JSON_DIRECTORY } from "common/constants";
 import { ParseResultType, ParsedFeedsDataType } from "types/global";
-import { handleSort } from "common/helpers";
+import { decryptCookie, parseCookie } from "controllers/utils";
+import MongoDB from "controllers/mongodb";
+import { handleSort, checkShouldSortByReverse } from "common/helpers";
+import { SORT_STANDARD_STATE } from "common/constants";
 
 export default async function feedsHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    const fileContents = await fs.readFile(
-        `${JSON_DIRECTORY}/feeds.json`,
-        "utf8"
-    );
-    if (fileContents == null) {
-        response.status(404).send("file not exists.");
+    const { userId, mw } = request.query;
+    const id = userId ?? parseCookie(mw);
+    const Feeds = MongoDB.getFeedsModel();
+    const remoteData = await Feeds.find({ _uuid: id }).lean();
+
+    if (remoteData.length === 0 && typeof id === "string" && id.length > 0) {
+        await Feeds.insertMany({ _uuid: id, data: [] });
     }
     if (areEqual(request.method, "GET")) {
-        const parsedContents: ParseResultType[] = JSON.parse(fileContents).data;
+        const parsedContents: ParseResultType[] = remoteData[0]?.data;
         try {
-            const { favorites, displayOption, textOption, page, per_page } =
-                request.query;
+            const {
+                favorites,
+                displayOption,
+                textOption,
+                page,
+                per_page,
+                sortOption,
+            } = request.query;
             let pageValue =
                 page != null && typeof page === "string" ? parseInt(page) : 1;
             let perPageValue =
                 per_page != null && typeof per_page === "string"
                     ? parseInt(per_page)
                     : 10;
+            let sortIndex =
+                sortOption != null && typeof sortOption === "string"
+                    ? parseInt(sortOption)
+                    : 0;
             const paginationStartIndex = perPageValue * (pageValue - 1);
             const paginationEndIndex = perPageValue * pageValue;
             const isFavoriteFilterNeeded = favorites === "true" ? true : false;
@@ -102,7 +114,7 @@ export default async function feedsHandler(
                 }
             }
             const totalFeedsList = filteredContents
-                .reduce(
+                ?.reduce(
                     (
                         totalArray: ParsedFeedsDataType[],
                         currentData: ParseResultType
@@ -117,7 +129,7 @@ export default async function feedsHandler(
                 )
                 .sort((a, b) => {
                     if (a.pubDate && b.pubDate) {
-                        const previousDate = new Date(a.pubDate);
+                        const previousDate: Date = new Date(a.pubDate);
                         const nextDate = new Date(b.pubDate);
                         return previousDate > nextDate ? -1 : 1;
                     } else {
@@ -125,14 +137,19 @@ export default async function feedsHandler(
                     }
                 });
             const responseBody = {
-                data: totalFeedsList.slice(
-                    paginationStartIndex,
-                    paginationEndIndex
-                ),
-                count: totalFeedsList.length,
+                data: totalFeedsList
+                    ?.sort(
+                        handleSort(
+                            SORT_STANDARD_STATE[sortIndex],
+                            checkShouldSortByReverse(sortIndex)
+                        )
+                    )
+                    .slice(paginationStartIndex, paginationEndIndex),
+                count: totalFeedsList?.length,
             };
             response.status(200).json(JSON.stringify(responseBody));
         } catch (error) {
+            console.log(error);
             response.status(400).send(error);
         }
     } else if (areEqual(request.method, "POST")) {

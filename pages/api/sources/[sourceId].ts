@@ -1,31 +1,23 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
 import {
     CustomError,
-    checkIfDataValid,
     checkIfDataExists,
-    updateData,
-    FileContentsInterface,
     SourceData,
-    SourceDataToModify,
-    deleteData,
 } from "controllers/sources";
-import { JSON_DIRECTORY } from 'common/constants';
 import RequestControllers from 'controllers';
+import { parseCookie } from 'controllers/utils';
+import MongoDB from 'controllers/mongodb';
 
 export default async function sourceNameHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    const fileContents = await fs.readFile(
-        `${JSON_DIRECTORY}/sources.json`,
-        "utf8"
-    );
-    if (fileContents == null) {
-        response.status(404).send("file not exists.");
-    }
-    const { sources }: FileContentsInterface = JSON.parse(fileContents);
+    const { userId, mw } = request.query;
+    const id = userId ?? parseCookie(mw);
+    const Sources = MongoDB.getSourcesModel();
+    const remoteContents = await Sources.find({ _uuid: id }).lean();
+    const { sources } = remoteContents[0];
     const idList = sources?.map((sourceData: SourceData) => sourceData.id);
     const { deleteDataOf } = new RequestControllers();
     if (areEqual(request.method, "GET")) {
@@ -42,16 +34,22 @@ export default async function sourceNameHandler(
             if (!checkIfDataExists(idList, Number(sourceId))) {
                 throw new CustomError(404, 'source not exists');
             }
-            const deleteResult = deleteData(sources, Number(sourceId));
-            if (deleteResult) {
-                const result = await deleteDataOf(`/feeds/${sourceId}`);
-                if(result.status === 204) {
+            const listAfterDelete = sources.filter(
+                (_: any, index: number) => index !== Number(sourceId)
+            );
+            const updateResult = await Sources.updateOne(
+                { _uuid: id },
+                { $set: { sources: listAfterDelete } }
+            );
+            if (updateResult.acknowledged) {
+                const result = await deleteDataOf(`/feeds/${sourceId}?userId=${id}`);
+                if (result.status === 204) { 
                     response.status(204).send("success");
                 } else {
-                    throw new CustomError(400, 'update failed');
+                    throw new CustomError(400, "update failed");
                 }
             } else {
-                throw new CustomError(400, 'update failed');
+                throw new CustomError(400, "update failed");
             }
         } catch (error) {
             if (error instanceof CustomError) {

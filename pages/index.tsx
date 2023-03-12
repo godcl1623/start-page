@@ -1,6 +1,6 @@
 import React from "react";
 import Search from "components/search";
-import RequestControllers, { getUserId } from "controllers";
+import RequestControllers from "controllers";
 import Card from "components/card";
 import { ParsedFeedsDataType } from "types/global";
 import { handleSort } from "common/helpers";
@@ -17,8 +17,13 @@ import useFilters from "hooks/useFilters";
 import FilterByText from "components/feeds/FilterByText";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import { GetServerSidePropsContext } from "next";
-import { encryptCookie, checkIfCookieExists } from "controllers";
+import {
+    encryptCookie,
+    checkIfCookieExists,
+    getUserId,
+} from "controllers/utils";
 import { setCookie } from "cookies-next";
+import useGetRawCookie from "hooks/useGetRawCookie";
 
 interface IndexProps {
     feeds: string;
@@ -48,11 +53,11 @@ export default function Index({ feeds, sources }: IndexProps) {
         React.useState<HTMLDivElement | null>(null);
     const [isFilterFavorite, setIsFilterFavorite] =
         React.useState<boolean>(false);
-    const [newFeeds, setNewFeeds] = React.useState<ParsedFeedsDataType[]>([]);
     const [totalCount, setTotalCount] = React.useState<number>(0);
     const [isMobileLayout, setIsMobileLayout] = React.useState<boolean>(false);
     const [currentPage, setCurrentPage] = React.useState<number>(1);
     const [formerFeedsList, setFormerFeedsList] = React.useState<any>({});
+    const rawCookie = useGetRawCookie();
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
@@ -63,22 +68,29 @@ export default function Index({ feeds, sources }: IndexProps) {
     );
     const startPageRef = React.useRef<HTMLElement | null>(null);
     const newFeedsRequestResult = useQuery<AxiosResponse<RenewedFeedsData>>(
-        ["/feeds/new"],
-        () => getDataFrom("/feeds/new")
+        [`/feeds/new?mw=${rawCookie}`],
+        () => getDataFrom(`/feeds/new?mw=${rawCookie}`)
     )?.data?.data;
     const {
         data: storedFeed,
         refetch: refetchStoredFeeds,
         fetchNextPage,
         hasNextPage,
+        isFetchingNextPage,
+        isFetched,
     } = useInfiniteQuery({
-        queryKey: ["/feeds", { isMobileLayout }],
+        queryKey: [`/feeds?mw=${rawCookie}`, { isMobileLayout }],
         queryFn: ({ pageParam = currentPage }) =>
-            getDataFrom("/feeds", {
+            getDataFrom(`/feeds?mw=${rawCookie}`, {
                 params: {
-                    favorites: isFilterFavorite,
-                    displayOption: sourceDisplayState,
-                    textOption: searchTexts,
+                    ...(isFilterFavorite && { favorites: isFilterFavorite }),
+                    ...(Object.values(sourceDisplayState).includes(false) && {
+                        displayOption: sourceDisplayState,
+                    }),
+                    ...(Object.values(searchTexts).some(
+                        (searchText: string) => searchText.length >= 2
+                    ) && { textOption: searchTexts }),
+                    ...(currentSort > 0 && { sortOption: currentSort }),
                     page: pageParam,
                 },
             }),
@@ -98,7 +110,34 @@ export default function Index({ feeds, sources }: IndexProps) {
               .reduce((acc, x) => acc?.concat(x), [])
         : formerFeedsList[currentPage];
 
-    const checkShouldSortByReverse = (sortState: number) => sortState === 1;
+    const updateFormerFeedsList = (feedsList: ParsedFeedsDataType[]) => {
+        setFormerFeedsList(
+            (previousObject: { [key in number]: ParsedFeedsDataType[] }) => {
+                if (previousObject[currentPage] != null) {
+                    if (
+                        currentPage > 1 &&
+                        previousObject[currentPage - 1].every(
+                            (feed: ParsedFeedsDataType, index: number) =>
+                                feed.id === feedsList[index]?.id
+                        )
+                    ) {
+                        return previousObject;
+                    }
+                    return {
+                        ...previousObject,
+                        [currentPage]: previousObject[currentPage]
+                            ?.slice(previousObject[currentPage].length)
+                            .concat(feedsList),
+                    };
+                } else {
+                    return {
+                        [currentPage]: feedsList,
+                    };
+                }
+            }
+        );
+    };
+
     const setSortState = (stateString: string, stateStringArray: string[]) => {
         if (stateStringArray.includes(stateString)) {
             setCurrentSort(stateStringArray.indexOf(stateString));
@@ -123,6 +162,7 @@ export default function Index({ feeds, sources }: IndexProps) {
 
     const filterFavorites = () => {
         setIsFilterFavorite(!isFilterFavorite);
+        setCurrentPage(1);
     };
 
     React.useEffect(() => {
@@ -154,9 +194,7 @@ export default function Index({ feeds, sources }: IndexProps) {
                     [k + 1]: [],
                 }))
             );
-            setNewFeeds((previousArray) =>
-                previousArray.slice(previousArray.length).concat(data)
-            );
+            updateFormerFeedsList(data);
         }
     }, [feeds]);
 
@@ -164,10 +202,9 @@ export default function Index({ feeds, sources }: IndexProps) {
         if (storedFeed && storedFeed.pages) {
             const dataArray = JSON.parse(
                 storedFeed.pages[storedFeed.pages.length - 1].data
-            ).data;
-            setNewFeeds((previousArray) =>
-                previousArray.slice(previousArray.length).concat(dataArray)
             );
+            setTotalCount(dataArray.count);
+            updateFormerFeedsList(dataArray.data);
         }
     }, [storedFeed, isMobileLayout]);
 
@@ -176,8 +213,9 @@ export default function Index({ feeds, sources }: IndexProps) {
             newFeedsRequestResult != null &&
             typeof newFeedsRequestResult !== "string"
         ) {
-            const { count } = newFeedsRequestResult;
+            const { count, data } = newFeedsRequestResult;
             if (count !== totalCount) setTotalCount(count);
+            updateFormerFeedsList(data);
         }
     }, [newFeedsRequestResult]);
 
@@ -193,7 +231,13 @@ export default function Index({ feeds, sources }: IndexProps) {
         if (!isMobileLayout) {
             refetchStoredFeeds();
         }
-    }, [isFilterFavorite, searchTexts, currentPage, isMobileLayout]);
+    }, [
+        isFilterFavorite,
+        searchTexts,
+        currentPage,
+        isMobileLayout,
+        currentSort,
+    ]);
 
     React.useEffect(() => {
         if (isMobileLayout) {
@@ -214,7 +258,7 @@ export default function Index({ feeds, sources }: IndexProps) {
                 Object.values(formerFeedsList) as any[]
             ).reduce(
                 (totalNumber: number, currentDataArray: any[]) =>
-                    currentDataArray.length > 0
+                    currentDataArray?.length > 0
                         ? (totalNumber += 1)
                         : totalNumber,
                 0
@@ -222,21 +266,6 @@ export default function Index({ feeds, sources }: IndexProps) {
             setCurrentPage(fetchedPages > 0 ? fetchedPages : 1);
         }
     }, [isMobileLayout]);
-
-    React.useEffect(() => {
-        const doh = newFeedsRequestResult
-            ? newFeedsRequestResult?.data
-            : newFeeds;
-        setFormerFeedsList((previousObject: any) => ({
-            ...previousObject,
-            [currentPage]:
-                previousObject[currentPage].length === 0
-                    ? previousObject[currentPage]
-                          ?.slice(previousObject[currentPage].length)
-                          .concat(doh)
-                    : previousObject[currentPage],
-        }));
-    }, [newFeedsRequestResult, newFeeds]);
 
     React.useEffect(() => {
         if (typeof window !== "undefined" && observerElement != null) {
@@ -266,22 +295,16 @@ export default function Index({ feeds, sources }: IndexProps) {
         }
     }, [observerElement, hasNextPage]);
 
-    const feedsToDisplay = feedsFromServer
-        ? feedsFromServer
-              ?.sort(
-                  handleSort(
-                      SORT_STANDARD_STATE[currentSort],
-                      checkShouldSortByReverse(currentSort)
-                  )
-              )
-              .map((feed: ParsedFeedsDataType) => (
+    const feedsToDisplay =
+        feedsFromServer != null && feedsFromServer.length > 0
+            ? feedsFromServer?.map((feed: ParsedFeedsDataType) => (
                   <Card
                       cardData={feed}
-                      key={feed.id}
+                      key={feed?.id}
                       refetchFeeds={refetchStoredFeeds}
                   />
               ))
-        : [];
+            : [];
 
     const pageIndicator = Array.from(
         { length: Math.ceil(totalCount / 10) },
@@ -390,7 +413,7 @@ export default function Index({ feeds, sources }: IndexProps) {
                     <SubscriptionDialogBox
                         closeModal={closeModal("addSubscription")}
                     >
-                        <SubscribeNew />
+                        <SubscribeNew userCookie={rawCookie} />
                     </SubscriptionDialogBox>
                 </Modal>
             )}
@@ -430,11 +453,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
             setCookie("mw", encryptedId, {
                 req: context.req,
                 res: context.res,
-                maxAge: 60 * 6 * 24,
+                maxAge: 60 * 60 * 24 * 30,
             });
         }
-        const { data: feeds } = await getDataFrom("/feeds");
-        const { data: sources } = await getDataFrom("/sources");
+        const { data: feeds } = await getDataFrom(`/feeds?userId=${userId}`);
+        const { data: sources } = await getDataFrom(
+            `/sources?userId=${userId}`
+        );
 
         return {
             props: {
