@@ -17,9 +17,13 @@ import useFilters from "hooks/useFilters";
 import FilterByText from "components/feeds/FilterByText";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import { GetServerSidePropsContext } from "next";
-import { encryptCookie, checkIfCookieExists, getUserId } from "controllers/utils";
+import {
+    encryptCookie,
+    checkIfCookieExists,
+    getUserId,
+} from "controllers/utils";
 import { setCookie } from "cookies-next";
-import useGetRawCookie from 'hooks/useGetRawCookie';
+import useGetRawCookie from "hooks/useGetRawCookie";
 
 interface IndexProps {
     feeds: string;
@@ -112,7 +116,8 @@ export default function Index({ feeds, sources }: IndexProps) {
                                     (feedData: ParsedFeedsDataType) =>
                                         feedData?.id === feedsList?.[0]?.id
                                 )
-                        )
+                        ) &&
+                        previousObject[currentPage].length === feedsList.length
                     ) {
                         return previousObject;
                     }
@@ -156,6 +161,7 @@ export default function Index({ feeds, sources }: IndexProps) {
 
     const filterFavorites = () => {
         setIsFilterFavorite(!isFilterFavorite);
+        setCurrentPage(1);
     };
 
     React.useEffect(() => {
@@ -195,8 +201,9 @@ export default function Index({ feeds, sources }: IndexProps) {
         if (storedFeed && storedFeed.pages) {
             const dataArray = JSON.parse(
                 storedFeed.pages[storedFeed.pages.length - 1].data
-            ).data;
-            updateFormerFeedsList(dataArray);
+            );
+            setTotalCount(dataArray.count);
+            updateFormerFeedsList(dataArray.data);
         }
     }, [storedFeed, isMobileLayout]);
 
