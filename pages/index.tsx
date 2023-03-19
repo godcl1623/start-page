@@ -329,36 +329,38 @@ export default function Index({ feeds, sources }: IndexProps) {
 
     return (
         <article
-            className="flex-center flex-col w-full h-max min-h-full bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
+            className="flex-center flex-col w-full h-max min-h-full px-4 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
             ref={startPageRef}
         >
-            <section className="flex-center w-full h-1/3 my-32 md:w-[768px]">
+            <section className="flex-center w-full h-1/3 my-32 lg:w-[768px]">
                 <Search />
             </section>
-            <section className="flex flex-col items-center w-full h-max md:w-[768px]">
-                <section>
-                    <section className="flex justify-between h-8 mb-4">
-                        <section>
+            <section className="flex flex-col items-center w-full h-max lg:w-[768px]">
+                <section className="w-full">
+                    <section
+                        className="flex flex-col justify-between gap-2 w-full h-28 mb-4 md:flex-row md:gap-0 md:h-8"
+                    >
+                        <section className="flex justify-between gap-2">
                             <button
-                                className="mr-3 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
+                                className="w-full px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 md:w-auto"
                                 onClick={handleClick("addSubscription")}
                             >
                                 구독 추가
                             </button>
                             <button
-                                className="mr-3 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
+                                className="w-full px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 md:w-auto"
                                 onClick={handleClick("cancelSubscription")}
                             >
                                 구독 취소
                             </button>
                             <button
-                                className="mr-3 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
+                                className="w-full px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 md:w-auto"
                                 onClick={filterFavorites}
                             >
                                 즐겨찾기
                             </button>
                             <button
-                                className="mr-3 px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
+                                className="w-full px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 md:w-auto"
                                 onClick={handleClick("filterBySource")}
                             >
                                 출처별 필터
