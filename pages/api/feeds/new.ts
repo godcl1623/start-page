@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { areEqual } from "common/capsuledConditions";
-import RequestControllers from 'controllers';
+import RequestControllers from "controllers";
 import { parseCookie } from "controllers/utils";
 import {
     SourceData,
@@ -14,7 +14,7 @@ import {
 } from "controllers/feeds/new";
 import { AxiosResponse } from "axios";
 import { ParsedFeedsDataType, ParseResultType } from "types/global";
-import MongoDB from 'controllers/mongodb';
+import MongoDB from "controllers/mongodb";
 
 export default async function feedsHandler(
     request: NextApiRequest,
@@ -97,14 +97,41 @@ export default async function feedsHandler(
                         }
                     }
                 );
+                const updatedFeedSets = parseResult.map(
+                    (newFeedSet: ParseResultType, feedSetIndex: number) => {
+                        const newFeedsList = newFeedSet.feeds;
+                        const correspondFeeds = storedFeeds[feedSetIndex]
+                            ? storedFeeds[feedSetIndex].feeds ?? []
+                            : [];
+                        const updatedFeed =
+                            newFeedsList?.filter(
+                                (newFeed) =>
+                                    !correspondFeeds
+                                        .map(
+                                            (correspondFeed) =>
+                                                correspondFeed.title
+                                        )
+                                        .includes(newFeed.title)
+                            ) ?? [];
+                        const newFeedsListWithUserStates =
+                            correspondFeeds.concat(updatedFeed);
+                        return {
+                            ...newFeedSet,
+                            lastFeedsLength: newFeedsListWithUserStates.length,
+                            latestFeedTitle:
+                                newFeedsListWithUserStates[0].title,
+                            feeds: newFeedsListWithUserStates,
+                        };
+                    }
+                );
                 const differentiateArray = parseResult.filter(
                     (resultData: ParseResultType, index: number) =>
                         resultData.lastFeedsLength !==
-                            storedFeeds[index]?.lastFeedsLength ||
+                            updatedFeedSets[index]?.lastFeedsLength ||
                         resultData.latestFeedTitle !==
-                            storedFeeds[index]?.latestFeedTitle
+                            updatedFeedSets[index]?.latestFeedTitle
                 );
-                const totalFeedsList = parseResult
+                const totalFeedsList = updatedFeedSets
                     .reduce(
                         (
                             totalArray: ParsedFeedsDataType[],
@@ -135,7 +162,7 @@ export default async function feedsHandler(
                     count: totalFeedsList.length,
                 };
                 if (differentiateArray.length > 0) {
-                    postDataTo(`/feeds/new?userId=${id}`, parseResult);
+                    postDataTo(`/feeds/new?userId=${id}`, updatedFeedSets);
                     response.status(200).json(responseBody);
                 } else {
                     response.status(204).send("no new feeds available");
@@ -150,37 +177,9 @@ export default async function feedsHandler(
     } else if (areEqual(request.method, "POST")) {
         try {
             const dataToWrite: ParseResultType[] = request.body;
-            const storedFeeds: ParseResultType[] = remoteData[0]
-                ? remoteData[0].data
-                : [];
-            const newFeedSets = dataToWrite.map(
-                (newFeedSet: ParseResultType, feedSetIndex: number) => {
-                    const newFeedsList = newFeedSet.feeds;
-                    const newFeedsListWithUserStates = newFeedsList?.map(
-                        (newFeeds: ParsedFeedsDataType, feedIndex: number) => {
-                            const correspondFeed = storedFeeds[feedSetIndex]
-                                ? storedFeeds[feedSetIndex].feeds ?? []
-                                : [];
-                            return {
-                                ...newFeeds,
-                                isRead: correspondFeed[feedIndex]
-                                    ? correspondFeed[feedIndex].isRead
-                                    : false,
-                                isFavorite: correspondFeed[feedIndex]
-                                    ? correspondFeed[feedIndex].isFavorite
-                                    : false,
-                            };
-                        }
-                    );
-                    return {
-                        ...newFeedSet,
-                        feeds: newFeedsListWithUserStates,
-                    };
-                }
-            );
             const updateResult = await Feeds.updateOne(
                 { _uuid: id },
-                { $set: { data: newFeedSets } }
+                { $set: { data: dataToWrite } }
             );
             if (updateResult.acknowledged) {
                 response.status(201).send("success");
