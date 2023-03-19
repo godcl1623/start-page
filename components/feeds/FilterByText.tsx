@@ -50,7 +50,7 @@ export default function FilterByText({ setTextFilter }: Props) {
 
     return (
         <form
-            className="relative flex w-72 h-full mr-3 shadow-md text-xs dark:shadow-zinc-600"
+            className="relative flex w-full h-full mr-3 shadow-md text-xs dark:shadow-zinc-600 md:w-80"
             onSubmit={handleSubmit}
         >
             <SelectBox
