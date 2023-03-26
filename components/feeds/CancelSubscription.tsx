@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
-
 import { SourceData } from "controllers/sources";
 
+import useCancelSubscription from "./hooks/useCancelSubscription";
+
 import Button from "./common/Button";
-import DeleteButtonWrapper from "components/common/DeleteButtonWrapper";
 import ListItemBox from "./common/ListItemBox";
 import ModalTemplate from "./common/ModalTemplate";
 
@@ -12,6 +11,9 @@ interface Props {
 }
 
 export default function CancelSubscription({ sources }: Props) {
+    const cancelSubscription = useCancelSubscription();
+    const handleClick = (deleteTarget: number) => () =>
+        cancelSubscription(deleteTarget);
     const title = (
         <>
             구독을 취소할 블로그 / 사이트를
@@ -27,21 +29,20 @@ export default function CancelSubscription({ sources }: Props) {
                 return (
                     <ListItemBox key={origins}>
                         <div>{name || `blog_${index}`}</div>
-                        <DeleteButtonWrapper deleteTarget={id}>
-                            <Button
-                                type="button"
-                                customStyle="bg-red-600 dark:bg-red-700"
-                            >
-                                삭제
-                            </Button>
-                        </DeleteButtonWrapper>
+                        <Button
+                            type="button"
+                            customStyle="bg-red-600 dark:bg-red-700"
+                            clickHandler={handleClick(id)}
+                        >
+                            삭제
+                        </Button>
                     </ListItemBox>
                 );
             })
         ) : (
             <></>
         );
-
+    // FIXME: 이런 ModalTemplate 형식 전부 수정할 것
     return (
         <section className="h-full">
             <ModalTemplate
