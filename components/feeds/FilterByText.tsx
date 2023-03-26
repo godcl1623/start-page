@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, memo, useRef, useState } from "react";
 
 import { extractFormValues } from "components/search/utils/helpers";
 
@@ -17,7 +17,7 @@ export const SEARCH_OPTIONS: SearchOptions = {
     본문: "description",
 };
 
-export default function FilterByText({ setTextFilter }: Props) {
+export default memo(function FilterByText({ setTextFilter }: Props) {
     const [isInputFilled, setIsInputFilled] = useState<boolean>(false);
     const inputElement = useRef<HTMLInputElement>(null);
     const searchOptions = Object.keys(SEARCH_OPTIONS);
@@ -82,4 +82,4 @@ export default function FilterByText({ setTextFilter }: Props) {
             </button>
         </form>
     );
-}
+})

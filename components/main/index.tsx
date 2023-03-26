@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
 import { ParsedFeedsDataType } from "pages";
 
@@ -44,7 +44,7 @@ export interface SourcesList {
     sources: SourceData[];
 }
 
-export default function MainPage({
+export default memo(function MainPage({
     feedsFromServer,
     currentPage,
     setCurrentPage,
@@ -226,4 +226,4 @@ export default function MainPage({
             )}
         </article>
     );
-}
+})

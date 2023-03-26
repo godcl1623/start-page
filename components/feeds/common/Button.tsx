@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 interface Props {
     customStyle?: string;
     type: "button" | "submit" | "reset" | undefined;
@@ -5,7 +7,7 @@ interface Props {
     children: string;
 }
 
-export default function Button({
+export default memo(function Button({
     customStyle,
     children,
     type,
@@ -20,4 +22,4 @@ export default function Button({
             {children}
         </button>
     );
-}
+})

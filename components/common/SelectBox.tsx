@@ -1,4 +1,4 @@
-import { ChangeEvent } from "react";
+import { ChangeEvent, memo } from "react";
 
 import { SORT_STANDARD } from "common/constants";
 
@@ -8,7 +8,7 @@ interface Props {
     setSortState?: (stateString: string) => void;
 }
 
-export default function SelectBox({
+export default memo(function SelectBox({
     optionValues,
     customStyles,
     setSortState,
@@ -34,4 +34,4 @@ export default function SelectBox({
             {options}
         </select>
     );
-}
+})

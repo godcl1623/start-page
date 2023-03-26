@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, memo, useEffect, useState } from "react";
 
 import { SEARCH_ADDRESS_BY_ENGINE } from "./utils/constants";
 
@@ -6,7 +6,7 @@ import { extractFormValues, openSearchResult } from "./utils/helpers";
 
 import SelectBox from "../common/SelectBox";
 
-export default function Search() {
+export default memo(function Search() {
     const [inputValue, setInputValue] = useState<string>("");
     const [isInputFilled, setIsInputFilled] = useState<boolean>(false);
     const searchEngines = Object.keys(SEARCH_ADDRESS_BY_ENGINE);
@@ -64,4 +64,4 @@ export default function Search() {
             />
         </form>
     );
-}
+})

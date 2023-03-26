@@ -1,4 +1,4 @@
-import { MouseEvent, useEffect, useState } from "react";
+import { memo, MouseEvent, useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
     AiFillStar as FavoriteIcon,
@@ -21,7 +21,7 @@ interface CardProps {
 
 type CallbackType = (value: any) => void;
 
-export default function Card({ cardData, refetchFeeds }: CardProps) {
+export default memo(function Card({ cardData, refetchFeeds }: CardProps) {
     const {
         title,
         description,
@@ -31,7 +31,7 @@ export default function Card({ cardData, refetchFeeds }: CardProps) {
         isRead,
         isFavorite,
         id,
-    } = cardData;
+    } = cardData ?? {};
     const [readState, setReadState] = useDerivedStateFromProps<boolean>(
         isRead ?? false
     );
@@ -147,4 +147,4 @@ export default function Card({ cardData, refetchFeeds }: CardProps) {
             `}</style>
         </section>
     );
-}
+})
