@@ -14,7 +14,7 @@ export default function Button({
     return (
         <button
             type={type}
-            className={`px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 ${customStyle}`}
+            className={`w-full px-3 py-2 rounded-md shadow-md bg-neutral-100 text-xs text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 md:w-auto ${customStyle}`}
             onClick={clickHandler}
         >
             {children}

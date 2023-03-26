@@ -4,6 +4,7 @@ import {
     areEqual,
     isSatisfyingBothAAndB,
     isFrontBiggerThanRear,
+    isNull,
 } from "./capsuledConditions";
 
 const extractObjectData = <T extends ParsedFeedsDataType>(
@@ -41,6 +42,8 @@ export const handleSort = <T extends ParsedFeedsDataType>(
         return reverse ? 1 : -1;
     };
 };
+
+export const checkShouldSortByReverse = (sortState: number) => sortState === 1;
 
 const returnDaysAddedDate = (dateString: string, daysToAdd: number) => {
     const dateToAddDays = new Date(Date.parse(dateString));

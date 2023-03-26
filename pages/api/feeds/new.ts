@@ -1,9 +1,12 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
-import { JSON_DIRECTORY } from "common/constants";
 import RequestControllers from "controllers";
-import { SourceData, FileContentsInterface } from "controllers/sources";
+import { parseCookie } from "controllers/utils";
+import {
+    SourceData,
+    FileContentsInterface,
+    CustomError,
+} from "controllers/sources";
 import {
     getRssResponses,
     parseXml,
@@ -11,30 +14,28 @@ import {
 } from "controllers/feeds/new";
 import { AxiosResponse } from "axios";
 import { ParsedFeedsDataType, ParseResultType } from "pages";
+import MongoDB from "controllers/mongodb";
 
 export default async function feedsHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
+    const { userId, mw } = request.query;
+    const id = userId ?? parseCookie(mw);
+    const Feeds = MongoDB.getFeedsModel();
+    const remoteData = await Feeds.find({ _uuid: id }).lean();
     const { getDataFrom, postDataTo } = new RequestControllers();
-    const fileContents = await fs.readFile(
-        `${JSON_DIRECTORY}/feeds.json`,
-        "utf8"
-    );
-    if (fileContents == null) {
-        response.status(404).send("file not exists.");
-    }
     if (areEqual(request.method, "GET")) {
         try {
             const pageValue = 1;
             const perPageValue = 10;
             const paginationStartIndex = perPageValue * (pageValue - 1);
             const paginationEndIndex = perPageValue * pageValue;
-            const { data } = await getDataFrom("/sources");
+            const { data } = await getDataFrom(`/sources?userId=${id}`);
             const { sources }: FileContentsInterface = JSON.parse(data);
-            const urlList = sources.map(
-                (sourceData: SourceData) => sourceData.url
-            );
+            const urlList = sources
+                ? sources.map((sourceData: SourceData) => sourceData.url)
+                : [];
             const result: PromiseSettledResult<AxiosResponse>[] | undefined =
                 await getRssResponses(urlList);
             if (result != null) {
@@ -45,10 +46,10 @@ export default async function feedsHandler(
                         }
                     }
                 );
-                const storedFeeds: ParseResultType[] = fileContents
-                    ? JSON.parse(fileContents).data
+                const storedFeeds: ParseResultType[] = remoteData[0]
+                    ? remoteData[0].data
                     : [];
-                let originId = sources.length > 0 ? storedFeeds.length + 1 : 0;
+                let originId = sources?.length > 0 ? storedFeeds.length : 0;
                 const parseResult = totalFeedsFromSources.map(
                     (rawRss: string, index: number) => {
                         const indexedFeed =
@@ -96,14 +97,41 @@ export default async function feedsHandler(
                         }
                     }
                 );
+                const updatedFeedSets = parseResult.map(
+                    (newFeedSet: ParseResultType, feedSetIndex: number) => {
+                        const newFeedsList = newFeedSet.feeds;
+                        const correspondFeeds = storedFeeds[feedSetIndex]
+                            ? storedFeeds[feedSetIndex].feeds ?? []
+                            : [];
+                        const updatedFeed =
+                            newFeedsList?.filter(
+                                (newFeed) =>
+                                    !correspondFeeds
+                                        .map(
+                                            (correspondFeed) =>
+                                                correspondFeed.title
+                                        )
+                                        .includes(newFeed.title)
+                            ) ?? [];
+                        const newFeedsListWithUserStates =
+                            correspondFeeds.concat(updatedFeed);
+                        return {
+                            ...newFeedSet,
+                            lastFeedsLength: newFeedsListWithUserStates.length,
+                            latestFeedTitle:
+                                newFeedsListWithUserStates[0].title,
+                            feeds: newFeedsListWithUserStates,
+                        };
+                    }
+                );
                 const differentiateArray = parseResult.filter(
                     (resultData: ParseResultType, index: number) =>
                         resultData.lastFeedsLength !==
-                            storedFeeds[index]?.lastFeedsLength ||
+                            updatedFeedSets[index]?.lastFeedsLength ||
                         resultData.latestFeedTitle !==
-                            storedFeeds[index]?.latestFeedTitle
+                            updatedFeedSets[index]?.latestFeedTitle
                 );
-                const totalFeedsList = parseResult
+                const totalFeedsList = updatedFeedSets
                     .reduce(
                         (
                             totalArray: ParsedFeedsDataType[],
@@ -119,7 +147,7 @@ export default async function feedsHandler(
                     )
                     .sort((a, b) => {
                         if (a.pubDate && b.pubDate) {
-                            const previousDate = new Date(a.pubDate);
+                            const previousDate: Date = new Date(a.pubDate);
                             const nextDate = new Date(b.pubDate);
                             return previousDate > nextDate ? -1 : 1;
                         } else {
@@ -134,7 +162,7 @@ export default async function feedsHandler(
                     count: totalFeedsList.length,
                 };
                 if (differentiateArray.length > 0) {
-                    postDataTo("/feeds/new", parseResult);
+                    postDataTo(`/feeds/new?userId=${id}`, updatedFeedSets);
                     response.status(200).json(responseBody);
                 } else {
                     response.status(204).send("no new feeds available");
@@ -149,42 +177,15 @@ export default async function feedsHandler(
     } else if (areEqual(request.method, "POST")) {
         try {
             const dataToWrite: ParseResultType[] = request.body;
-            const storedFeeds: ParseResultType[] = fileContents
-                ? JSON.parse(fileContents).data
-                : [];
-            const newFeedSets = dataToWrite.map(
-                (newFeedSet: ParseResultType, feedSetIndex: number) => {
-                    const newFeedsList = newFeedSet.feeds;
-                    const newFeedsListWithUserStates = newFeedsList?.map(
-                        (newFeeds: ParsedFeedsDataType, feedIndex: number) => {
-                            const correspondFeed = storedFeeds[feedSetIndex]
-                                ? storedFeeds[feedSetIndex].feeds ?? []
-                                : [];
-                            return {
-                                ...newFeeds,
-                                isRead: correspondFeed[feedIndex]
-                                    ? correspondFeed[feedIndex].isRead
-                                    : false,
-                                isFavorite: correspondFeed[feedIndex]
-                                    ? correspondFeed[feedIndex].isFavorite
-                                    : false,
-                            };
-                        }
-                    );
-                    return {
-                        ...newFeedSet,
-                        feeds: newFeedsListWithUserStates,
-                    };
-                }
+            const updateResult = await Feeds.updateOne(
+                { _uuid: id },
+                { $set: { data: dataToWrite } }
             );
-            const newData = {
-                data: newFeedSets,
-            };
-            fs.writeFile(
-                `${JSON_DIRECTORY}/feeds.json`,
-                JSON.stringify(newData)
-            );
-            response.status(201).send("success");
+            if (updateResult.acknowledged) {
+                response.status(201).send("success");
+            } else {
+                throw new CustomError(400, "update failed");
+            }
         } catch (error) {
             response.status(400).send(error);
         }

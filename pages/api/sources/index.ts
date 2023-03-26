@@ -1,48 +1,54 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
 import {
     CustomError,
     checkIfDataExists,
-    updateData,
     SourceDataInput,
     FileContentsInterface,
     SourceData,
 } from "controllers/sources";
-import { JSON_DIRECTORY } from 'common/constants';
+import { decryptCookie, parseCookie } from "controllers/utils";
+import MongoDB from "controllers/mongodb";
 
 export default async function sourceHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    const fileContents = await fs.readFile(
-        `${JSON_DIRECTORY}/sources.json`,
-        "utf8"
-    );
-    if (fileContents == null) {
-        response.status(404).send("file not exists.");
+    const { userId, mw } = request.query;
+    const id = userId ?? parseCookie(mw);
+    const Sources = MongoDB.getSourcesModel();
+    const remoteContents = await Sources.find({ _uuid: id }).lean();
+    if (
+        remoteContents.length === 0 &&
+        typeof id === "string" &&
+        id.length > 0
+    ) {
+        await Sources.insertMany({ _uuid: id, sources: [] });
     }
     if (areEqual(request.method, "GET")) {
         try {
-            response.status(200).json(fileContents);
+            response.status(200).json(JSON.stringify(remoteContents[0]));
         } catch (error) {
             response.status(400).send(error);
         }
     } else if (areEqual(request.method, "POST")) {
         try {
             const sourceDataInput: SourceDataInput = request.body;
-            const { sources }: FileContentsInterface = JSON.parse(fileContents);
+            const { sources } = remoteContents[0];
             const urlsList = sources.map(
                 (sourceData: SourceData) => sourceData.url
             );
             if (checkIfDataExists(urlsList, sourceDataInput.url)) {
                 throw new CustomError(409, "source already exists.");
             }
-            const updateResult = updateData(sources, sourceDataInput);
-            if (updateResult) {
+            const updateResult = await Sources.updateOne(
+                { _uuid: id },
+                { $push: { sources: sourceDataInput } }
+            );
+            if (updateResult.acknowledged) {
                 response.status(201).send("success");
             } else {
-                throw new CustomError(400, 'update failed');
+                throw new CustomError(400, "update failed");
             }
         } catch (error) {
             if (error instanceof CustomError) {

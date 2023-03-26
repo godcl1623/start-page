@@ -2,6 +2,7 @@ import { cloneElement, ReactElement } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import useGetRawCookie from 'hooks/useGetRawCookie';
 
 import RequestControllers from 'controllers';
 
@@ -12,7 +13,8 @@ interface Props {
 
 export default function DeleteButtonWrapper({ children, deleteTarget }: Props) {
     const { deleteDataOf } = new RequestControllers();
-    const mutationFn = () => deleteDataOf(`/sources/${deleteTarget}`);
+    const rawCookie = useGetRawCookie();
+    const mutationFn = () => deleteDataOf(`/sources/${deleteTarget}?mw=${rawCookie}`);
     const router = useRouter();
     const onSuccess = () => {
         window.alert("저장되었습니다.");

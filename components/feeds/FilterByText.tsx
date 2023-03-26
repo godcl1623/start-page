@@ -25,9 +25,11 @@ export default function FilterByText({ setTextFilter }: Props) {
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const [searchOptionKey, inputValue] = extractFormValues(event);
-        const otherOption = searchOptionKey === "제목" ? "본문" : "제목";
+        if (inputValue.length < 2) {
+            alert("검색어는 두 글자 이상 입력해주세요.");
+            return;
+        }
         setTextFilter(SEARCH_OPTIONS[searchOptionKey], inputValue);
-        setTextFilter(SEARCH_OPTIONS[otherOption], "");
     };
 
     const checkIfInputFilled = (event: ChangeEvent<HTMLInputElement>) => {
@@ -35,12 +37,13 @@ export default function FilterByText({ setTextFilter }: Props) {
             setIsInputFilled(true);
         } else {
             setIsInputFilled(false);
+            setTextFilter(SEARCH_OPTIONS["제목"], "");
         }
     };
 
     const clearInput = () => {
         if (inputElement.current) {
-            inputElement.current.value = '';
+            inputElement.current.value = "";
         }
         setIsInputFilled(false);
         Object.values(SEARCH_OPTIONS).forEach((value: string) =>
@@ -50,7 +53,7 @@ export default function FilterByText({ setTextFilter }: Props) {
 
     return (
         <form
-            className="relative flex w-72 h-full mr-3 shadow-md text-xs dark:shadow-zinc-600"
+            className="relative flex w-full h-full mr-3 shadow-md text-xs dark:shadow-zinc-600 md:w-80"
             onSubmit={handleSubmit}
         >
             <SelectBox

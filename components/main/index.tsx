@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { ParsedFeedsDataType } from "pages";
 
-import { SORT_STANDARD, SORT_STANDARD_STATE } from "common/constants";
-
-import { handleSort } from "common/helpers";
+import { SORT_STANDARD } from "common/constants";
 
 import Search from "components/search";
 import Card from "components/card";
@@ -23,14 +21,13 @@ interface Props {
     feedsFromServer: ParsedFeedsDataType[];
     currentPage: number;
     setCurrentPage: (value: number | ((value: number) => number)) => void;
-    currentSort: number;
-    checkShouldSortByReverse: (sortState: number) => boolean;
     setSortState: (stateString: string) => void;
     totalCount: number;
     isMobileLayout: boolean;
     sources: string;
     sourceDisplayState: FilterType<boolean>;
     setSourceDisplayState: (target: string, value: boolean) => void;
+    rawCookie: string;
     updateObserverElement: (element: HTMLDivElement) => void;
     refetchStoredFeeds: () => void;
     setSearchTexts: (target: string, value: string) => void;
@@ -51,14 +48,13 @@ export default function MainPage({
     feedsFromServer,
     currentPage,
     setCurrentPage,
-    currentSort,
-    checkShouldSortByReverse,
     setSortState,
     totalCount,
     isMobileLayout,
     sources,
     sourceDisplayState,
     setSourceDisplayState,
+    rawCookie,
     updateObserverElement,
     refetchStoredFeeds,
     setSearchTexts,
@@ -108,22 +104,16 @@ export default function MainPage({
         }
     }, [modalState, startPageRef]);
 
-    const feedsToDisplay = feedsFromServer
-        ? feedsFromServer
-              ?.sort(
-                  handleSort(
-                      SORT_STANDARD_STATE[currentSort],
-                      checkShouldSortByReverse(currentSort)
-                  )
-              )
-              .map((feed: ParsedFeedsDataType) => (
+    const feedsToDisplay =
+        feedsFromServer != null && feedsFromServer.length > 0
+            ? feedsFromServer?.map((feed: ParsedFeedsDataType) => (
                   <Card
                       cardData={feed}
-                      key={feed.id}
+                      key={feed?.id}
                       refetchFeeds={refetchStoredFeeds}
                   />
               ))
-        : [];
+            : [];
 
     const pageIndicator = Array.from(
         { length: Math.ceil(totalCount / 10) },
@@ -139,7 +129,7 @@ export default function MainPage({
                     currentPage === pageIndex ? "text-blue-500 font-bold" : ""
                 }`}
             >
-                {pageIndex} 
+                {pageIndex}
             </button>
         </li>
     ));
@@ -157,7 +147,7 @@ export default function MainPage({
                 <Button
                     key={`${buttonText}_${index}`}
                     type="button"
-                    customStyle="mr-3"
+                    customStyle="mr-3" // TODO: 필요 여부 체크
                     clickHandler={clickHandler}
                 >
                     {buttonText}
@@ -171,13 +161,15 @@ export default function MainPage({
             className="flex-center flex-col w-full h-max min-h-full bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
             ref={startPageRef}
         >
-            <section className="flex-center w-full h-1/3 my-32 md:w-[768px]">
+            <section className="flex-center w-full h-1/3 my-32 lg:w-[768px]">
                 <Search />
             </section>
-            <section className="flex flex-col items-center w-full h-max md:w-[768px]">
-                <section>
-                    <section className="flex justify-between h-8 mb-4">
-                        <section>{optionButtonsList}</section>
+            <section className="flex flex-col items-center w-full h-max lg:w-[768px]">
+                <section className="w-full">
+                    <section className="flex flex-col justify-between gap-2 w-full h-28 mb-4 md:flex-row md:gap-0 md:h-8">
+                        <section className="flex justify-between gap-2">
+                            {optionButtonsList}
+                        </section>
                         <FilterByText setTextFilter={setSearchTexts} />
                         <SelectBox
                             optionValues={SORT_STANDARD}
@@ -205,7 +197,7 @@ export default function MainPage({
                     <SubscriptionDialogBox
                         closeModal={closeModal("addSubscription")}
                     >
-                        <SubscribeNew />
+                        <SubscribeNew userCookie={rawCookie} />
                     </SubscriptionDialogBox>
                 </Modal>
             )}
