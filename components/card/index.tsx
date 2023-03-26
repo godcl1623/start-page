@@ -1,46 +1,27 @@
-import { memo, MouseEvent, useEffect, useState } from "react";
+import { memo, MouseEvent, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import {
-    AiFillStar as FavoriteIcon,
-    AiFillRead as CheckIcon,
-} from "react-icons/ai";
 
-import { ParsedFeedsDataType } from 'pages'; 
+import { ParsedFeedsDataType } from "pages";
 
-import { isTodayLessThanExtraDay } from "common/helpers";
 import RequestControllers from "controllers";
-import useDerivedStateFromProps from "./hooks/useDerivedStateFromProps";
 
-import Checkbox from "./Checkbox";
-import useGetRawCookie from 'hooks/useGetRawCookie';
+import useGetRawCookie from "hooks/useGetRawCookie";
+import CardContent from './CardContent';
 
 interface CardProps {
     cardData: ParsedFeedsDataType;
     refetchFeeds: any;
 }
 
-type CallbackType = (value: any) => void;
+export type CallbackType = (value: any) => void;
 
 export default memo(function Card({ cardData, refetchFeeds }: CardProps) {
     const {
-        title,
-        description,
         link,
-        pubDate,
         origin,
-        isRead,
         isFavorite,
         id,
     } = cardData ?? {};
-    const [readState, setReadState] = useDerivedStateFromProps<boolean>(
-        isRead ?? false
-    );
-    const [favoriteState, setFavoriteState] = useDerivedStateFromProps<boolean>(
-        isFavorite ?? false
-    );
-    const [pubDateState] = useDerivedStateFromProps<string>(pubDate ?? '');
-    const [dateState, setDateState] = useState(false);
-    const parsedPubDate = new Date(pubDateState).toDateString();
     const { patchDataTo } = new RequestControllers();
     const rawCookie = useGetRawCookie();
     const mutationFn = (newData: ParsedFeedsDataType) =>
@@ -49,7 +30,7 @@ export default memo(function Card({ cardData, refetchFeeds }: CardProps) {
         mutationFn,
     });
 
-    const handleCard = (event: MouseEvent) => {
+    const handleCard = (favoriteState: boolean) => (event: MouseEvent) => {
         if (!(event.target instanceof SVGElement)) {
             const newData = {
                 ...cardData,
@@ -62,7 +43,7 @@ export default memo(function Card({ cardData, refetchFeeds }: CardProps) {
     };
 
     const handleFavorite =
-        (originalState: boolean, callback: CallbackType) => () => {
+        (originalState: boolean, readState: boolean, callback: CallbackType) => () => {
             callback(!originalState);
             const newData = {
                 ...cardData,
@@ -73,7 +54,7 @@ export default memo(function Card({ cardData, refetchFeeds }: CardProps) {
         };
 
     const handleRead =
-        (originalState: boolean, callback: CallbackType) => () => {
+        (originalState: boolean, favoriteState: boolean, callback: CallbackType) => () => {
             callback(!originalState);
             const newData = {
                 ...cardData,
@@ -83,68 +64,18 @@ export default memo(function Card({ cardData, refetchFeeds }: CardProps) {
             mutate(newData);
         };
 
-    const returnReadStyle = (flag: boolean) => {
-        if (flag) return "brightness-75 dark:opacity-50";
-        return "brightness-100 dark:opacity-100";
-    };
-
-    // hydration 오류 수정용
     useEffect(() => {
-        const dateFlag = isTodayLessThanExtraDay(pubDate);
-        if (dateFlag) {
-            setDateState(dateFlag);
-        }
-    }, [pubDate]);
-
-    useEffect(() => {
-        if (isSuccess && favoriteState) {
+        if (isSuccess && isFavorite) {
             refetchFeeds();
         }
-    }, [isSuccess, favoriteState]);
+    }, [isSuccess, isFavorite]);
 
     return (
-        <section
-            className={`flex rounded-md shadow-lg mb-8 px-6 py-4 bg-neutral-100 text-neutral-700 cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${returnReadStyle(
-                readState
-            )}`}
-            onClick={handleCard}
-        >
-            <div className="mr-4 py-1">
-                <Checkbox
-                    targetState={favoriteState}
-                    buttonIcon={FavoriteIcon}
-                    handleCheckbox={handleFavorite(
-                        favoriteState,
-                        setFavoriteState
-                    )}
-                />
-                {dateState && (
-                    <span className="text-xs text-yellow-500 font-bold dark:text-yellow-300">
-                        New
-                    </span>
-                )}
-            </div>
-            <div className="w-full">
-                <div className="flex justify-between w-full">
-                    <h2 className="text-lg">{title}</h2>
-                    <Checkbox
-                        targetState={readState}
-                        buttonIcon={CheckIcon}
-                        handleCheckbox={handleRead(readState, setReadState)}
-                    />
-                </div>
-                <p className="my-3">{description}</p>
-                <div className="flex justify-between w-full">
-                    <p>{parsedPubDate}</p>
-                    <p>{origin}</p>
-                </div>
-            </div>
-            <style jsx>{`
-                p {
-                    font-size: 0.875rem;
-                    line-height: 1.25rem;
-                }
-            `}</style>
-        </section>
+        <CardContent
+            cardData={cardData}
+            handleCard={handleCard}
+            handleFavorite={handleFavorite}
+            handleRead={handleRead}
+        />
     );
-})
+});
