@@ -11,6 +11,7 @@ import {
     getRssResponses,
     parseXml,
     makeFeedDataArray,
+    sortFeedSets,
 } from "controllers/feeds/new";
 import { AxiosResponse } from "axios";
 import { ParsedFeedsDataType, ParseResultType } from "pages";
@@ -113,8 +114,9 @@ export default async function feedsHandler(
                                         )
                                         .includes(newFeed.title)
                             ) ?? [];
-                        const newFeedsListWithUserStates =
-                            correspondFeeds.concat(updatedFeed);
+                        const newFeedsListWithUserStates = correspondFeeds
+                            .concat(updatedFeed)
+                            .sort(sortFeedSets);
                         return {
                             ...newFeedSet,
                             lastFeedsLength: newFeedsListWithUserStates.length,
@@ -145,15 +147,7 @@ export default async function feedsHandler(
                         },
                         []
                     )
-                    .sort((a, b) => {
-                        if (a.pubDate && b.pubDate) {
-                            const previousDate: Date = new Date(a.pubDate);
-                            const nextDate = new Date(b.pubDate);
-                            return previousDate > nextDate ? -1 : 1;
-                        } else {
-                            return -1;
-                        }
-                    });
+                    .sort(sortFeedSets);
                 const responseBody = {
                     data: totalFeedsList.slice(
                         paginationStartIndex,
