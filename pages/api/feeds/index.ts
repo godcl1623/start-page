@@ -1,3 +1,4 @@
+// TODO: api 전부 데이터 가공 로직 별도 함수로 분리할 것
 import { NextApiRequest, NextApiResponse } from "next";
 import { areEqual } from "common/capsuledConditions";
 import { ParseResultType, ParsedFeedsDataType } from "pages";

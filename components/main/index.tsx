@@ -147,7 +147,6 @@ export default memo(function MainPage({
                 <Button
                     key={`${buttonText}_${index}`}
                     type="button"
-                    customStyle="mr-3" // TODO: 필요 여부 체크
                     clickHandler={clickHandler}
                 >
                     {buttonText}
