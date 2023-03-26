@@ -226,4 +226,4 @@ export default memo(function MainPage({
             )}
         </article>
     );
-})
+});
