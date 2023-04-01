@@ -1,12 +1,12 @@
 // TODO: 페이지 네비게이터는 5개까지 + 맨 처음, 맨 마지막 페이지만 표시, 그 외는 줄임표로
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import RequestControllers from "controllers";
 import { AxiosResponse } from "axios";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import useFilters from "hooks/useFilters";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import MainPage from "components/main";
-import { SORT_STANDARD } from 'common/constants';
+import { SORT_STANDARD } from "common/constants";
 import { GetServerSidePropsContext } from "next";
 import {
     encryptCookie,
@@ -51,7 +51,8 @@ export default function Index({ feeds, sources }: IndexProps) {
     const { getDataFrom } = new RequestControllers();
     const [currentSort, setCurrentSort] = useState(0);
     const [isFilterFavorite, setIsFilterFavorite] = useState<boolean>(false);
-    const [observerElement, setObserverElement] = useState<HTMLDivElement | null>(null);
+    const [observerElement, setObserverElement] =
+        useState<HTMLDivElement | null>(null);
     const [totalCount, setTotalCount] = useState<number>(0);
     const [isMobileLayout, setIsMobileLayout] = useState<boolean>(false);
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -136,13 +137,16 @@ export default function Index({ feeds, sources }: IndexProps) {
         );
     };
 
-    const setSortState = (stateStringArray: string[]) => (stateString: string) => {
-        if (stateStringArray.includes(stateString)) {
-            setCurrentSort(stateStringArray.indexOf(stateString));
-        } else {
-            setCurrentSort(0);
-        }
-    };
+    const setSortState = useCallback(
+        (stateStringArray: string[]) => (stateString: string) => {
+            if (stateStringArray.includes(stateString)) {
+                setCurrentSort(stateStringArray.indexOf(stateString));
+            } else {
+                setCurrentSort(0);
+            }
+        },
+        []
+    );
 
     const filterFavorites = () => {
         setIsFilterFavorite(!isFilterFavorite);
@@ -227,7 +231,7 @@ export default function Index({ feeds, sources }: IndexProps) {
         if (isMobileLayout) {
             const firstEmptyPageIndex = (
                 Object.values(formerFeedsList) as any[]
-            ).findIndex((value: any[]) => value.length === 0);
+            ).findIndex((value: any[]) => value?.length === 0);
             setCurrentPage(firstEmptyPageIndex);
             Object.keys(formerFeedsList).forEach((key: string, index) => {
                 if (index > firstEmptyPageIndex) {

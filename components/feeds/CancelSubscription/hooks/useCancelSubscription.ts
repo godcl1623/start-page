@@ -5,11 +5,12 @@ import useGetRawCookie from "hooks/useGetRawCookie";
 import { useRouter } from "next/router";
 
 const useCancelSubscription = () => {
-    const { deleteDataOf } = new RequestControllers();
     const rawCookie = useGetRawCookie();
+    const router = useRouter();
+
+    const { deleteDataOf } = new RequestControllers();
     const mutationFn = (deleteTarget: number) =>
         deleteDataOf(`/sources/${deleteTarget}?mw=${rawCookie}`);
-    const router = useRouter();
     const onSuccess = () => {
         window.alert("저장되었습니다.");
         router.reload();

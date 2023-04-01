@@ -53,7 +53,7 @@ export default memo(function FilterByText({ setTextFilter }: Props) {
 
     return (
         <form
-            className="relative flex w-full h-full mr-3 shadow-md text-xs dark:shadow-zinc-600 md:w-80"
+            className="relative flex w-full my-2 h-full shadow-md text-xs dark:shadow-zinc-600 md:mx-2 md:my-0"
             onSubmit={handleSubmit}
         >
             <SelectBox

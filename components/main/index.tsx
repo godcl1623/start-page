@@ -2,20 +2,16 @@ import { memo, useEffect, useRef, useState } from "react";
 
 import { ParsedFeedsDataType } from "pages";
 
-import { SORT_STANDARD } from "common/constants";
-
 import Search from "components/search";
 import Card from "components/card";
-import SelectBox from "components/common/SelectBox";
 import Modal from "components/modal";
 import SubscriptionDialogBox from "components/feeds";
 import SubscribeNew from "components/feeds/SubscribeNew";
 import CancelSubscription from "components/feeds/CancelSubscription";
 import FilterBySource from "components/feeds/FilterBySource";
-import FilterByText from "components/feeds/FilterByText";
 import { FilterType } from "hooks/useFilters";
-import Button from "components/feeds/common/Button";
 import { SourceData } from "controllers/sources";
+import PostHandleOptions from './PostHandleOptions';
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
@@ -34,7 +30,10 @@ interface Props {
     filterFavorites: () => void;
 }
 
-type ModalKeys = "addSubscription" | "cancelSubscription" | "filterBySource";
+export type ModalKeys =
+    | "addSubscription"
+    | "cancelSubscription"
+    | "filterBySource";
 
 type ModalStateType = {
     [key in ModalKeys]: boolean;
@@ -66,7 +65,7 @@ export default memo(function MainPage({
         filterBySource: false,
     });
     const startPageRef = useRef<HTMLElement | null>(null);
-    const { sources: sourcesList }: SourcesList = JSON.parse(sources);
+    const { sources: sourcesList }: SourcesList = sources ? JSON.parse(sources) : {};
 
     const handleClick = (target: ModalKeys) => () => {
         document.documentElement.scrollTo({ top: 0 });
@@ -97,7 +96,7 @@ export default memo(function MainPage({
     };
 
     useEffect(() => {
-        if (modalState.addSubscription || modalState.cancelSubscription) {
+        if (Object.values(modalState).includes(true)) {
             document.documentElement.style.overflow = "hidden";
         } else {
             document.documentElement.style.overflow = "auto";
@@ -115,6 +114,7 @@ export default memo(function MainPage({
               ))
             : [];
 
+    // TODO: 로직 수정
     const pageIndicator = Array.from(
         { length: Math.ceil(totalCount / 10) },
         (v, k) => k + 1
@@ -134,49 +134,21 @@ export default memo(function MainPage({
         </li>
     ));
 
-    const buttonData = {
-        "구독 추가": handleClick("addSubscription"),
-        "구독 취소": handleClick("cancelSubscription"),
-        즐겨찾기: filterFavorites,
-        "출처별 필터": handleClick("filterBySource"),
-    };
-    const optionButtonsList = Object.entries(buttonData).map(
-        (buttonData: [string, () => void], index: number) => {
-            const [buttonText, clickHandler] = buttonData;
-            return (
-                <Button
-                    key={`${buttonText}_${index}`}
-                    type="button"
-                    clickHandler={clickHandler}
-                >
-                    {buttonText}
-                </Button>
-            );
-        }
-    );
-
     return (
         <article
-            className="flex-center flex-col w-full h-max min-h-full bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
+            className="flex-center flex-col w-full h-max min-h-full px-4 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
             ref={startPageRef}
         >
             <section className="flex-center w-full h-1/3 my-32 lg:w-[768px]">
                 <Search />
             </section>
             <section className="flex flex-col items-center w-full h-max lg:w-[768px]">
-                <section className="w-full">
-                    <section className="flex flex-col justify-between gap-2 w-full h-28 mb-4 md:flex-row md:gap-0 md:h-8">
-                        <section className="flex justify-between gap-2">
-                            {optionButtonsList}
-                        </section>
-                        <FilterByText setTextFilter={setSearchTexts} />
-                        <SelectBox
-                            optionValues={SORT_STANDARD}
-                            customStyles="rounded-md shadow-md text-xs dark:shadow-zinc-600"
-                            setSortState={setSortState}
-                        />
-                    </section>
-                </section>
+                <PostHandleOptions
+                    filterFavorites={filterFavorites}
+                    handleClick={handleClick}
+                    setSearchTexts={setSearchTexts}
+                    setSortState={setSortState}
+                />
                 <section>{feedsToDisplay}</section>
                 {isMobileLayout ? (
                     <div

@@ -1,4 +1,4 @@
-import { ParsedFeedsDataType } from 'pages'; 
+import { ParsedFeedsDataType } from "pages";
 
 import {
     areEqual,
@@ -52,20 +52,20 @@ const returnDaysAddedDate = (dateString: string, daysToAdd: number) => {
     return dateToAddDays;
 };
 
-export const isTodayLessThanExtraDay = (
-    pubDateString: string | null,
+export const checkIfTodayLessThan = (
+    dateString: string | null,
     extraDay = 3
 ) => {
-    if (pubDateString == null) return; 
-    const pubDate = new Date(Date.parse(pubDateString));
-    pubDate.setHours(0);
-    const pubDateWithExtraDay = returnDaysAddedDate(
-        pubDateString,
+    if (dateString == null) return;
+    const dateToCheck = new Date(Date.parse(dateString));
+    dateToCheck.setHours(0);
+    const dateToCheckWithExtraDay = returnDaysAddedDate(
+        dateString,
         extraDay
     );
-    pubDateWithExtraDay.setHours(0);
-    const today = new Date();
-    const isTodayMoreThanPubDate = pubDate <= today;
-    const isTodayLessThanExtraDay = today <= pubDateWithExtraDay;
-    return isTodayLessThanExtraDay && isTodayMoreThanPubDate;
+    dateToCheckWithExtraDay.setHours(0);
+    const now = new Date();
+    const isTodayMoreThanDateToCheck = dateToCheck <= now;
+    const isTodayLessThanExtraDay = now <= dateToCheckWithExtraDay;
+    return isTodayLessThanExtraDay && isTodayMoreThanDateToCheck;
 };

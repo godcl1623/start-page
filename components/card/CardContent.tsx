@@ -1,4 +1,4 @@
-import { isTodayLessThanExtraDay } from "common/helpers";
+import { checkIfTodayLessThan } from "common/helpers";
 import { memo, MouseEvent, useEffect, useState } from "react";
 import { CallbackType } from ".";
 import Checkbox from "./Checkbox";
@@ -7,6 +7,8 @@ import {
     AiFillRead as CheckIcon,
 } from "react-icons/ai";
 import useDerivedStateFromProps from "./hooks/useDerivedStateFromProps";
+import useClientSideDate from './hooks/useClientSideDate';
+import useCheckIfDataIsNew from './hooks/useCheckIfDataIsNew';
 import { ParsedFeedsDataType } from "pages";
 
 interface Props {
@@ -32,27 +34,21 @@ export default memo(function CardContent({
 }: Props) {
     const { title, description, pubDate, isRead, isFavorite, origin } =
         cardData ?? {};
+
     const [readState, setReadState] = useDerivedStateFromProps<boolean>(
         isRead ?? false
     );
     const [favoriteState, setFavoriteState] = useDerivedStateFromProps<boolean>(
         isFavorite ?? false
     );
-    const [pubDateState] = useDerivedStateFromProps<string>(pubDate ?? "");
-    const [dateState, setDateState] = useState(false);
-    const parsedPubDate = new Date(pubDateState).toDateString();
+
+    const clientSideDate = useClientSideDate(pubDate);
+    const isDataNew = useCheckIfDataIsNew(clientSideDate);
+
     const returnReadStyle = (flag: boolean) => {
         if (flag) return "brightness-75 dark:opacity-50";
         return "brightness-100 dark:opacity-100";
     };
-
-    // hydration 오류 수정용
-    useEffect(() => {
-        const dateFlag = isTodayLessThanExtraDay(pubDate);
-        if (dateFlag) {
-            setDateState(dateFlag);
-        }
-    }, [pubDate]);
 
     return (
         <section
@@ -71,7 +67,7 @@ export default memo(function CardContent({
                         setFavoriteState
                     )}
                 />
-                {dateState && (
+                {isDataNew && (
                     <span className="text-xs text-yellow-500 font-bold dark:text-yellow-300">
                         New
                     </span>
@@ -92,7 +88,7 @@ export default memo(function CardContent({
                 </div>
                 <p className="my-3">{description}</p>
                 <div className="flex justify-between w-full">
-                    <p>{parsedPubDate}</p>
+                    <p>{clientSideDate}</p>
                     <p>{origin}</p>
                 </div>
             </div>

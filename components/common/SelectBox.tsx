@@ -1,7 +1,5 @@
 import { ChangeEvent, memo } from "react";
 
-import { SORT_STANDARD } from "common/constants";
-
 interface Props {
     optionValues: string[];
     customStyles?: string;

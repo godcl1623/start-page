@@ -2,9 +2,9 @@ import { SourceData } from "controllers/sources";
 
 import useCancelSubscription from "./hooks/useCancelSubscription";
 
-import Button from "./common/Button";
-import ListItemBox from "./common/ListItemBox";
-import ModalTemplate from "./common/ModalTemplate";
+import Button from "../common/Button";
+import ListItemBox from "../common/ListItemBox";
+import ModalTemplate from "../common/ModalTemplate";
 
 interface Props {
     sources: SourceData[];

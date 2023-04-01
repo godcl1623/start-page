@@ -1,8 +1,8 @@
 import { FilterType } from "hooks/useFilters";
 
-import Button from "./common/Button";
-import ListItemBox from "./common/ListItemBox";
-import ModalTemplate from "./common/ModalTemplate";
+import Button from "../common/Button";
+import ModalTemplate from "../common/ModalTemplate";
+import SubscriptionOption from './SubscriptionOption';
 
 interface Props {
     displayState?: FilterType<boolean>;
@@ -50,36 +50,13 @@ export default function FilterBySource({
     const subscriptionOptions = Object.keys(displayState).map(
         (origins: string, index: number) => {
             return (
-                <ListItemBox
+                <SubscriptionOption
                     key={origins}
-                    onClick={changeDisplayFlag(origins, !displayState[origins])}
-                >
-                    <div>{origins || `blog_${index}`}</div>
-                    <label
-                        htmlFor="checkDisplay"
-                        className="w-5 h-5 border rounded p-0.5 cursor-pointer"
-                        onClick={changeDisplayFlag(
-                            origins,
-                            !displayState[origins]
-                        )}
-                    >
-                        <div
-                            className={`w-full h-full ${
-                                displayState[origins]
-                                    ? "bg-white"
-                                    : "bg-transparent"
-                            }`}
-                        />
-                    </label>
-                    <input
-                        type="checkbox"
-                        name="checkDisplay"
-                        className="hidden"
-                        value={origins}
-                        checked={displayState[origins] ?? true}
-                        onChange={() => {}}
-                    />
-                </ListItemBox>
+                    alternativeString={`blog_${index}`}
+                    displayState={displayState}
+                    origins={origins}
+                    changeDisplayFlag={changeDisplayFlag}
+                />
             );
         }
     );
