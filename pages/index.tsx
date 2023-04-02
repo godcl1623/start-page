@@ -1,4 +1,3 @@
-// TODO: 페이지 네비게이터는 5개까지 + 맨 처음, 맨 마지막 페이지만 표시, 그 외는 줄임표로
 import { useCallback, useEffect, useState } from "react";
 import RequestControllers from "controllers";
 import { AxiosResponse } from "axios";
@@ -75,10 +74,8 @@ export default function Index({ feeds, sources }: IndexProps) {
         refetch: refetchStoredFeeds,
         fetchNextPage,
         hasNextPage,
-        isFetchingNextPage,
-        isFetched,
     } = useInfiniteQuery({
-        queryKey: [`/feeds?mw=${rawCookie}`, { isMobileLayout }],
+        queryKey: [`/feeds?mw=${rawCookie}`, { isMobileLayout, currentPage }],
         queryFn: ({ pageParam = currentPage }) =>
             getDataFrom(`/feeds?mw=${rawCookie}`, {
                 params: {
@@ -105,7 +102,7 @@ export default function Index({ feeds, sources }: IndexProps) {
     });
     const feedsFromServer = isMobileLayout
         ? (Object.values(formerFeedsList) as any[])
-              .filter((foo: any[]) => foo?.length > 0)
+              .filter((feedListPerPage: any[]) => feedListPerPage?.length > 0)
               .reduce((acc, x) => acc?.concat(x), [])
         : formerFeedsList[currentPage];
 

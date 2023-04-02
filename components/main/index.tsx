@@ -14,6 +14,7 @@ import SubscribeNew from "components/feeds/SubscribeNew";
 import CancelSubscription from "components/feeds/CancelSubscription";
 import FilterBySource from "components/feeds/FilterBySource";
 import PostHandleOptions from "./PostHandleOptions";
+import PageButton from "./PageButton";
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
@@ -122,24 +123,21 @@ export default memo(function MainPage({
         currentPage,
         calculateTotalPages(totalCount)
     ).map((pageIndex: number) => (
-        <li
-            key={`page_${pageIndex}`}
-            className="list-none"
-            onClick={moveToPage(pageIndex)}
-        >
-            <button
-                className={`${
+        <li key={`page_${pageIndex}`} className="list-none">
+            <PageButton
+                customStyle={`${
                     currentPage === pageIndex ? "text-blue-500 font-bold" : ""
                 }`}
+                clickHandler={moveToPage(pageIndex)}
             >
                 {pageIndex}
-            </button>
+            </PageButton>
         </li>
     ));
 
     return (
         <article
-            className="flex-center flex-col w-full h-max min-h-full px-4 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
+            className="flex-center flex-col w-full h-max min-h-full px-8 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
             ref={startPageRef}
         >
             <section className="flex-center w-full h-1/3 my-32 lg:w-[768px]">
@@ -159,10 +157,24 @@ export default memo(function MainPage({
                         className="w-full h-[150px]"
                     />
                 ) : (
-                    <ul className="flex justify-evenly items-center w-1/2 mt-10 mb-20">
-                        <button onClick={moveToPreviousPage}>&lt;</button>
+                    <ul className="flex justify-center items-center gap-2 w-full mt-10 mb-20">
+                        <PageButton clickHandler={moveToPage(1)}>
+                            &lt;&lt;
+                        </PageButton>
+                        <PageButton clickHandler={moveToPreviousPage}>
+                            &lt;
+                        </PageButton>
                         {pageIndicator}
-                        <button onClick={moveToNextPage}>&gt;</button>
+                        <PageButton clickHandler={moveToNextPage}>
+                            &gt;
+                        </PageButton>
+                        <PageButton
+                            clickHandler={moveToPage(
+                                calculateTotalPages(totalCount)
+                            )}
+                        >
+                            &gt;&gt;
+                        </PageButton>
                     </ul>
                 )}
             </section>
