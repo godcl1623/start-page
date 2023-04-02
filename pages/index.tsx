@@ -115,6 +115,7 @@ export default function Index({ feeds, sources }: IndexProps) {
                 if (previousObject[currentPage] != null) {
                     if (
                         currentPage > 1 &&
+                        previousObject[currentPage - 1].length > 0 &&
                         previousObject[currentPage - 1].every(
                             (feed: ParsedFeedsDataType, index: number) =>
                                 feed.id === feedsList[index]?.id

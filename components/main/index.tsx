@@ -1,6 +1,10 @@
 import { memo, useEffect, useRef, useState } from "react";
 
 import { ParsedFeedsDataType } from "pages";
+import { FilterType } from "hooks/useFilters";
+import { SourceData } from "controllers/sources";
+
+import { calculateTotalPages, calculatePagesList } from "./utils";
 
 import Search from "components/search";
 import Card from "components/card";
@@ -9,9 +13,7 @@ import SubscriptionDialogBox from "components/feeds";
 import SubscribeNew from "components/feeds/SubscribeNew";
 import CancelSubscription from "components/feeds/CancelSubscription";
 import FilterBySource from "components/feeds/FilterBySource";
-import { FilterType } from "hooks/useFilters";
-import { SourceData } from "controllers/sources";
-import PostHandleOptions from './PostHandleOptions';
+import PostHandleOptions from "./PostHandleOptions";
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
@@ -65,7 +67,9 @@ export default memo(function MainPage({
         filterBySource: false,
     });
     const startPageRef = useRef<HTMLElement | null>(null);
-    const { sources: sourcesList }: SourcesList = sources ? JSON.parse(sources) : {};
+    const { sources: sourcesList }: SourcesList = sources
+        ? JSON.parse(sources)
+        : {};
 
     const handleClick = (target: ModalKeys) => () => {
         document.documentElement.scrollTo({ top: 0 });
@@ -114,10 +118,9 @@ export default memo(function MainPage({
               ))
             : [];
 
-    // TODO: 로직 수정
-    const pageIndicator = Array.from(
-        { length: Math.ceil(totalCount / 10) },
-        (v, k) => k + 1
+    const pageIndicator = calculatePagesList(
+        currentPage,
+        calculateTotalPages(totalCount)
     ).map((pageIndex: number) => (
         <li
             key={`page_${pageIndex}`}
