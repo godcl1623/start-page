@@ -31,7 +31,7 @@ export default function CancelSubscription({ sources }: Props) {
                         <div>{name || `blog_${index}`}</div>
                         <Button
                             type="button"
-                            customStyle="bg-red-600 dark:bg-red-700"
+                            customStyle="w-16 bg-red-600 text-neutral-100 dark:bg-red-700"
                             clickHandler={handleClick(id)}
                         >
                             삭제

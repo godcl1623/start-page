@@ -63,7 +63,7 @@ export default function FilterBySource({
 
     const buttonsData: ButtonsData = {
         취소: {
-            customStyle: "w-16 bg-red-600 dark:bg-red-700",
+            customStyle: "w-16 bg-red-400 text-neutral-100 dark:bg-red-700",
             clickHandler: closeModal,
         },
         초기화: {
@@ -71,7 +71,7 @@ export default function FilterBySource({
             clickHandler: initiateDisplayFilter,
         },
         저장: {
-            customStyle: "w-16 bg-blue-600 dark:bg-sky-600",
+            customStyle: "w-16 bg-sky-500 text-neutral-100 dark:bg-sky-600",
             clickHandler: enableDisplayFilter,
         },
     };
