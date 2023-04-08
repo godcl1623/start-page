@@ -11,14 +11,19 @@ export default async function feedsHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
+    // TODO: MongoDB 초기화 함수 분리(범용) - start
     const { userId, mw } = request.query;
     const id = userId ?? parseCookie(mw);
     const Feeds = MongoDB.getFeedsModel();
     const remoteData = await Feeds.find({ _uuid: id }).lean();
+    // MongoDB 초기화 함수 분리(범용) - end
 
+    // TODO: 빈 데이터 방어 코드 함수 분리(기본 api) - start
     if (remoteData.length === 0 && typeof id === "string" && id.length > 0) {
         await Feeds.insertMany({ _uuid: id, data: [] });
     }
+    // 빈 데이터 방어 코드 함수 분리(기본 api) - end
+
     if (areEqual(request.method, "GET")) {
         const parsedContents: ParseResultType[] = remoteData[0]?.data;
         try {
@@ -30,6 +35,8 @@ export default async function feedsHandler(
                 per_page,
                 sortOption,
             } = request.query;
+
+            // TODO: 페이지네이션 함수 분리(피드 목록 공통) - start
             let pageValue =
                 page != null && typeof page === "string" ? parseInt(page) : 1;
             let perPageValue =
@@ -42,6 +49,8 @@ export default async function feedsHandler(
                     : 0;
             const paginationStartIndex = perPageValue * (pageValue - 1);
             const paginationEndIndex = perPageValue * pageValue;
+            // 페이지네이션 함수 분리(피드 목록 공통) - end
+
             const isFavoriteFilterNeeded = favorites === "true" ? true : false;
             const displayState =
                 displayOption != null && typeof displayOption === "string"
@@ -52,6 +61,7 @@ export default async function feedsHandler(
                     ? JSON.parse(textOption)
                     : null;
             let filteredContents: ParseResultType[] = parsedContents;
+            // TODO: filteredContents 각각 가공하는 함수로 분리
             if (isFavoriteFilterNeeded) {
                 const favoriteFilteredContents = filteredContents.map(
                     (parsedContent: ParseResultType) => {
@@ -128,6 +138,7 @@ export default async function feedsHandler(
                     },
                     []
                 )
+                // TODO: 별도 sort 로직으로 분리
                 .sort((a, b) => {
                     if (a.pubDate && b.pubDate) {
                         const previousDate: Date = new Date(a.pubDate);

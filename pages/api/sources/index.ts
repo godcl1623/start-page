@@ -14,10 +14,14 @@ export default async function sourceHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
+    // TODO: MongoDB 초기화 함수 분리(범용) - start
     const { userId, mw } = request.query;
     const id = userId ?? parseCookie(mw);
     const Sources = MongoDB.getSourcesModel();
     const remoteContents = await Sources.find({ _uuid: id }).lean();
+    // MongoDB 초기화 함수 분리(범용) - end
+
+    // TODO: 빈 데이터 방어 코드 함수 분리(기본 api) - start
     if (
         remoteContents.length === 0 &&
         typeof id === "string" &&
@@ -25,6 +29,8 @@ export default async function sourceHandler(
     ) {
         await Sources.insertMany({ _uuid: id, sources: [] });
     }
+    // 빈 데이터 방어 코드 함수 분리(기본 api) - end
+
     if (areEqual(request.method, "GET")) {
         try {
             response.status(200).json(JSON.stringify(remoteContents[0]));

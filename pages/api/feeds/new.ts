@@ -21,17 +21,25 @@ export default async function feedsHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
+    // TODO: MongoDB 초기화 함수 분리(범용) - start
     const { userId, mw } = request.query;
     const id = userId ?? parseCookie(mw);
     const Feeds = MongoDB.getFeedsModel();
     const remoteData = await Feeds.find({ _uuid: id }).lean();
+    // MongoDB 초기화 함수 분리(범용) - end
+
     const { getDataFrom, postDataTo } = new RequestControllers();
+
     if (areEqual(request.method, "GET")) {
         try {
+            // TODO: 페이지네이션 함수 분리(피드 목록 공통) - start
             const pageValue = 1;
             const perPageValue = 10;
             const paginationStartIndex = perPageValue * (pageValue - 1);
             const paginationEndIndex = perPageValue * pageValue;
+            // 페이지네이션 함수 분리(피드 목록 공통) - end
+
+            // TODO: source 파싱 함수로 분리 - 아래 sources.length 포함 - start
             const { data } = await getDataFrom(`/sources?userId=${id}`);
             const { sources }: FileContentsInterface = JSON.parse(data);
             const urlList = sources
@@ -39,7 +47,10 @@ export default async function feedsHandler(
                 : [];
             const result: PromiseSettledResult<AxiosResponse>[] | undefined =
                 await getRssResponses(urlList);
+            // source 파싱 함수로 분리 - end
+
             if (result != null) {
+                // TODO: 1. source 파싱 결과 반환 함수
                 const totalFeedsFromSources: string[] = result.map(
                     (resultData: PromiseSettledResult<AxiosResponse>) => {
                         if (resultData.status === "fulfilled") {
@@ -47,9 +58,11 @@ export default async function feedsHandler(
                         }
                     }
                 );
+                // TODO: 2. 스토리지 목록 반환 함수
                 const storedFeeds: ParseResultType[] = remoteData[0]
                     ? remoteData[0].data
                     : [];
+                // TODO: 3. source 파싱 결과 가공 함수 - storedFeeds 파라미터로
                 let originId = sources?.length > 0 ? storedFeeds.length : 0;
                 const parseResult = totalFeedsFromSources.map(
                     (rawRss: string, index: number) => {
@@ -98,6 +111,7 @@ export default async function feedsHandler(
                         }
                     }
                 );
+                // TODO: 4. 스토리지 목록 업데이트 함수
                 const updatedFeedSets = parseResult.map(
                     (newFeedSet: ParseResultType, feedSetIndex: number) => {
                         const newFeedsList = newFeedSet.feeds;
@@ -126,6 +140,7 @@ export default async function feedsHandler(
                         };
                     }
                 );
+                // TODO: 5. 파싱 결과, 업데이트 목록 차이점 비교 함수
                 const differentiateArray = parseResult.filter(
                     (resultData: ParseResultType, index: number) =>
                         resultData.lastFeedsLength !==
@@ -133,6 +148,7 @@ export default async function feedsHandler(
                         resultData.latestFeedTitle !==
                             updatedFeedSets[index]?.latestFeedTitle
                 );
+                // TODO: 6. 최종 업데이트 피드 목록 반환 함수
                 const totalFeedsList = updatedFeedSets
                     .reduce(
                         (
