@@ -1,5 +1,4 @@
-import { checkIfTodayLessThan } from "common/helpers";
-import { memo, MouseEvent, useEffect, useState } from "react";
+import { memo, MouseEvent } from "react";
 import { CallbackType } from ".";
 import Checkbox from "./Checkbox";
 import {
@@ -26,7 +25,7 @@ interface Props {
     ) => () => void;
 }
 
-export default memo(function CardContent({
+export default memo(function CardView({
     cardData,
     handleCard,
     handleFavorite,

@@ -3,12 +3,13 @@ import { ChangeEvent, FormEvent, memo, useEffect, useState } from "react";
 import { SEARCH_ADDRESS_BY_ENGINE } from "./utils/constants";
 
 import { extractFormValues, openSearchResult } from "./utils/helpers";
+import useHandleInputFill from './hooks/useHandleInputFill';
 
 import SelectBox from "../common/SelectBox";
 
 export default memo(function Search() {
     const [inputValue, setInputValue] = useState<string>("");
-    const [isInputFilled, setIsInputFilled] = useState<boolean>(false);
+    const isInputFilled = useHandleInputFill(inputValue);
     const searchEngines = Object.keys(SEARCH_ADDRESS_BY_ENGINE);
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -24,11 +25,6 @@ export default memo(function Search() {
     const clearInput = () => {
         setInputValue("");
     };
-
-    useEffect(() => {
-        if (inputValue.length > 0) setIsInputFilled(true);
-        else setIsInputFilled(false);
-    }, [inputValue]);
 
     return (
         <form

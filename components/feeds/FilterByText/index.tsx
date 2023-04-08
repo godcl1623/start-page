@@ -2,7 +2,7 @@ import { ChangeEvent, FormEvent, memo, useRef, useState } from "react";
 
 import { extractFormValues } from "components/search/utils/helpers";
 
-import SelectBox from "components/common/SelectBox";
+import FilterByTextView from "./FilterByTextView";
 
 interface Props {
     setTextFilter: (target: string, value: string) => void;
@@ -52,34 +52,13 @@ export default memo(function FilterByText({ setTextFilter }: Props) {
     };
 
     return (
-        <form
-            className="relative flex w-full my-2 h-full shadow-md text-xs dark:shadow-zinc-600 md:mx-2 md:my-0"
-            onSubmit={handleSubmit}
-        >
-            <SelectBox
-                optionValues={searchOptions}
-                customStyles="h-full rounded-l-md"
-            />
-            <input
-                ref={inputElement}
-                className="w-full h-full px-3"
-                onChange={checkIfInputFilled}
-            />
-            {isInputFilled && (
-                <button
-                    type="button"
-                    className="absolute right-8 w-5 h-full"
-                    onClick={clearInput}
-                >
-                    ✕
-                </button>
-            )}
-            <button
-                type="submit"
-                className="w-12 rounded-r-md bg-sky-400 text-neutral-100 dark:bg-sky-800 dark:text-gray-300"
-            >
-                검색
-            </button>
-        </form>
+        <FilterByTextView
+            searchOptions={searchOptions}
+            checkIfInputFilled={checkIfInputFilled}
+            clearInput={clearInput}
+            handleSubmit={handleSubmit}
+            isInputFilled={isInputFilled}
+            ref={inputElement}
+        />
     );
-})
+});

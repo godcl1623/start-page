@@ -6,7 +6,7 @@ import { ParsedFeedsDataType } from "pages";
 import RequestControllers from "controllers";
 
 import useGetRawCookie from "hooks/useGetRawCookie";
-import CardContent from './CardContent';
+import CardView from './CardView';
 
 interface CardProps {
     cardData: ParsedFeedsDataType;
@@ -71,7 +71,7 @@ export default memo(function Card({ cardData, refetchFeeds }: CardProps) {
     }, [isSuccess, isFavorite]);
 
     return (
-        <CardContent
+        <CardView
             cardData={cardData}
             handleCard={handleCard}
             handleFavorite={handleFavorite}

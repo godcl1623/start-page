@@ -9,7 +9,7 @@ import { calculateTotalPages, calculatePagesList } from "./utils";
 import Search from "components/search";
 import Card from "components/card";
 import Modal from "components/modal";
-import SubscriptionDialogBox from "components/feeds";
+import SubscriptionDialogBox from "components/feeds/SubscriptionDialogBox";
 import SubscribeNew from "components/feeds/SubscribeNew";
 import CancelSubscription from "components/feeds/CancelSubscription";
 import FilterBySource from "components/feeds/FilterBySource";
