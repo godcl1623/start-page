@@ -121,16 +121,3 @@ export const makeFeedDataArray = (
         return result;
     });
 };
-
-export const sortFeedSets = (
-    a: ParsedFeedsDataType,
-    b: ParsedFeedsDataType
-) => {
-    if (a.pubDate && b.pubDate) {
-        const previousDate: Date = new Date(a.pubDate);
-        const nextDate = new Date(b.pubDate);
-        return previousDate > nextDate ? -1 : 1;
-    } else {
-        return -1;
-    }
-};

@@ -1,7 +1,6 @@
-// TODO: api 전부 데이터 가공 로직 별도 함수로 분리할 것
 import { NextApiRequest, NextApiResponse } from "next";
 import { areEqual } from "common/capsuledConditions";
-import { ParseResultType, ParsedFeedsDataType } from "pages";
+import { ParseResultType } from "pages";
 import { handleSort, checkShouldSortByReverse } from "common/helpers";
 import {
     initializeMongoDBWith,
@@ -9,7 +8,14 @@ import {
     defendDataEmptyException,
 } from "controllers/common";
 import { SORT_STANDARD_STATE } from "common/constants";
-import { getPaginationIndexes } from "controllers/feeds";
+import {
+    getPaginationIndexes,
+    filterFavorites,
+    replaceOriginalWith,
+    filterSpecificSources,
+    filterByTexts,
+    reduceFeedSetsToFeeds,
+} from "controllers/feeds";
 
 export default async function feedsHandler(
     request: NextApiRequest,
@@ -26,8 +32,8 @@ export default async function feedsHandler(
     });
 
     if (areEqual(request.method, "GET")) {
-        const parsedContents: ParseResultType[] = remoteData;
         try {
+            const parsedContents: ParseResultType[] = remoteData;
             const {
                 favorites,
                 displayOption,
@@ -40,103 +46,48 @@ export default async function feedsHandler(
             const [paginationStartIndex, paginationEndIndex, sortIndex] =
                 getPaginationIndexes(page, per_page, sortOption);
 
+            let filteredContents: ParseResultType[] = parsedContents;
+
             const isFavoriteFilterNeeded = favorites === "true" ? true : false;
+            if (isFavoriteFilterNeeded) {
+                filteredContents = replaceOriginalWith(
+                    filteredContents,
+                    filterFavorites(filteredContents)
+                );
+            }
+
             const displayState =
                 displayOption != null && typeof displayOption === "string"
                     ? JSON.parse(displayOption)
                     : null;
-            const textState =
-                textOption != null && typeof textOption === "string"
-                    ? JSON.parse(textOption)
-                    : null;
-            let filteredContents: ParseResultType[] = parsedContents;
-            // TODO: filteredContents 각각 가공하는 함수로 분리
-            if (isFavoriteFilterNeeded) {
-                const favoriteFilteredContents = filteredContents.map(
-                    (parsedContent: ParseResultType) => {
-                        const originalFeeds = parsedContent.feeds;
-                        const filteredFeeds = originalFeeds?.filter(
-                            (feed: ParsedFeedsDataType) => feed.isFavorite
-                        );
-                        return {
-                            ...parsedContent,
-                            feeds: filteredFeeds,
-                        };
-                    }
-                );
-                filteredContents = filteredContents
-                    .slice(filteredContents.length)
-                    .concat(favoriteFilteredContents);
-            }
             if (displayState != null && Object.keys(displayState).length > 0) {
                 const feedsToDisplay = Object.keys(displayState).filter(
                     (feedSource: string) => displayState[feedSource]
                 );
-                const displayFilteredContents = filteredContents.filter(
-                    (parsedContent: ParseResultType) => {
-                        const feedSource = parsedContent.originName ?? "";
-                        return feedsToDisplay.includes(feedSource);
-                    }
+                filteredContents = replaceOriginalWith(
+                    filteredContents,
+                    filterSpecificSources(filteredContents, feedsToDisplay)
                 );
-                filteredContents = filteredContents
-                    .slice(filteredContents.length)
-                    .concat(displayFilteredContents);
             }
+
+            const textState =
+                textOption != null && typeof textOption === "string"
+                    ? JSON.parse(textOption)
+                    : null;
             if (textState != null && Object.keys(textState).length > 0) {
                 const dataSet = Object.entries<string>(textState).filter(
                     (dataSet: string | unknown[]) => dataSet[1] !== ""
                 )[0];
                 if (dataSet != null) {
                     const [standard, value] = dataSet;
-                    const textFilteredContents = filteredContents.map(
-                        (parsedContent: ParseResultType) => {
-                            const originalFeeds = parsedContent.feeds;
-                            const filteredFeeds = originalFeeds?.filter(
-                                (feed: ParsedFeedsDataType) => {
-                                    if (standard === "title") {
-                                        return feed.title?.includes(value);
-                                    } else {
-                                        return feed.description?.includes(
-                                            value
-                                        );
-                                    }
-                                }
-                            );
-                            return {
-                                ...parsedContent,
-                                feeds: filteredFeeds,
-                            };
-                        }
+                    filteredContents = replaceOriginalWith(
+                        filteredContents,
+                        filterByTexts(filteredContents, standard, value)
                     );
-                    filteredContents = filteredContents
-                        .slice(filteredContents.length)
-                        .concat(textFilteredContents);
                 }
             }
-            const totalFeedsList = filteredContents
-                ?.reduce(
-                    (
-                        totalArray: ParsedFeedsDataType[],
-                        currentData: ParseResultType
-                    ) => {
-                        if (currentData.feeds) {
-                            return totalArray.concat(currentData.feeds);
-                        } else {
-                            return totalArray;
-                        }
-                    },
-                    []
-                )
-                // TODO: 별도 sort 로직으로 분리
-                .sort((a, b) => {
-                    if (a.pubDate && b.pubDate) {
-                        const previousDate: Date = new Date(a.pubDate);
-                        const nextDate = new Date(b.pubDate);
-                        return previousDate > nextDate ? -1 : 1;
-                    } else {
-                        return -1;
-                    }
-                });
+
+            const totalFeedsList = reduceFeedSetsToFeeds(filteredContents);
             const responseBody = {
                 data: totalFeedsList
                     ?.sort(

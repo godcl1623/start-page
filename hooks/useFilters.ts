@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { SourceData } from "controllers/sources";
-import { SourcesList } from 'components/main'; 
+import { SourcesList } from "components/main";
 
 export type FilterType<T> = {
     [key in string]: T;
@@ -22,13 +22,15 @@ const useFilters = <T>(sourceString: string, defaultValue: T) => {
         if (sourceString != null) {
             try {
                 const parseResult = JSON.parse(sourceString);
-                if (Array.isArray(parseResult)) {
+                if (
+                    Array.isArray(parseResult) &&
+                    typeof parseResult[0] === "string"
+                ) {
                     parseResult.forEach((key: string) =>
                         updateInnerState(key, defaultValue)
                     );
                 } else {
-                    const { sources: sourcesList }: SourcesList = parseResult;
-                    const nameList = sourcesList.map(
+                    const nameList = parseResult.map(
                         (source: SourceData) => source.name
                     );
                     nameList.forEach((name: string) =>

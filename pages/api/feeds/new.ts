@@ -11,11 +11,10 @@ import {
     getRssResponses,
     parseXml,
     makeFeedDataArray,
-    sortFeedSets,
-} from "controllers/feeds/new";
+} from "controllers/feeds/new/utils";
 import { AxiosResponse } from "axios";
 import { ParsedFeedsDataType, ParseResultType } from "pages";
-import { getPaginationIndexes } from "controllers/feeds";
+import { getPaginationIndexes, sortFeedSets } from "controllers/feeds";
 
 export default async function feedsHandler(
     request: NextApiRequest,

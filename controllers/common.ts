@@ -54,6 +54,5 @@ export const defendDataEmptyException = ({
     Schema,
     customProperty,
 }: DefendDataEmptyExceptionParameters) => {
-    console.log('customProperty: ', customProperty)
     if (condition) Schema.insertMany({ _uuid: userId, [customProperty]: [] });
 };
