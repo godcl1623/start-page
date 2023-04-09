@@ -3,7 +3,7 @@ import { JSDOM } from "jsdom";
 
 import { ParsedFeedsDataType } from "pages";
 
-import RequestControllers from "controllers";
+import RequestControllers from "controllers/requestControllers";
 import { areEqual } from "common/capsuledConditions";
 
 export const getRssResponses = async (

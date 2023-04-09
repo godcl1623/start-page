@@ -2,19 +2,17 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { areEqual } from "common/capsuledConditions";
 import { checkIfDataExists, CustomError } from "controllers/sources";
 import { ParseResultType } from "pages";
-import { parseCookie } from "controllers/utils";
-import MongoDB from "controllers/mongodb";
+import { extractUserIdFrom, initializeMongoDBWith } from "controllers/common";
 
 export default async function feedsSetIdHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    // TODO: MongoDB 초기화 함수 분리(범용) - start
-    const { userId, mw } = request.query;
-    const id = userId ?? parseCookie(mw);
-    const Feeds = MongoDB.getFeedsModel();
-    const remoteData = await Feeds.find({ _uuid: id }).lean();
-    // MongoDB 초기화 함수 분리(범용) - end
+    const userId = extractUserIdFrom(request);
+    const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
+        userId,
+        "feeds"
+    );
 
     if (areEqual(request.method, "GET")) {
         response.status(405).send("Method Not Allowed");
@@ -29,7 +27,7 @@ export default async function feedsSetIdHandler(
             const { feedsSetId } = request.query;
             // TODO: feeds/new 2번 함수 참조
             const data: ParseResultType[] = remoteData[0]
-                ? remoteData[0].data
+                ? remoteData
                 : [];
             const idList = data.map((feedsSet: ParseResultType) => feedsSet.id);
             if (!checkIfDataExists(idList, Number(feedsSetId))) {
@@ -39,11 +37,11 @@ export default async function feedsSetIdHandler(
                 (feedsSet: ParseResultType) =>
                     feedsSet.id !== Number(feedsSetId)
             );
-            const updateResult = await Feeds.updateOne(
+            const updateResult = await Feeds?.updateOne(
                 { _uuid: userId },
                 { $set: { data: filteredList } }
             );
-            if (updateResult.acknowledged) {
+            if (updateResult?.acknowledged) {
                 response.status(204).send("success");
             } else {
                 throw new CustomError(400, "update failed");

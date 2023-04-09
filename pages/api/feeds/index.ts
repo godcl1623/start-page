@@ -2,30 +2,31 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { areEqual } from "common/capsuledConditions";
 import { ParseResultType, ParsedFeedsDataType } from "pages";
-import { parseCookie } from "controllers/utils";
-import MongoDB from "controllers/mongodb";
 import { handleSort, checkShouldSortByReverse } from "common/helpers";
+import {
+    initializeMongoDBWith,
+    extractUserIdFrom,
+    defendDataEmptyException,
+} from "controllers/common";
 import { SORT_STANDARD_STATE } from "common/constants";
+import { getPaginationIndexes } from "controllers/feeds";
 
 export default async function feedsHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    // TODO: MongoDB 초기화 함수 분리(범용) - start
-    const { userId, mw } = request.query;
-    const id = userId ?? parseCookie(mw);
-    const Feeds = MongoDB.getFeedsModel();
-    const remoteData = await Feeds.find({ _uuid: id }).lean();
-    // MongoDB 초기화 함수 분리(범용) - end
+    const userId = extractUserIdFrom(request);
+    const { remoteData, Schema } = await initializeMongoDBWith(userId, "feeds");
 
-    // TODO: 빈 데이터 방어 코드 함수 분리(기본 api) - start
-    if (remoteData.length === 0 && typeof id === "string" && id.length > 0) {
-        await Feeds.insertMany({ _uuid: id, data: [] });
-    }
-    // 빈 데이터 방어 코드 함수 분리(기본 api) - end
+    defendDataEmptyException({
+        condition: remoteData == null,
+        userId,
+        Schema,
+        customProperty: "data",
+    });
 
     if (areEqual(request.method, "GET")) {
-        const parsedContents: ParseResultType[] = remoteData[0]?.data;
+        const parsedContents: ParseResultType[] = remoteData;
         try {
             const {
                 favorites,
@@ -36,20 +37,8 @@ export default async function feedsHandler(
                 sortOption,
             } = request.query;
 
-            // TODO: 페이지네이션 함수 분리(피드 목록 공통) - start
-            let pageValue =
-                page != null && typeof page === "string" ? parseInt(page) : 1;
-            let perPageValue =
-                per_page != null && typeof per_page === "string"
-                    ? parseInt(per_page)
-                    : 10;
-            let sortIndex =
-                sortOption != null && typeof sortOption === "string"
-                    ? parseInt(sortOption)
-                    : 0;
-            const paginationStartIndex = perPageValue * (pageValue - 1);
-            const paginationEndIndex = perPageValue * pageValue;
-            // 페이지네이션 함수 분리(피드 목록 공통) - end
+            const [paginationStartIndex, paginationEndIndex, sortIndex] =
+                getPaginationIndexes(page, per_page, sortOption);
 
             const isFavoriteFilterNeeded = favorites === "true" ? true : false;
             const displayState =

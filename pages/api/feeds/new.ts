@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { areEqual } from "common/capsuledConditions";
-import RequestControllers from "controllers";
-import { parseCookie } from "controllers/utils";
+import RequestControllers from "controllers/requestControllers";
+import { extractUserIdFrom, initializeMongoDBWith } from "controllers/common";
 import {
     SourceData,
     FileContentsInterface,
@@ -15,32 +15,27 @@ import {
 } from "controllers/feeds/new";
 import { AxiosResponse } from "axios";
 import { ParsedFeedsDataType, ParseResultType } from "pages";
-import MongoDB from "controllers/mongodb";
+import { getPaginationIndexes } from "controllers/feeds";
 
 export default async function feedsHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    // TODO: MongoDB 초기화 함수 분리(범용) - start
-    const { userId, mw } = request.query;
-    const id = userId ?? parseCookie(mw);
-    const Feeds = MongoDB.getFeedsModel();
-    const remoteData = await Feeds.find({ _uuid: id }).lean();
-    // MongoDB 초기화 함수 분리(범용) - end
+    const userId = extractUserIdFrom(request);
+    const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
+        userId,
+        "feeds"
+    );
 
     const { getDataFrom, postDataTo } = new RequestControllers();
 
     if (areEqual(request.method, "GET")) {
         try {
-            // TODO: 페이지네이션 함수 분리(피드 목록 공통) - start
-            const pageValue = 1;
-            const perPageValue = 10;
-            const paginationStartIndex = perPageValue * (pageValue - 1);
-            const paginationEndIndex = perPageValue * pageValue;
-            // 페이지네이션 함수 분리(피드 목록 공통) - end
+            const [paginationStartIndex, paginationEndIndex] =
+                getPaginationIndexes("1", "10");
 
             // TODO: source 파싱 함수로 분리 - 아래 sources.length 포함 - start
-            const { data } = await getDataFrom(`/sources?userId=${id}`);
+            const { data } = await getDataFrom(`/sources?userId=${userId}`);
             const { sources }: FileContentsInterface = JSON.parse(data);
             const urlList = sources
                 ? sources.map((sourceData: SourceData) => sourceData.url)
@@ -59,9 +54,8 @@ export default async function feedsHandler(
                     }
                 );
                 // TODO: 2. 스토리지 목록 반환 함수
-                const storedFeeds: ParseResultType[] = remoteData[0]
-                    ? remoteData[0].data
-                    : [];
+                const storedFeeds: ParseResultType[] =
+                    remoteData != null && remoteData[0] ? remoteData : [];
                 // TODO: 3. source 파싱 결과 가공 함수 - storedFeeds 파라미터로
                 let originId = sources?.length > 0 ? storedFeeds.length : 0;
                 const parseResult = totalFeedsFromSources.map(
@@ -172,7 +166,7 @@ export default async function feedsHandler(
                     count: totalFeedsList.length,
                 };
                 if (differentiateArray.length > 0) {
-                    postDataTo(`/feeds/new?userId=${id}`, updatedFeedSets);
+                    postDataTo(`/feeds/new?userId=${userId}`, updatedFeedSets);
                     response.status(200).json(responseBody);
                 } else {
                     response.status(204).send("no new feeds available");
@@ -187,11 +181,11 @@ export default async function feedsHandler(
     } else if (areEqual(request.method, "POST")) {
         try {
             const dataToWrite: ParseResultType[] = request.body;
-            const updateResult = await Feeds.updateOne(
-                { _uuid: id },
+            const updateResult = await Feeds?.updateOne(
+                { _uuid: userId },
                 { $set: { data: dataToWrite } }
             );
-            if (updateResult.acknowledged) {
+            if (updateResult?.acknowledged) {
                 response.status(201).send("success");
             } else {
                 throw new CustomError(400, "update failed");

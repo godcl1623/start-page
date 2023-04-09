@@ -2,8 +2,8 @@ import { useRouter } from "next/router";
 import axios from "axios";
 
 import { extractInputValue, checkIfStringPassesRule } from "../utils/helpers";
-import RequestControllers from "controllers";
-import SubscriptionForm from './SubscriptionForm';
+import RequestControllers from "controllers/requestControllers";
+import SubscriptionForm from "./SubscriptionForm";
 
 interface Props {
     userCookie: string;

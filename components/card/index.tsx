@@ -3,10 +3,10 @@ import { useMutation } from "@tanstack/react-query";
 
 import { ParsedFeedsDataType } from "pages";
 
-import RequestControllers from "controllers";
+import RequestControllers from "controllers/requestControllers";
 
 import useGetRawCookie from "hooks/useGetRawCookie";
-import CardView from './CardView';
+import CardView from "./CardView";
 
 interface CardProps {
     cardData: ParsedFeedsDataType;
@@ -16,12 +16,7 @@ interface CardProps {
 export type CallbackType = (value: any) => void;
 
 export default memo(function Card({ cardData, refetchFeeds }: CardProps) {
-    const {
-        link,
-        origin,
-        isFavorite,
-        id,
-    } = cardData ?? {};
+    const { link, origin, isFavorite, id } = cardData ?? {};
     const { patchDataTo } = new RequestControllers();
     const rawCookie = useGetRawCookie();
     const mutationFn = (newData: ParsedFeedsDataType) =>
@@ -43,7 +38,8 @@ export default memo(function Card({ cardData, refetchFeeds }: CardProps) {
     };
 
     const handleFavorite =
-        (originalState: boolean, readState: boolean, callback: CallbackType) => () => {
+        (originalState: boolean, readState: boolean, callback: CallbackType) =>
+        () => {
             callback(!originalState);
             const newData = {
                 ...cardData,
@@ -54,7 +50,12 @@ export default memo(function Card({ cardData, refetchFeeds }: CardProps) {
         };
 
     const handleRead =
-        (originalState: boolean, favoriteState: boolean, callback: CallbackType) => () => {
+        (
+            originalState: boolean,
+            favoriteState: boolean,
+            callback: CallbackType
+        ) =>
+        () => {
             callback(!originalState);
             const newData = {
                 ...cardData,

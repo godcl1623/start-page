@@ -1,20 +1,19 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { areEqual } from "common/capsuledConditions";
 import { ParsedFeedsDataType, ParseResultType } from "pages";
-import MongoDB from "controllers/mongodb";
-import { parseCookie } from "controllers/utils";
 import { CustomError } from "controllers/sources";
+import { extractUserIdFrom, initializeMongoDBWith } from "controllers/common";
 
 export default async function feedsSetIdHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    // TODO: MongoDB 초기화 함수 분리(범용) - start
-    const { mw } = request.query;
-    const userId = parseCookie(mw);
-    const Feeds = MongoDB.getFeedsModel();
-    const remoteData = await Feeds.find({ _uuid: userId }).lean();
-    // MongoDB 초기화 함수 분리(범용) - end
+    const userId = extractUserIdFrom(request);
+    const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
+        userId,
+        "feeds"
+    );
+
     if (areEqual(request.method, "GET")) {
         response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "POST")) {
@@ -25,7 +24,7 @@ export default async function feedsSetIdHandler(
         try {
             // TODO: feeds/new 2번 함수 참조
             const storedFeeds: ParseResultType[] = remoteData[0]
-                ? remoteData[0].data
+                ? remoteData
                 : [];
             const dataToChange: ParsedFeedsDataType = request.body;
             const { id, origin } = dataToChange;
@@ -55,11 +54,11 @@ export default async function feedsSetIdHandler(
                 };
                 // 통째로 함수로 분리? - end?
                 storedFeeds[feedSetIndex] = newFeedsSetRelatedToRequest;
-                const updateResult = await Feeds.updateOne(
+                const updateResult = await Feeds?.updateOne(
                     { _uuid: userId },
                     { $set: { data: storedFeeds } }
                 );
-                if (updateResult.acknowledged) {
+                if (updateResult?.acknowledged) {
                     response.status(200).send("success");
                 } else {
                     throw new CustomError(400, "update failed");
