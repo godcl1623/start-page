@@ -4,45 +4,49 @@ import {
     CustomError,
     checkIfDataExists,
     SourceDataInput,
-    FileContentsInterface,
     SourceData,
 } from "controllers/sources";
-import { decryptCookie, parseCookie } from "controllers/utils";
-import MongoDB from "controllers/mongodb";
+import {
+    extractUserIdFrom,
+    initializeMongoDBWith,
+    defendDataEmptyException,
+} from "controllers/common";
 
 export default async function sourceHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    const { userId, mw } = request.query;
-    const id = userId ?? parseCookie(mw);
-    const Sources = MongoDB.getSourcesModel();
-    const remoteContents = await Sources.find({ _uuid: id }).lean();
-    if (
-        remoteContents.length === 0 &&
-        typeof id === "string" &&
-        id.length > 0
-    ) {
-        await Sources.insertMany({ _uuid: id, sources: [] });
-    }
+    const userId = extractUserIdFrom(request);
+    const { remoteData: sources, Schema: Sources } =
+        await initializeMongoDBWith(userId, "sources");
+
+    defendDataEmptyException({
+        condition: sources == null,
+        userId,
+        Schema: Sources,
+        customProperty: "sources",
+    });
+
     if (areEqual(request.method, "GET")) {
         try {
-            response.status(200).json(JSON.stringify(remoteContents[0]));
+            response.status(200).json(sources != null ? JSON.stringify(sources) : '');
         } catch (error) {
             response.status(400).send(error);
         }
     } else if (areEqual(request.method, "POST")) {
         try {
             const sourceDataInput: SourceDataInput = request.body;
-            const { sources } = remoteContents[0];
+
             const urlsList = sources.map(
                 (sourceData: SourceData) => sourceData.url
             );
+
             if (checkIfDataExists(urlsList, sourceDataInput.url)) {
                 throw new CustomError(409, "source already exists.");
             }
+
             const updateResult = await Sources.updateOne(
-                { _uuid: id },
+                { _uuid: userId },
                 { $push: { sources: sourceDataInput } }
             );
             if (updateResult.acknowledged) {

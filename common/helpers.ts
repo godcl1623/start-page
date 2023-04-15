@@ -1,4 +1,5 @@
-import { ParsedFeedsDataType } from "types/global";
+import { ParsedFeedsDataType } from "pages";
+
 import {
     areEqual,
     isSatisfyingBothAAndB,
@@ -21,24 +22,24 @@ export const handleSort = <T extends ParsedFeedsDataType>(
 ) => {
     return (prev: T, next: T) => {
         if (
-            isSatisfyingBothAAndB(
+            !isSatisfyingBothAAndB(
                 isFrontBiggerThanRear(Object.keys(prev).length, 0),
                 isFrontBiggerThanRear(Object.keys(next).length, 0)
             )
         ) {
-            const prevData = extractObjectData(prev, targetProperty);
-            const nextData = extractObjectData(next, targetProperty);
-            if (
-                isSatisfyingBothAAndB(
-                    prevData && nextData,
-                    isFrontBiggerThanRear(prevData, nextData)
-                )
-            )
-                return reverse ? 1 : -1;
-            else return reverse ? -1 : 1;
-        } else {
             return reverse ? -1 : 1;
         }
+        const prevData = extractObjectData(prev, targetProperty);
+        const nextData = extractObjectData(next, targetProperty);
+        if (
+            !isSatisfyingBothAAndB(
+                isSatisfyingBothAAndB(prevData, nextData),
+                isFrontBiggerThanRear(prevData, nextData)
+            )
+        ) {
+            return reverse ? -1 : 1;
+        }
+        return reverse ? 1 : -1;
     };
 };
 
@@ -51,21 +52,20 @@ const returnDaysAddedDate = (dateString: string, daysToAdd: number) => {
     return dateToAddDays;
 };
 
-export const isTodayLessThanExtraDay = (
-    pubDateString: string | null,
+export const checkIfTodayLessThan = (
+    dateString: string | null,
     extraDay = 3
 ) => {
-    if (pubDateString) {
-        const pubDate = new Date(Date.parse(pubDateString));
-        pubDate.setHours(0);
-        const pubDateWithExtraDay = returnDaysAddedDate(
-            pubDateString,
-            extraDay
-        );
-        pubDateWithExtraDay.setHours(0);
-        const today = new Date();
-        const isTodayMoreThanPubDate = pubDate <= today;
-        const isTodayLessThanExtraDay = today <= pubDateWithExtraDay;
-        return isTodayLessThanExtraDay && isTodayMoreThanPubDate;
-    }
+    if (dateString == null) return;
+    const dateToCheck = new Date(Date.parse(dateString));
+    dateToCheck.setHours(0);
+    const dateToCheckWithExtraDay = returnDaysAddedDate(
+        dateString,
+        extraDay
+    );
+    dateToCheckWithExtraDay.setHours(0);
+    const now = new Date();
+    const isTodayMoreThanDateToCheck = dateToCheck <= now;
+    const isTodayLessThanExtraDay = now <= dateToCheckWithExtraDay;
+    return isTodayLessThanExtraDay && isTodayMoreThanDateToCheck;
 };

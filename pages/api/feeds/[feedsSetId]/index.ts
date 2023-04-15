@@ -1,20 +1,19 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { promises as fs } from "fs";
 import { areEqual } from "common/capsuledConditions";
-import { JSON_DIRECTORY } from 'common/constants';
-import { checkIfDataExists, CustomError } from 'controllers/sources';
-import { ParseResultType } from 'types/global';
-import { parseCookie } from 'controllers/utils';
-import MongoDB from 'controllers/mongodb';
+import { checkIfDataExists, CustomError } from "controllers/sources";
+import { ParseResultType } from "pages";
+import { extractUserIdFrom, initializeMongoDBWith } from "controllers/common";
+import { extractStoredFeedsFromRemote } from "controllers/feeds/new";
 
 export default async function feedsSetIdHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    const { userId, mw } = request.query;
-    const id = userId ?? parseCookie(mw);
-    const Feeds = MongoDB.getFeedsModel();
-    const remoteData = await Feeds.find({ _uuid: id }).lean();
+    const userId = extractUserIdFrom(request);
+    const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
+        userId,
+        "feeds"
+    );
 
     if (areEqual(request.method, "GET")) {
         response.status(405).send("Method Not Allowed");
@@ -27,19 +26,24 @@ export default async function feedsSetIdHandler(
     } else if (areEqual(request.method, "DELETE")) {
         try {
             const { feedsSetId } = request.query;
-            const data: ParseResultType[] = remoteData[0]
-                ? remoteData[0].data
-                : [];
+            const data = extractStoredFeedsFromRemote(remoteData);
             const idList = data.map((feedsSet: ParseResultType) => feedsSet.id);
-            if(!checkIfDataExists(idList, Number(feedsSetId))) {
-                throw new CustomError(404, 'feedsSet not exists');
+
+            if (!checkIfDataExists(idList, Number(feedsSetId))) {
+                throw new CustomError(404, "feedsSet not exists");
             }
-            const filteredList = data.filter((feedsSet: ParseResultType) => feedsSet.id !== Number(feedsSetId));
-            const updateResult = await Feeds.updateOne(
+
+            const filteredList = data.filter(
+                (feedsSet: ParseResultType) =>
+                    feedsSet.id !== Number(feedsSetId)
+            );
+
+            const updateResult = await Feeds?.updateOne(
                 { _uuid: userId },
                 { $set: { data: filteredList } }
             );
-            if (updateResult.acknowledged) {
+
+            if (updateResult?.acknowledged) {
                 response.status(204).send("success");
             } else {
                 throw new CustomError(400, "update failed");

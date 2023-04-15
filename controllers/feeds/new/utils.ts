@@ -1,8 +1,10 @@
 import { AxiosResponse } from "axios";
 import { JSDOM } from "jsdom";
-import RequestControllers from "controllers";
+
+import { ParsedFeedsDataType } from "pages";
+
+import RequestControllers from "controllers/requestControllers";
 import { areEqual } from "common/capsuledConditions";
-import { ParsedFeedsDataType } from "types/global";
 
 export const getRssResponses = async (
     feedsUrls: string[]
@@ -93,7 +95,7 @@ export const makeFeedDataArray = (
             : findNode(feedDataArray, "content:encoded")?.textContent;
         const description = findNode(feedDataArray, "description")
             ? findNode(feedDataArray, "description")?.textContent ||
-                "출처를 참조해주세요."
+              "출처를 참조해주세요."
             : content || "출처를 참조해주세요.";
         const parsedDescription =
             description.length > 250
@@ -105,7 +107,7 @@ export const makeFeedDataArray = (
         const link = findNode(feedDataArray, "link")?.textContent
             ? findNode(feedDataArray, "link")?.textContent || "/"
             : findNode(feedDataArray, "link")?.attributes.getNamedItem("href")
-                    ?.value || "/";
+                  ?.value || "/";
         const result: ParsedFeedsDataType = {
             id: `${feedOriginName}_${feedIndex}`,
             title,

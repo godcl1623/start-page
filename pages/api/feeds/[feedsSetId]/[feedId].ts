@@ -1,18 +1,25 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { areEqual } from "common/capsuledConditions";
-import { ParsedFeedsDataType, ParseResultType } from "types/global";
-import MongoDB from 'controllers/mongodb';
-import { parseCookie } from 'controllers/utils';
-import { CustomError } from 'controllers/sources';
+import { ParsedFeedsDataType, ParseResultType } from "pages";
+import { CustomError } from "controllers/sources";
+import { extractUserIdFrom, initializeMongoDBWith } from "controllers/common";
+import { extractStoredFeedsFromRemote } from "controllers/feeds/new";
+import {
+    copyArray,
+    findFeedToChange,
+    findRequestedFeedSetIndex,
+} from "controllers/feeds/feedsSetId/feedId";
 
 export default async function feedsSetIdHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    const { mw } = request.query;
-    const userId = parseCookie(mw);
-    const Feeds = MongoDB.getFeedsModel();
-    const remoteData = await Feeds.find({ _uuid: userId }).lean();
+    const userId = extractUserIdFrom(request);
+    const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
+        userId,
+        "feeds"
+    );
+
     if (areEqual(request.method, "GET")) {
         response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "POST")) {
@@ -21,40 +28,43 @@ export default async function feedsSetIdHandler(
         response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "PATCH")) {
         try {
-            const storedFeeds: ParseResultType[] = remoteData[0]
-                ? remoteData[0].data
-                : [];
             const dataToChange: ParsedFeedsDataType = request.body;
             const { id, origin } = dataToChange;
+
+            const storedFeeds = extractStoredFeedsFromRemote(remoteData);
             const feedsSetRelatedToRequest = storedFeeds.find(
                 (storedFeed: ParseResultType) =>
                     storedFeed.originName === origin
             );
+
             if (
                 feedsSetRelatedToRequest != null &&
                 feedsSetRelatedToRequest.feeds
             ) {
-                const feedSetIndex = storedFeeds.indexOf(
+                const feedSetIndex = findRequestedFeedSetIndex(
+                    storedFeeds,
                     feedsSetRelatedToRequest
                 );
-                const totalFeeds = [...feedsSetRelatedToRequest.feeds];
-                const oldFeed = totalFeeds.find(
-                    (feed: ParsedFeedsDataType) => feed.id === id
-                );
+
+                const totalFeeds = copyArray(feedsSetRelatedToRequest.feeds);
+
+                const oldFeed = findFeedToChange(totalFeeds, id);
                 if (oldFeed != null) {
                     const oldFeedIndex = totalFeeds.indexOf(oldFeed);
                     totalFeeds[oldFeedIndex] = dataToChange;
                 }
+
                 const newFeedsSetRelatedToRequest = {
                     ...feedsSetRelatedToRequest,
                     feeds: totalFeeds,
                 };
+
                 storedFeeds[feedSetIndex] = newFeedsSetRelatedToRequest;
-                const updateResult = await Feeds.updateOne(
+                const updateResult = await Feeds?.updateOne(
                     { _uuid: userId },
                     { $set: { data: storedFeeds } }
                 );
-                if (updateResult.acknowledged) {
+                if (updateResult?.acknowledged) {
                     response.status(200).send("success");
                 } else {
                     throw new CustomError(400, "update failed");

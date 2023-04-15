@@ -1,19 +1,24 @@
-import React from "react";
+import { ChangeEvent, FormEvent, memo, useEffect, useState } from "react";
+
 import { SEARCH_ADDRESS_BY_ENGINE } from "./utils/constants";
+
 import { extractFormValues, openSearchResult } from "./utils/helpers";
+import useHandleInputFill from './hooks/useHandleInputFill';
+
 import SelectBox from "../common/SelectBox";
 
-export default function Search() {
-    const [inputValue, setInputValue] = React.useState<string>("");
-    const [isInputFilled, setIsInputFilled] = React.useState<boolean>(false);
+export default memo(function Search() {
+    const [inputValue, setInputValue] = useState<string>("");
+    const isInputFilled = useHandleInputFill(inputValue);
+    const searchEngines = Object.keys(SEARCH_ADDRESS_BY_ENGINE);
 
-    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const [selectedSearchEngine, inputValue] = extractFormValues(event);
         openSearchResult(selectedSearchEngine, inputValue);
-    }
+    };
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
         setInputValue(event.currentTarget.value);
     };
 
@@ -21,18 +26,13 @@ export default function Search() {
         setInputValue("");
     };
 
-    React.useEffect(() => {
-        if (inputValue.length > 0) setIsInputFilled(true);
-        else setIsInputFilled(false);
-    }, [inputValue]);
-
     return (
         <form
             className="relative flex-center w-full h-12 shadow-lg dark:shadow-zinc-600"
             onSubmit={handleSubmit}
         >
             <SelectBox
-                optionValues={SEARCH_ADDRESS_BY_ENGINE}
+                optionValues={searchEngines}
                 customStyles="rounded-l-md"
             />
             <input
@@ -60,4 +60,4 @@ export default function Search() {
             />
         </form>
     );
-}
+})
