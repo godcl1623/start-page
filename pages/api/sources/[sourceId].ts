@@ -29,14 +29,16 @@ export default async function sourceNameHandler(
     } else if (areEqual(request.method, "PATCH")) {
         response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "DELETE")) {
-        const { sourceId } = request.query;
         try {
+            const { sourceId } = request.query;
             if (!checkIfDataExists(idList, Number(sourceId))) {
                 throw new CustomError(404, "source not exists");
             }
+
             const listAfterDelete = sources.filter(
                 (_: any, index: number) => index !== Number(sourceId)
             );
+
             const updateResult = await Sources?.updateOne(
                 { _uuid: userId },
                 { $set: { sources: listAfterDelete } }

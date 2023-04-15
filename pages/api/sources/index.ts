@@ -36,12 +36,15 @@ export default async function sourceHandler(
     } else if (areEqual(request.method, "POST")) {
         try {
             const sourceDataInput: SourceDataInput = request.body;
+
             const urlsList = sources.map(
                 (sourceData: SourceData) => sourceData.url
             );
+
             if (checkIfDataExists(urlsList, sourceDataInput.url)) {
                 throw new CustomError(409, "source already exists.");
             }
+
             const updateResult = await Sources.updateOne(
                 { _uuid: userId },
                 { $push: { sources: sourceDataInput } }
