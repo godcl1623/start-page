@@ -7,14 +7,18 @@ import {
     FileContentsInterface,
     CustomError,
 } from "controllers/sources";
-import {
-    getRssResponses,
-    parseXml,
-    makeFeedDataArray,
-} from "controllers/feeds/new/utils";
+import { getRssResponses } from "controllers/feeds/new/utils";
 import { AxiosResponse } from "axios";
-import { ParsedFeedsDataType, ParseResultType } from "pages";
-import { getPaginationIndexes, sortFeedSets } from "controllers/feeds";
+import { ParseResultType } from "pages";
+import { getPaginationIndexes } from "controllers/feeds";
+import {
+    differentiateArrays,
+    getStoredFeedsFromRemote,
+    makeUpdatedFeedsLists,
+    parseFeedsFromSources,
+    processGetSourceResult,
+    updateFeedSets,
+} from "controllers/feeds/new";
 
 export default async function feedsHandler(
     request: NextApiRequest,
@@ -32,131 +36,34 @@ export default async function feedsHandler(
         try {
             const [paginationStartIndex, paginationEndIndex] =
                 getPaginationIndexes("1", "10");
-
-            // TODO: source 파싱 함수로 분리 - 아래 sources.length 포함 - start
             const { data } = await getDataFrom(`/sources?userId=${userId}`);
+
             const { sources }: FileContentsInterface = JSON.parse(data);
             const urlList = sources
                 ? sources.map((sourceData: SourceData) => sourceData.url)
                 : [];
             const result: PromiseSettledResult<AxiosResponse>[] | undefined =
                 await getRssResponses(urlList);
-            // source 파싱 함수로 분리 - end
 
             if (result != null) {
-                // TODO: 1. source 파싱 결과 반환 함수
-                const totalFeedsFromSources: string[] = result.map(
-                    (resultData: PromiseSettledResult<AxiosResponse>) => {
-                        if (resultData.status === "fulfilled") {
-                            return resultData.value.data;
-                        }
-                    }
-                );
-                // TODO: 2. 스토리지 목록 반환 함수
-                const storedFeeds: ParseResultType[] =
-                    remoteData != null && remoteData[0] ? remoteData : [];
-                // TODO: 3. source 파싱 결과 가공 함수 - storedFeeds 파라미터로
+                const totalFeedsFromSources = processGetSourceResult(result);
+
+                const storedFeeds = getStoredFeedsFromRemote(remoteData);
+
                 let originId = sources?.length > 0 ? storedFeeds.length : 0;
-                const parseResult = totalFeedsFromSources.map(
-                    (rawRss: string, index: number) => {
-                        const indexedFeed =
-                            storedFeeds[index] != null
-                                ? storedFeeds[index].feeds
-                                : [];
-                        const id = indexedFeed != null ? indexedFeed.length : 0;
-                        const {
-                            feedOriginName,
-                            feedOriginParsedLink,
-                            rssFeeds,
-                        } = parseXml(rawRss);
-                        const parsedFeedsArray = makeFeedDataArray(
-                            rssFeeds,
-                            feedOriginName,
-                            id
-                        );
-                        const latestFeed: ParsedFeedsDataType =
-                            parsedFeedsArray[0];
-                        if (
-                            !areEqual(
-                                feedOriginName,
-                                storedFeeds[index]?.originName
-                            )
-                        ) {
-                            const result: ParseResultType = {
-                                id: sources[index].id
-                                    ? sources[index].id
-                                    : originId,
-                                originName: feedOriginName,
-                                originLink: feedOriginParsedLink,
-                                lastFeedsLength: parsedFeedsArray.length,
-                                latestFeedTitle: latestFeed?.title,
-                                feeds: parsedFeedsArray,
-                            };
-                            originId += 1;
-                            return result;
-                        } else {
-                            return {
-                                ...storedFeeds[index],
-                                lastFeedsLength: parsedFeedsArray.length,
-                                latestFeedTitle: latestFeed?.title,
-                                feeds: parsedFeedsArray,
-                            };
-                        }
-                    }
+                const parseResult = parseFeedsFromSources({
+                    totalFeedsFromSources,
+                    storedFeeds,
+                    sources,
+                    originId,
+                });
+
+                const updatedFeedSets = updateFeedSets(
+                    parseResult,
+                    storedFeeds
                 );
-                // TODO: 4. 스토리지 목록 업데이트 함수
-                const updatedFeedSets = parseResult.map(
-                    (newFeedSet: ParseResultType, feedSetIndex: number) => {
-                        const newFeedsList = newFeedSet.feeds;
-                        const correspondFeeds = storedFeeds[feedSetIndex]
-                            ? storedFeeds[feedSetIndex].feeds ?? []
-                            : [];
-                        const updatedFeed =
-                            newFeedsList?.filter(
-                                (newFeed) =>
-                                    !correspondFeeds
-                                        .map(
-                                            (correspondFeed) =>
-                                                correspondFeed.title
-                                        )
-                                        .includes(newFeed.title)
-                            ) ?? [];
-                        const newFeedsListWithUserStates = correspondFeeds
-                            .concat(updatedFeed)
-                            .sort(sortFeedSets);
-                        return {
-                            ...newFeedSet,
-                            lastFeedsLength: newFeedsListWithUserStates.length,
-                            latestFeedTitle:
-                                newFeedsListWithUserStates[0].title,
-                            feeds: newFeedsListWithUserStates,
-                        };
-                    }
-                );
-                // TODO: 5. 파싱 결과, 업데이트 목록 차이점 비교 함수
-                const differentiateArray = parseResult.filter(
-                    (resultData: ParseResultType, index: number) =>
-                        resultData.lastFeedsLength !==
-                            updatedFeedSets[index]?.lastFeedsLength ||
-                        resultData.latestFeedTitle !==
-                            updatedFeedSets[index]?.latestFeedTitle
-                );
-                // TODO: 6. 최종 업데이트 피드 목록 반환 함수
-                const totalFeedsList = updatedFeedSets
-                    .reduce(
-                        (
-                            totalArray: ParsedFeedsDataType[],
-                            currenetData: ParseResultType
-                        ) => {
-                            if (currenetData.feeds) {
-                                return totalArray.concat(currenetData.feeds);
-                            } else {
-                                return totalArray;
-                            }
-                        },
-                        []
-                    )
-                    .sort(sortFeedSets);
+
+                const totalFeedsList = makeUpdatedFeedsLists(updatedFeedSets);
                 const responseBody = {
                     data: totalFeedsList.slice(
                         paginationStartIndex,
@@ -164,7 +71,12 @@ export default async function feedsHandler(
                     ),
                     count: totalFeedsList.length,
                 };
-                if (differentiateArray.length > 0) {
+
+                const differentiateResult = differentiateArrays(
+                    parseResult,
+                    updatedFeedSets
+                );
+                if (differentiateResult.length > 0) {
                     postDataTo(`/feeds/new?userId=${userId}`, updatedFeedSets);
                     response.status(200).json(responseBody);
                 } else {
