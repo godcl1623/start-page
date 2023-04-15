@@ -40,7 +40,7 @@ export default function CancelSubscriptionView({
         ) : (
             <></>
         );
-    // FIXME: 이런 ModalTemplate 형식 전부 수정할 것
+
     return (
         <section className="h-full">
             <ModalTemplate

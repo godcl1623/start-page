@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 
 import { SourceData } from "controllers/sources";
-import { SourcesList } from "components/main";
 
 export type FilterType<T> = {
     [key in string]: T;
 };
 
-// TODO: 추상화해서 범용적으로 사용할 수 있는 형태로 만들기
 const useFilters = <T>(sourceString: string, defaultValue: T) => {
     const [innerState, setInnerState] = useState<FilterType<T>>({});
 
