@@ -3,6 +3,7 @@ import { areEqual } from "common/capsuledConditions";
 import { checkIfDataExists, CustomError } from "controllers/sources";
 import { ParseResultType } from "pages";
 import { extractUserIdFrom, initializeMongoDBWith } from "controllers/common";
+import { extractStoredFeedsFromRemote } from "controllers/feeds/new";
 
 export default async function feedsSetIdHandler(
     request: NextApiRequest,
@@ -25,22 +26,23 @@ export default async function feedsSetIdHandler(
     } else if (areEqual(request.method, "DELETE")) {
         try {
             const { feedsSetId } = request.query;
-            // TODO: feeds/new 2번 함수 참조
-            const data: ParseResultType[] = remoteData[0]
-                ? remoteData
-                : [];
+            const data = extractStoredFeedsFromRemote(remoteData);
             const idList = data.map((feedsSet: ParseResultType) => feedsSet.id);
+
             if (!checkIfDataExists(idList, Number(feedsSetId))) {
                 throw new CustomError(404, "feedsSet not exists");
             }
+
             const filteredList = data.filter(
                 (feedsSet: ParseResultType) =>
                     feedsSet.id !== Number(feedsSetId)
             );
+
             const updateResult = await Feeds?.updateOne(
                 { _uuid: userId },
                 { $set: { data: filteredList } }
             );
+
             if (updateResult?.acknowledged) {
                 response.status(204).send("success");
             } else {

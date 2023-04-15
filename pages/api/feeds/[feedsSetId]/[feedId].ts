@@ -3,6 +3,12 @@ import { areEqual } from "common/capsuledConditions";
 import { ParsedFeedsDataType, ParseResultType } from "pages";
 import { CustomError } from "controllers/sources";
 import { extractUserIdFrom, initializeMongoDBWith } from "controllers/common";
+import { extractStoredFeedsFromRemote } from "controllers/feeds/new";
+import {
+    copyArray,
+    findFeedToChange,
+    findRequestedFeedSetIndex,
+} from "controllers/feeds/feedsSetId/feedId";
 
 export default async function feedsSetIdHandler(
     request: NextApiRequest,
@@ -22,37 +28,37 @@ export default async function feedsSetIdHandler(
         response.status(405).send("Method Not Allowed");
     } else if (areEqual(request.method, "PATCH")) {
         try {
-            // TODO: feeds/new 2번 함수 참조
-            const storedFeeds: ParseResultType[] = remoteData[0]
-                ? remoteData
-                : [];
             const dataToChange: ParsedFeedsDataType = request.body;
             const { id, origin } = dataToChange;
+
+            const storedFeeds = extractStoredFeedsFromRemote(remoteData);
             const feedsSetRelatedToRequest = storedFeeds.find(
                 (storedFeed: ParseResultType) =>
                     storedFeed.originName === origin
             );
+
             if (
                 feedsSetRelatedToRequest != null &&
                 feedsSetRelatedToRequest.feeds
             ) {
-                // TODO: 통째로 함수로 분리? - start
-                const feedSetIndex = storedFeeds.indexOf(
+                const feedSetIndex = findRequestedFeedSetIndex(
+                    storedFeeds,
                     feedsSetRelatedToRequest
                 );
-                const totalFeeds = [...feedsSetRelatedToRequest.feeds];
-                const oldFeed = totalFeeds.find(
-                    (feed: ParsedFeedsDataType) => feed.id === id
-                );
+
+                const totalFeeds = copyArray(feedsSetRelatedToRequest.feeds);
+
+                const oldFeed = findFeedToChange(totalFeeds, id);
                 if (oldFeed != null) {
                     const oldFeedIndex = totalFeeds.indexOf(oldFeed);
                     totalFeeds[oldFeedIndex] = dataToChange;
                 }
+
                 const newFeedsSetRelatedToRequest = {
                     ...feedsSetRelatedToRequest,
                     feeds: totalFeeds,
                 };
-                // 통째로 함수로 분리? - end?
+
                 storedFeeds[feedSetIndex] = newFeedsSetRelatedToRequest;
                 const updateResult = await Feeds?.updateOne(
                     { _uuid: userId },
