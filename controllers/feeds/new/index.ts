@@ -5,7 +5,7 @@ import { ParseResultType, ParsedFeedsDataType } from "pages";
 import { sortFeedSets } from "..";
 import { getRssResponses, makeFeedDataArray, parseXml } from "./utils";
 
-export const processGetSourceResult = (
+export const extractFeedsFromSources = (
     rawArray: PromiseSettledResult<AxiosResponse>[]
 ): string[] =>
     rawArray.map((resultData: PromiseSettledResult<AxiosResponse>) => {
@@ -14,7 +14,7 @@ export const processGetSourceResult = (
         }
     });
 
-export const getStoredFeedsFromRemote = (
+export const extractStoredFeedsFromRemote = (
     remoteData: ParseResultType[]
 ): ParseResultType[] => (remoteData != null && remoteData[0] ? remoteData : []);
 
@@ -64,7 +64,7 @@ export const parseFeedsFromSources = ({
         }
     });
 
-export const updateFeedSets = (
+export const updateFeedSetsDataBy = (
     parseResult: ParseResultType[],
     storedFeeds: ParseResultType[]
 ) =>

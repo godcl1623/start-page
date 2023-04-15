@@ -13,11 +13,11 @@ import { ParseResultType } from "pages";
 import { getPaginationIndexes } from "controllers/feeds";
 import {
     differentiateArrays,
-    getStoredFeedsFromRemote,
+    extractStoredFeedsFromRemote,
     makeUpdatedFeedsLists,
     parseFeedsFromSources,
-    processGetSourceResult,
-    updateFeedSets,
+    extractFeedsFromSources,
+    updateFeedSetsDataBy,
 } from "controllers/feeds/new";
 
 export default async function feedsHandler(
@@ -39,16 +39,16 @@ export default async function feedsHandler(
             const { data } = await getDataFrom(`/sources?userId=${userId}`);
 
             const { sources }: FileContentsInterface = JSON.parse(data);
-            const urlList = sources
+            const urlsToGetFeeds = sources
                 ? sources.map((sourceData: SourceData) => sourceData.url)
                 : [];
             const result: PromiseSettledResult<AxiosResponse>[] | undefined =
-                await getRssResponses(urlList);
+                await getRssResponses(urlsToGetFeeds);
 
             if (result != null) {
-                const totalFeedsFromSources = processGetSourceResult(result);
+                const totalFeedsFromSources = extractFeedsFromSources(result);
 
-                const storedFeeds = getStoredFeedsFromRemote(remoteData);
+                const storedFeeds = extractStoredFeedsFromRemote(remoteData);
 
                 let originId = sources?.length > 0 ? storedFeeds.length : 0;
                 const parseResult = parseFeedsFromSources({
@@ -58,7 +58,7 @@ export default async function feedsHandler(
                     originId,
                 });
 
-                const updatedFeedSets = updateFeedSets(
+                const updatedFeedSets = updateFeedSetsDataBy(
                     parseResult,
                     storedFeeds
                 );
