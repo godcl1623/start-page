@@ -3,6 +3,7 @@ import AuthenticationLayout from "./Layout";
 import LoginView from "./LoginView";
 import PasswordResetView from "./PasswordResetView";
 import RegisterView from "./RegisterView";
+import useChangeModalView from './hooks/useChangeModalView';
 
 interface Props {
     closeModal: () => void;
@@ -11,10 +12,7 @@ interface Props {
 export type ViewState = "login" | "register" | "reset";
 
 export default function Authentication({ closeModal }: Props) {
-    const [currentView, setCurrentView] = useState<ViewState>("login");
-    const changeViewTo = (value: ViewState) => () => {
-        setCurrentView(value);
-    };
+    const [currentView, changeViewTo] = useChangeModalView<ViewState>("login");
 
     const viewComponent = useMemo(() => {
         switch (currentView) {
@@ -23,7 +21,7 @@ export default function Authentication({ closeModal }: Props) {
             case "register":
                 return <RegisterView closeModal={closeModal} />;
             case "reset":
-                return <PasswordResetView />;
+                return <PasswordResetView closeModal={closeModal} />;
             default:
                 return <h1>Error</h1>;
         }

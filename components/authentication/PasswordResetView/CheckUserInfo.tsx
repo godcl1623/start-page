@@ -1,11 +1,13 @@
-import TextInput, { Props as InputData } from "../common/TextInput";
 import CancelSubmitButtonSets from "../common/CancelSubmitButtonSets";
+import TextInput, { Props as InputData } from "../common/TextInput";
+import { PasswordResetViewState } from '.';
 
 interface Props {
     closeModal: () => void;
+    changeViewTo: () => void;
 }
 
-export default function RegisterView({ closeModal }: Props) {
+export default function CheckUserInfo({ closeModal, changeViewTo }: Props) {
     const inputs = INPUT_DATA.map((inputData: InputData, index: number) => (
         <section key={`${inputData.name}_${index}`}>
             <TextInput {...inputData} />
@@ -17,10 +19,12 @@ export default function RegisterView({ closeModal }: Props) {
     return (
         <form className="flex flex-col gap-4 mt-8">
             {inputs}
-            <CancelSubmitButtonSets
-                handleCancel={closeModal}
-                handleSubmit={() => null}
-            />
+            <div className="mt-8">
+                <CancelSubmitButtonSets
+                    handleCancel={closeModal}
+                    handleSubmit={changeViewTo}
+                />
+            </div>
         </form>
     );
 }
@@ -38,20 +42,6 @@ const INPUT_DATA: InputData[] = [
         placeholder: "닉네임",
         required: true,
         name: "nickname",
-        className: "w-full rounded-md shadow-md py-3 px-6 dark:shadow-zinc-600",
-    },
-    {
-        type: "password",
-        placeholder: "비밀번호",
-        required: true,
-        name: "password",
-        className: "w-full rounded-md shadow-md py-3 px-6 dark:shadow-zinc-600",
-    },
-    {
-        type: "password",
-        placeholder: "비밀번호 확인",
-        required: true,
-        name: "password_check",
         className: "w-full rounded-md shadow-md py-3 px-6 dark:shadow-zinc-600",
     },
 ];
