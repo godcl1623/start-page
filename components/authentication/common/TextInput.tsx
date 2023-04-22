@@ -1,6 +1,6 @@
-import { ChangeEvent, HTMLInputTypeAttribute, useState } from "react";
+import { ChangeEvent, useState } from "react";
 
-interface Props {
+export interface Props {
     type?: "text" | "email" | "password";
     placeholder?: string;
     name?: string;

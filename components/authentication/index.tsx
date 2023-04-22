@@ -21,7 +21,7 @@ export default function Authentication({ closeModal }: Props) {
             case "login":
                 return <LoginView changeViewTo={changeViewTo} />;
             case "register":
-                return <RegisterView />;
+                return <RegisterView closeModal={closeModal} />;
             case "reset":
                 return <PasswordResetView />;
             default:
