@@ -15,6 +15,7 @@ import CancelSubscription from "components/feeds/CancelSubscription";
 import FilterBySource from "components/feeds/FilterBySource";
 import PostHandleOptions from "./PostHandleOptions";
 import PageButton from "./PageButton";
+import LoginInfoArea from './LoginInfoArea';
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
@@ -137,9 +138,10 @@ export default memo(function MainPage({
 
     return (
         <article
-            className="flex-center flex-col w-full h-max min-h-full px-8 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
+            className="flex-center flex-col w-full h-max min-h-full p-8 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
             ref={startPageRef}
         >
+            <LoginInfoArea />
             <section className="flex-center w-full h-1/3 my-32 lg:w-[768px]">
                 <Search />
             </section>

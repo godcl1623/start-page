@@ -1,4 +1,4 @@
-import Button from "components/feeds/common/Button";
+import Button from "components/common/Button";
 import { ModalKeys } from "..";
 
 interface Props {
