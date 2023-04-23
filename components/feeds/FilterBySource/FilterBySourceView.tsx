@@ -1,5 +1,5 @@
 import { FilterType } from "hooks/useFilters";
-import Button from "../common/Button";
+import Button from "../../common/Button";
 import ModalTemplate from "../common/ModalTemplate";
 import SubscriptionOption from "./SubscriptionOption";
 

@@ -15,6 +15,8 @@ import CancelSubscription from "components/feeds/CancelSubscription";
 import FilterBySource from "components/feeds/FilterBySource";
 import PostHandleOptions from "./PostHandleOptions";
 import PageButton from "./PageButton";
+import LoginInfoArea from "./LoginInfoArea";
+import Authentication from 'components/authentication';
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
@@ -36,7 +38,8 @@ interface Props {
 export type ModalKeys =
     | "addSubscription"
     | "cancelSubscription"
-    | "filterBySource";
+    | "filterBySource"
+    | "handleAuthentication";
 
 type ModalStateType = {
     [key in ModalKeys]: boolean;
@@ -66,6 +69,7 @@ export default memo(function MainPage({
         addSubscription: false,
         cancelSubscription: false,
         filterBySource: false,
+        handleAuthentication: false,
     });
     const startPageRef = useRef<HTMLElement | null>(null);
     const { sources: sourcesList }: SourcesList = sources
@@ -137,9 +141,10 @@ export default memo(function MainPage({
 
     return (
         <article
-            className="flex-center flex-col w-full h-max min-h-full px-8 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
+            className="flex-center flex-col w-full h-max min-h-full p-8 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
             ref={startPageRef}
         >
+            <LoginInfoArea handleAuthenticationModal={handleClick} />
             <section className="flex-center w-full h-1/3 my-32 lg:w-[768px]">
                 <Search />
             </section>
@@ -208,6 +213,11 @@ export default memo(function MainPage({
                             refetchFeeds={refetchStoredFeeds}
                         />
                     </SubscriptionDialogBox>
+                </Modal>
+            )}
+            {modalState.handleAuthentication && (
+                <Modal closeModal={closeModal("handleAuthentication")}>
+                    <Authentication closeModal={closeModal("handleAuthentication")} />
                 </Modal>
             )}
         </article>
