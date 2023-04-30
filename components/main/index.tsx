@@ -144,44 +144,48 @@ export default memo(function MainPage({
             className="flex items-center space-between flex-col w-full h-max min-h-full p-8 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
             ref={startPageRef}
         >
-            <LoginInfoArea handleAuthenticationModal={handleClick} />
-            <section className="flex-center w-full h-1/3 my-32 lg:w-[768px]">
-                <Search />
-            </section>
-            <section className="flex flex-col items-center w-full h-max lg:w-[768px]">
-                <PostHandleOptions
-                    filterFavorites={filterFavorites}
-                    handleClick={handleClick}
-                    setSearchTexts={setSearchTexts}
-                    setSortState={setSortState}
-                />
-                <section>{feedsToDisplay}</section>
-                {isMobileLayout ? (
-                    <div
-                        ref={updateObserverElement}
-                        className="w-full h-[150px]"
-                    />
-                ) : (
-                    <ul className="flex justify-center items-center gap-2 w-full mt-10 mb-20">
-                        <PageButton clickHandler={moveToPage(1)}>
-                            &lt;&lt;
-                        </PageButton>
-                        <PageButton clickHandler={moveToPreviousPage}>
-                            &lt;
-                        </PageButton>
-                        {pageIndicator}
-                        <PageButton clickHandler={moveToNextPage}>
-                            &gt;
-                        </PageButton>
-                        <PageButton
-                            clickHandler={moveToPage(
-                                calculateTotalPages(totalCount)
-                            )}
-                        >
-                            &gt;&gt;
-                        </PageButton>
-                    </ul>
-                )}
+            <section className={`flex flex-col items-center w-full h-max min-h-[calc(100vh_-_64px)] fhd:max-w-[1920px] ${feedsFromServer?.length === 0 ? 'fhd:min-h-[1080px]' : ''} fhd:my-auto`}>
+                <LoginInfoArea handleAuthenticationModal={handleClick} />
+                <div className="flex flex-col justify-center my-auto">
+                    <section className="flex-center w-full my-32 lg:w-[768px]">
+                        <Search />
+                    </section>
+                    <section className="flex flex-col items-center w-full h-max lg:w-[768px]">
+                        <PostHandleOptions
+                            filterFavorites={filterFavorites}
+                            handleClick={handleClick}
+                            setSearchTexts={setSearchTexts}
+                            setSortState={setSortState}
+                        />
+                        <section>{feedsToDisplay}</section>
+                        {isMobileLayout ? (
+                            <div
+                                ref={updateObserverElement}
+                                className="w-full h-[150px]"
+                            />
+                        ) : (
+                            <ul className="flex justify-center items-center gap-2 w-full mt-10 mb-20">
+                                <PageButton clickHandler={moveToPage(1)}>
+                                    &lt;&lt;
+                                </PageButton>
+                                <PageButton clickHandler={moveToPreviousPage}>
+                                    &lt;
+                                </PageButton>
+                                {pageIndicator}
+                                <PageButton clickHandler={moveToNextPage}>
+                                    &gt;
+                                </PageButton>
+                                <PageButton
+                                    clickHandler={moveToPage(
+                                        calculateTotalPages(totalCount)
+                                    )}
+                                >
+                                    &gt;&gt;
+                                </PageButton>
+                            </ul>
+                        )}
+                    </section>
+                </div>
             </section>
             {modalState.addSubscription && (
                 <Modal closeModal={closeModal("addSubscription")}>
