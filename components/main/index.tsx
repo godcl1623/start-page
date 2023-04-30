@@ -141,7 +141,7 @@ export default memo(function MainPage({
 
     return (
         <article
-            className="flex-center flex-col w-full h-max min-h-full p-8 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
+            className="flex items-center space-between flex-col w-full h-max min-h-full p-8 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
             ref={startPageRef}
         >
             <LoginInfoArea handleAuthenticationModal={handleClick} />
