@@ -1,6 +1,7 @@
 import React from "react";
 import type { AppProps } from "next/app";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SessionProvider } from "next-auth/react";
 import Seo from "components/Seo";
 import "tailwindcss/tailwind.css";
 
@@ -17,7 +18,9 @@ function MyApp({ Component, pageProps }: AppProps) {
         <React.Fragment>
             <Seo title="Start Page" />
             <QueryClientProvider client={queryClient}>
-                <Component {...pageProps} />
+                <SessionProvider session={pageProps.session}>
+                    <Component {...pageProps} />
+                </SessionProvider>
             </QueryClientProvider>
             <style jsx global>{`
                 @tailwind base;
