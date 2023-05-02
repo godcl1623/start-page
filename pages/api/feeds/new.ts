@@ -38,7 +38,7 @@ export default async function feedsHandler(
                 getPaginationIndexes("1", "10");
             const { data } = await getDataFrom(`/sources?userId=${userId}`);
 
-            const { sources }: FileContentsInterface = JSON.parse(data);
+            const sources: SourceData[] = JSON.parse(data);
             const urlsToGetFeeds = sources
                 ? sources.map((sourceData: SourceData) => sourceData.url)
                 : [];
