@@ -1,69 +1,45 @@
-import Button from "components/common/Button";
-import { ViewState } from "..";
-import TextInput from "../common/TextInput";
-import { useSession, signIn, signOut } from 'next-auth/react';
-import { useEffect } from 'react';
+import { signIn } from "next-auth/react";
+import Image, { StaticImageData } from "next/image";
+import googleLoginButtonImage from "./assets/btn_google_signin_light_pressed_web@2x.png";
+import naverLoginButtonImage from "./assets/naver_login.png";
+import kakaoLoginButtonImage from "./assets/kakao_login_medium_narrow.png";
 
-interface Props {
-    changeViewTo: (value: ViewState) => () => void;
+interface ButtonsMetaData {
+    service: string;
+    src: StaticImageData;
 }
 
-export default function LoginView({ changeViewTo }: Props) {
-    const { data: session } = useSession();
-    useEffect(() => {
-        console.log(session)
-    }, [session]);
-    if (session) {
-        return <button onClick={() => signOut()}>signout</button>
-    }
+const BUTTONS_META_DATA: ButtonsMetaData[] = [
+    {
+        service: "google",
+        src: googleLoginButtonImage,
+    },
+    { service: "naver", src: naverLoginButtonImage },
+    { service: "kakao", src: kakaoLoginButtonImage },
+];
 
-    return (
-        <article>
-            <Button
+export default function LoginView() {
+    const loginButtons = BUTTONS_META_DATA.map((buttonData, index) => (
+        <li
+            key={`${buttonData.service}_${index}`}
+            className={`flex justify-center items-center ${buttonData.service === 'google' ? 'my-5' : 'my-6'}`}
+        >
+            <button
                 type="button"
-                customStyle="bg-sky-400 text-base text-neutral-100 dark:bg-sky-800 dark:text-gray-300"
-                clickHandler={() => signIn()}
+                onClick={() => signIn(buttonData.service)}
+                className={`relative ${
+                    buttonData.service !== "google"
+                        ? "w-[179px] h-[41px]"
+                        : "w-[183px] h-[45px]"
+                }`}
             >
-                구글로 로그인
-            </Button>
-            {/* <form className="flex flex-col gap-8 mb-8">
-                <TextInput
-                    type="email"
-                    placeholder="EMAIL"
-                    required
-                    name="email"
-                    className="rounded-md shadow-md py-3 px-6 dark:shadow-zinc-600"
+                <Image
+                    src={buttonData.src}
+                    alt={`login_button_${buttonData.service}`}
+                    layout="fill"
                 />
-                <TextInput
-                    type="password"
-                    placeholder="PW"
-                    required
-                    name="password"
-                    className="rounded-md shadow-md py-3 px-6 dark:shadow-zinc-600"
-                />
-                <Button
-                    type="submit"
-                    customStyle="bg-sky-400 text-base text-neutral-100 dark:bg-sky-800 dark:text-gray-300"
-                >
-                    로그인
-                </Button>
-            </form>
-            <section className="flex gap-4">
-                <Button
-                    type="button"
-                    customStyle="text-base bg-neutral-200 dark:bg-neutral-600"
-                    clickHandler={changeViewTo("register")}
-                >
-                    회원가입
-                </Button>
-                <Button
-                    type="button"
-                    customStyle="text-base bg-neutral-200 dark:bg-neutral-600"
-                    clickHandler={changeViewTo("reset")}
-                >
-                    비밀번호 재설정
-                </Button>
-            </section> */}
-        </article>
-    );
+            </button>
+        </li>
+    ));
+    return <ul>{loginButtons}</ul>;
 }
