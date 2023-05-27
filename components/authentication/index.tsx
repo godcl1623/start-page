@@ -17,7 +17,7 @@ export default function Authentication({ closeModal }: Props) {
     const viewComponent = useMemo(() => {
         switch (currentView) {
             case "login":
-                return <LoginView changeViewTo={changeViewTo} />;
+                return <LoginView />;
             case "register":
                 return <RegisterView closeModal={closeModal} />;
             case "reset":
