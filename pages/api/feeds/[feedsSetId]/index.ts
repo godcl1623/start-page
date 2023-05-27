@@ -9,7 +9,7 @@ export default async function feedsSetIdHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    const userId = extractUserIdFrom(request);
+    const [userId] = extractUserIdFrom(request);
     const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
         userId,
         "feeds"

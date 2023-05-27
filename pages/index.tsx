@@ -7,13 +7,9 @@ import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import MainPage from "components/main";
 import { SORT_STANDARD } from "common/constants";
 import { GetServerSidePropsContext } from "next";
-import {
-    encryptCookie,
-    checkIfCookieExists,
-    getUserId,
-} from "controllers/utils";
+import { encryptCookie, getNewUserId } from "controllers/utils";
 import { setCookie } from "cookies-next";
-import useGetRawCookie from "hooks/useGetRawCookie";
+import { getToken } from "next-auth/jwt";
 
 export interface ParsedFeedsDataType {
     id: string;
@@ -39,6 +35,7 @@ export interface ParseResultType {
 interface IndexProps {
     feeds: string;
     sources: string;
+    userId: string;
 }
 
 interface RenewedFeedsData {
@@ -46,7 +43,7 @@ interface RenewedFeedsData {
     count: number;
 }
 
-export default function Index({ feeds, sources }: IndexProps) {
+export default function Index({ feeds, sources, userId }: IndexProps) {
     const { getDataFrom } = new RequestControllers();
     const [currentSort, setCurrentSort] = useState(0);
     const [isFilterFavorite, setIsFilterFavorite] = useState<boolean>(false);
@@ -56,7 +53,6 @@ export default function Index({ feeds, sources }: IndexProps) {
     const [isMobileLayout, setIsMobileLayout] = useState<boolean>(false);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [formerFeedsList, setFormerFeedsList] = useState<any>({});
-    const rawCookie = useGetRawCookie();
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
@@ -66,8 +62,8 @@ export default function Index({ feeds, sources }: IndexProps) {
         ""
     );
     const newFeedsRequestResult = useQuery<AxiosResponse<RenewedFeedsData>>(
-        [`/feeds/new?mw=${rawCookie}`],
-        () => getDataFrom(`/feeds/new?mw=${rawCookie}`)
+        [`/feeds/new?userId=${userId}`],
+        () => getDataFrom(`/feeds/new?userId=${userId}`)
     )?.data?.data;
     const {
         data: storedFeed,
@@ -75,9 +71,9 @@ export default function Index({ feeds, sources }: IndexProps) {
         fetchNextPage,
         hasNextPage,
     } = useInfiniteQuery({
-        queryKey: [`/feeds?mw=${rawCookie}`, { isMobileLayout, currentPage }],
+        queryKey: [`/feeds?userId=${userId}`, { isMobileLayout, currentPage }],
         queryFn: ({ pageParam = currentPage }) =>
-            getDataFrom(`/feeds?mw=${rawCookie}`, {
+            getDataFrom(`/feeds?userId=${userId}`, {
                 params: {
                     ...(isFilterFavorite && { favorites: isFilterFavorite }),
                     ...(Object.values(sourceDisplayState).includes(false) && {
@@ -292,7 +288,7 @@ export default function Index({ feeds, sources }: IndexProps) {
             sources={sources}
             sourceDisplayState={sourceDisplayState}
             setSourceDisplayState={setSourceDisplayState}
-            rawCookie={rawCookie}
+            userId={userId}
             updateObserverElement={updateObserverElement}
             refetchStoredFeeds={refetchStoredFeeds}
             setSearchTexts={setSearchTexts}
@@ -304,15 +300,26 @@ export default function Index({ feeds, sources }: IndexProps) {
 export async function getServerSideProps(context: GetServerSidePropsContext) {
     const { getDataFrom } = new RequestControllers();
     try {
-        const userId = getUserId(context);
-        if (!checkIfCookieExists(context)) {
-            const encryptedId = encryptCookie({ userId });
+        const token = await getToken({
+            req: context.req,
+            secret: process.env.NEXTAUTH_SECRET,
+        });
+        let userId: string = "";
+
+        if (token?.email != null) {
+            userId = encryptCookie({ userId: token?.email });
+        } else if (context.req.cookies.mw != null) {
+            userId = context.req.cookies.mw;
+        } else {
+            const newUserId = getNewUserId();
+            const encryptedId = encryptCookie({ userId: newUserId });
             setCookie("mw", encryptedId, {
                 req: context.req,
                 res: context.res,
                 maxAge: 60 * 60 * 24 * 30,
             });
         }
+
         const { data: feeds } = await getDataFrom(`/feeds?userId=${userId}`);
         const { data: sources } = await getDataFrom(
             `/sources?userId=${userId}`
@@ -322,6 +329,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
             props: {
                 feeds,
                 sources,
+                userId,
             },
         };
     } catch (error) {

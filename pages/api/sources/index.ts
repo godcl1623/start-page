@@ -16,7 +16,7 @@ export default async function sourceHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    const userId = extractUserIdFrom(request);
+    const [userId] = extractUserIdFrom(request);
     const { remoteData: sources, Schema: Sources } =
         await initializeMongoDBWith(userId, "sources");
 

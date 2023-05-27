@@ -15,6 +15,8 @@ export const getUserId = (context: GetServerSidePropsContext) => {
     return userId;
 };
 
+export const getNewUserId = () => randomUUID();
+
 export const checkIfCookieExists = (context: GetServerSidePropsContext) => {
     if (
         context.req.cookies.mw != null &&

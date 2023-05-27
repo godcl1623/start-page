@@ -6,8 +6,8 @@ import { SourceData } from "./sources";
 import { parseCookie } from "./utils";
 
 export const extractUserIdFrom = (request: NextApiRequest) => {
-    const { userId, mw } = request.query;
-    return userId ?? parseCookie(mw);
+    const { userId } = request.query;
+    return [parseCookie(userId), userId];
 };
 
 interface InitializeMongoDBWithReturn<RemoteDataType> {

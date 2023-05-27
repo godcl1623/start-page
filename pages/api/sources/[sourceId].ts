@@ -12,11 +12,9 @@ export default async function sourceNameHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    const userId = extractUserIdFrom(request);
-    const { remoteData: sources, Schema: Sources } = await initializeMongoDBWith(
-        userId,
-        "sources"
-    );
+    const [userId, rawId] = extractUserIdFrom(request);
+    const { remoteData: sources, Schema: Sources } =
+        await initializeMongoDBWith(userId, "sources");
 
     const idList = sources?.map((sourceData: SourceData) => sourceData.id);
     const { deleteDataOf } = new RequestControllers();
@@ -35,9 +33,12 @@ export default async function sourceNameHandler(
                 throw new CustomError(404, "source not exists");
             }
 
-            const listAfterDelete = sources.filter(
-                (_: any, index: number) => index !== Number(sourceId)
-            );
+            const deleteTargetCurrentIndex = sources
+                .map((sourceData: SourceData) => sourceData.id)
+                .indexOf(Number(sourceId));
+            const listAfterDelete = sources
+                .slice(0, deleteTargetCurrentIndex)
+                .concat(sources.slice(deleteTargetCurrentIndex + 1));
 
             const updateResult = await Sources?.updateOne(
                 { _uuid: userId },
@@ -45,7 +46,7 @@ export default async function sourceNameHandler(
             );
             if (updateResult?.acknowledged) {
                 const result = await deleteDataOf(
-                    `/feeds/${sourceId}?userId=${userId}`
+                    `/feeds/${sourceId}?userId=${rawId}`
                 );
                 if (result.status === 204) {
                     response.status(204).send("success");

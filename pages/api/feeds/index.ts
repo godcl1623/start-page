@@ -21,7 +21,7 @@ export default async function feedsHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    const userId = extractUserIdFrom(request);
+    const [userId] = extractUserIdFrom(request);
     const { remoteData, Schema } = await initializeMongoDBWith(userId, "feeds");
 
     defendDataEmptyException({

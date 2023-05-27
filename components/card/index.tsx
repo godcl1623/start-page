@@ -5,22 +5,21 @@ import { ParsedFeedsDataType } from "pages";
 
 import RequestControllers from "controllers/requestControllers";
 
-import useGetRawCookie from "hooks/useGetRawCookie";
 import CardView from "./CardView";
 
 interface CardProps {
     cardData: ParsedFeedsDataType;
     refetchFeeds: any;
+    userId: string;
 }
 
 export type CallbackType = (value: any) => void;
 
-export default memo(function Card({ cardData, refetchFeeds }: CardProps) {
+export default memo(function Card({ cardData, refetchFeeds, userId }: CardProps) {
     const { link, origin, isFavorite, id } = cardData ?? {};
     const { patchDataTo } = new RequestControllers();
-    const rawCookie = useGetRawCookie();
     const mutationFn = (newData: ParsedFeedsDataType) =>
-        patchDataTo(`/feeds/${origin}/${id}?mw=${rawCookie}`, newData);
+        patchDataTo(`/feeds/${origin}/${id}?userId=${userId}`, newData);
     const { mutate, isSuccess } = useMutation({
         mutationFn,
     });
