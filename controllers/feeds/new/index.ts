@@ -92,15 +92,14 @@ export const updateFeedSetsDataBy = (
     });
 
 export const differentiateArrays = (
-    parseResult: ParseResultType[],
-    updatedFeedSets: ParseResultType[]
+    updatedList: ParseResultType[],
+    originalList: ParseResultType[]
 ) =>
-    parseResult.filter(
+    updatedList.filter(
         (resultData: ParseResultType, index: number) =>
             resultData.lastFeedsLength !==
-                updatedFeedSets[index]?.lastFeedsLength ||
-            resultData.latestFeedTitle !==
-                updatedFeedSets[index]?.latestFeedTitle
+                originalList[index]?.lastFeedsLength ||
+            resultData.latestFeedTitle !== originalList[index]?.latestFeedTitle
     );
 
 export const makeUpdatedFeedsLists = (updatedFeedSets: ParseResultType[]) =>

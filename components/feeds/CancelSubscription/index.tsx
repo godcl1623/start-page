@@ -6,10 +6,11 @@ import CancelSubscriptionView from "./CancelSubscriptionView";
 
 interface Props {
     sources: SourceData[];
+    userId: string;
 }
 
-export default function CancelSubscription({ sources }: Props) {
-    const cancelSubscription = useCancelSubscription();
+export default function CancelSubscription({ sources, userId }: Props) {
+    const cancelSubscription = useCancelSubscription(userId);
     const handleClick = (deleteTarget: number) => () =>
         cancelSubscription(deleteTarget);
 

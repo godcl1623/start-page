@@ -6,10 +6,10 @@ import RequestControllers from "controllers/requestControllers";
 import SubscriptionForm from "./SubscriptionForm";
 
 interface Props {
-    userCookie: string;
+    userId: string;
 }
 
-export default function SubscribeNew({ userCookie }: Props) {
+export default function SubscribeNew({ userId }: Props) {
     const router = useRouter();
     const { getDataFrom, postDataTo } = new RequestControllers();
 
@@ -49,10 +49,10 @@ export default function SubscribeNew({ userCookie }: Props) {
         const feedOriginTitle = xml.querySelector("title")?.textContent;
 
         try {
-            const { data } = await getDataFrom(`/sources?mw=${userCookie}`);
-            const { sources } = JSON.parse(data);
-            const id = sources.length;
-            const postResult = await postDataTo(`/sources?mw=${userCookie}`, {
+            const { data } = await getDataFrom(`/sources?userId=${userId}`);
+            const sources = JSON.parse(data);
+            const id = sources == null ? 0 : sources.length;
+            const postResult = await postDataTo(`/sources?userId=${userId}`, {
                 id,
                 name: feedOriginTitle,
                 url,

@@ -24,7 +24,7 @@ export default async function feedsHandler(
     request: NextApiRequest,
     response: NextApiResponse
 ) {
-    const userId = extractUserIdFrom(request);
+    const [userId, rawId] = extractUserIdFrom(request);
     const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
         userId,
         "feeds"
@@ -36,7 +36,7 @@ export default async function feedsHandler(
         try {
             const [paginationStartIndex, paginationEndIndex] =
                 getPaginationIndexes("1", "10");
-            const { data } = await getDataFrom(`/sources?userId=${userId}`);
+            const { data } = await getDataFrom(`/sources?userId=${rawId}`);
 
             const sources: SourceData[] = JSON.parse(data);
             const urlsToGetFeeds = sources
@@ -73,11 +73,11 @@ export default async function feedsHandler(
                 };
 
                 const differentiateResult = differentiateArrays(
-                    parseResult,
-                    updatedFeedSets
+                    updatedFeedSets,
+                    storedFeeds
                 );
-                if (differentiateResult.length > 0) {
-                    postDataTo(`/feeds/new?userId=${userId}`, updatedFeedSets);
+                if (storedFeeds.length === 0 || differentiateResult.length > 0) {
+                    postDataTo(`/feeds/new?userId=${rawId}`, updatedFeedSets);
                     response.status(200).json(responseBody);
                 } else {
                     response.status(204).send("no new feeds available");

@@ -16,7 +16,7 @@ import FilterBySource from "components/feeds/FilterBySource";
 import PostHandleOptions from "./PostHandleOptions";
 import PageButton from "./PageButton";
 import LoginInfoArea from "./LoginInfoArea";
-import Authentication from 'components/authentication';
+import Authentication from "components/authentication";
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
@@ -28,7 +28,7 @@ interface Props {
     sources: string;
     sourceDisplayState: FilterType<boolean>;
     setSourceDisplayState: (target: string, value: boolean) => void;
-    rawCookie: string;
+    userId: string;
     updateObserverElement: (element: HTMLDivElement) => void;
     refetchStoredFeeds: () => void;
     setSearchTexts: (target: string, value: string) => void;
@@ -59,7 +59,7 @@ export default memo(function MainPage({
     sources,
     sourceDisplayState,
     setSourceDisplayState,
-    rawCookie,
+    userId,
     updateObserverElement,
     refetchStoredFeeds,
     setSearchTexts,
@@ -72,9 +72,7 @@ export default memo(function MainPage({
         handleAuthentication: false,
     });
     const startPageRef = useRef<HTMLElement | null>(null);
-    const { sources: sourcesList }: SourcesList = sources
-        ? JSON.parse(sources)
-        : {};
+    const sourcesList = sources ? JSON.parse(sources) : [];
 
     const handleClick = (target: ModalKeys) => () => {
         document.documentElement.scrollTo({ top: 0 });
@@ -119,6 +117,7 @@ export default memo(function MainPage({
                       cardData={feed}
                       key={feed?.id}
                       refetchFeeds={refetchStoredFeeds}
+                      userId={userId}
                   />
               ))
             : [];
@@ -144,7 +143,11 @@ export default memo(function MainPage({
             className="flex items-center space-between flex-col w-full h-max min-h-full p-8 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
             ref={startPageRef}
         >
-            <section className={`flex flex-col items-center w-full h-max min-h-[calc(100vh_-_64px)] fhd:max-w-[1920px] ${feedsFromServer?.length === 0 ? 'fhd:min-h-[1080px]' : ''} fhd:my-auto`}>
+            <section
+                className={`flex flex-col items-center w-full h-max min-h-[calc(100vh_-_64px)] fhd:max-w-[1920px] ${
+                    feedsFromServer?.length === 0 ? "fhd:min-h-[1080px]" : ""
+                } fhd:my-auto`}
+            >
                 <LoginInfoArea handleAuthenticationModal={handleClick} />
                 <div className="flex flex-col justify-center my-auto">
                     <section className="flex-center w-full my-32 lg:w-[768px]">
@@ -192,7 +195,7 @@ export default memo(function MainPage({
                     <SubscriptionDialogBox
                         closeModal={closeModal("addSubscription")}
                     >
-                        <SubscribeNew userCookie={rawCookie} />
+                        <SubscribeNew userId={userId} />
                     </SubscriptionDialogBox>
                 </Modal>
             )}
@@ -201,7 +204,10 @@ export default memo(function MainPage({
                     <SubscriptionDialogBox
                         closeModal={closeModal("cancelSubscription")}
                     >
-                        <CancelSubscription sources={sourcesList} />
+                        <CancelSubscription
+                            sources={sourcesList}
+                            userId={userId}
+                        />
                     </SubscriptionDialogBox>
                 </Modal>
             )}
@@ -221,7 +227,9 @@ export default memo(function MainPage({
             )}
             {modalState.handleAuthentication && (
                 <Modal closeModal={closeModal("handleAuthentication")}>
-                    <Authentication closeModal={closeModal("handleAuthentication")} />
+                    <Authentication
+                        closeModal={closeModal("handleAuthentication")}
+                    />
                 </Modal>
             )}
         </article>
