@@ -1,10 +1,17 @@
 interface Props {
     userEmail: string | undefined;
+    handleDataHandler?: () => void;
 }
 
-export default function UserInfo({ userEmail }: Props) {
-    if (userEmail == null) {
-        return <button type="button">Guest</button>;
-    }
-    return <button type="button">{userEmail}</button>;
+export default function UserInfo({ userEmail, handleDataHandler }: Props) {
+    return (
+        <button
+            type="button"
+            onClick={() => {
+                if (handleDataHandler != null) handleDataHandler();
+            }}
+        >
+            {userEmail != null ? userEmail : "Guest"}
+        </button>
+    );
 }
