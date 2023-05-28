@@ -3,22 +3,31 @@ import UserInfo from "./UserInfo";
 import LoginHandleButton from "./LoginHandleButton";
 import { ModalKeys } from "..";
 import Button from "components/common/Button";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import RequestControllers from 'controllers/requestControllers';
 
 interface Props {
     handleAuthenticationModal: (target: ModalKeys) => () => void;
+    userId: string;
 }
 
-export default function LoginInfoArea({ handleAuthenticationModal }: Props) {
+export default function LoginInfoArea({ handleAuthenticationModal, userId }: Props) {
     const [modalState, setModalState] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null);
     const { data: session } = useSession();
+    const { getDataFrom } = new RequestControllers();
 
-    useEffect(() => {
-        if (buttonRef.current) {
-            console.log(buttonRef.current.offsetLeft);
+    const getTotalData = async () => {
+        try {
+            const totalFeedsFromServer = (await getDataFrom(`/feeds?userId=${userId}`))?.data;
+            const totalSourcesFromServer = (await getDataFrom(`/sources?userId=${userId}`))?.data;
+            const totalFeeds = JSON.parse(totalFeedsFromServer);
+            const totalSources = JSON.parse(totalSourcesFromServer);
+            console.log(totalFeeds, totalSources);
+        } catch (error) {
+            console.error(error);
         }
-    }, [modalState]);
+    };
 
     return (
         <section className="flex flex-col items-end gap-4 w-full md:flex-row md:gap-8 md:items-center md:justify-end">
@@ -66,6 +75,7 @@ export default function LoginInfoArea({ handleAuthenticationModal }: Props) {
                         <button
                             type="button"
                             className="w-44 px-4 py-2 rounded-md bg-zinc-600 text-base text-neutral-100 dark:text-gray-300"
+                            onClick={getTotalData}
                         >
                             피드 / 출처 내보내기
                         </button>

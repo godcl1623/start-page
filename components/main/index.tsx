@@ -148,7 +148,7 @@ export default memo(function MainPage({
                     feedsFromServer?.length === 0 ? "fhd:min-h-[1080px]" : ""
                 } fhd:my-auto`}
             >
-                <LoginInfoArea handleAuthenticationModal={handleClick} />
+                <LoginInfoArea handleAuthenticationModal={handleClick} userId={userId} />
                 <div className="flex flex-col justify-center my-auto">
                     <section className="flex-center w-full my-32 lg:w-[768px]">
                         <Search />
