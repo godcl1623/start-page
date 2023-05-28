@@ -3,7 +3,7 @@ import UserInfo from "./UserInfo";
 import LoginHandleButton from "./LoginHandleButton";
 import { ModalKeys } from "..";
 import Button from "components/common/Button";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
     handleAuthenticationModal: (target: ModalKeys) => () => void;
@@ -11,11 +11,19 @@ interface Props {
 
 export default function LoginInfoArea({ handleAuthenticationModal }: Props) {
     const [modalState, setModalState] = useState(false);
+    const buttonRef = useRef<HTMLButtonElement>(null);
     const { data: session } = useSession();
+
+    useEffect(() => {
+        if (buttonRef.current) {
+            console.log(buttonRef.current.offsetLeft);
+        }
+    }, [modalState]);
 
     return (
         <section className="flex flex-col items-end gap-4 w-full md:flex-row md:gap-8 md:items-center md:justify-end">
             <UserInfo
+                ref={buttonRef}
                 userEmail={
                     session != null &&
                     session.user != null &&
@@ -40,7 +48,13 @@ export default function LoginInfoArea({ handleAuthenticationModal }: Props) {
                 />
             )}
             {modalState && (
-                <div className="absolute top-32 right-4 md:top-28">
+                <div
+                    className={`absolute top-32 left-[${
+                        buttonRef.current
+                            ? `${buttonRef.current.offsetLeft}px`
+                            : 0
+                    }] z-10 md:top-28`}
+                >
                     <div className="hidden absolute -top-[40px] left-1/2 -translate-x-[10px] border-l-[20px] border-r-[20px] border-b-[40px] border-l-transparent border-r-transparent border-b-neutral-100 dark:border-b-neutral-700 md:block" />
                     <div className="flex flex-col gap-4 justify-center items-center w-64 h-36 rounded-md shadow-lg bg-neutral-100 dark:bg-neutral-700 dark:shadow-zinc-600 md:gap-8 md:w-80 md:h-56">
                         <button
