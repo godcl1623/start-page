@@ -61,10 +61,10 @@ export default function Index({ feeds, sources, userId }: IndexProps) {
         JSON.stringify(Object.values(SEARCH_OPTIONS)),
         ""
     );
-    const newFeedsRequestResult = useQuery<AxiosResponse<RenewedFeedsData>>(
-        [`/feeds/new?userId=${userId}`],
-        () => getDataFrom(`/feeds/new?userId=${userId}`)
-    )?.data?.data;
+    const newFeedsRequestResult = useQuery<AxiosResponse<RenewedFeedsData>>({
+        queryKey: [`/feeds/new?userId=${userId}`],
+        queryFn: () => getDataFrom(`/feeds/new?userId=${userId}`),
+    })?.data?.data;
     const {
         data: storedFeed,
         refetch: refetchStoredFeeds,
@@ -72,7 +72,8 @@ export default function Index({ feeds, sources, userId }: IndexProps) {
         hasNextPage,
     } = useInfiniteQuery({
         queryKey: [`/feeds?userId=${userId}`, { isMobileLayout, currentPage }],
-        queryFn: ({ pageParam = currentPage }) =>
+        initialPageParam: currentPage,
+        queryFn: ({ pageParam }) =>
             getDataFrom(`/feeds?userId=${userId}`, {
                 params: {
                     ...(isFilterFavorite && { favorites: isFilterFavorite }),
