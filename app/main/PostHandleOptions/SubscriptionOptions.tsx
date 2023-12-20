@@ -1,5 +1,5 @@
 import Button from "components/common/Button";
-import { ModalKeys } from "..";
+import { ModalKeys } from '../MainView';
 
 interface Props {
     handleClick: (target: ModalKeys) => () => void;

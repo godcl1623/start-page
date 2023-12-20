@@ -1,4 +1,4 @@
-import { ParsedFeedsDataType, ParseResultType } from "pages";
+import { ParsedFeedsDataType, ParseResultType } from "app/main";
 
 export const getPaginationIndexes = (
     page: string | string[] | undefined,

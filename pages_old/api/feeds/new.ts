@@ -9,7 +9,7 @@ import {
 } from "controllers/sources";
 import { getRssResponses } from "controllers/feeds/new/utils";
 import { AxiosResponse } from "axios";
-import { ParseResultType } from "pages";
+import { ParseResultType } from "app/main";
 import { getPaginationIndexes } from "controllers/feeds";
 import {
     differentiateArrays,
@@ -76,7 +76,10 @@ export default async function feedsHandler(
                     updatedFeedSets,
                     storedFeeds
                 );
-                if (storedFeeds.length === 0 || differentiateResult.length > 0) {
+                if (
+                    storedFeeds.length === 0 ||
+                    differentiateResult.length > 0
+                ) {
                     postDataTo(`/feeds/new?userId=${rawId}`, updatedFeedSets);
                     response.status(200).json(responseBody);
                 } else {

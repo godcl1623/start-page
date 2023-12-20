@@ -1,7 +1,7 @@
 import { AxiosResponse } from "axios";
 import { areEqual } from "common/capsuledConditions";
 import { FileContentsInterface, SourceData } from "controllers/sources";
-import { ParseResultType, ParsedFeedsDataType } from "pages";
+import { ParseResultType, ParsedFeedsDataType } from "app/main";
 import { sortFeedSets } from "..";
 import { getRssResponses, makeFeedDataArray, parseXml } from "./utils";
 

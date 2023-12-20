@@ -1,6 +1,6 @@
 import { Model } from "mongoose";
 import { NextApiRequest } from "next";
-import { ParseResultType } from "pages";
+import { ParseResultType } from 'app/main';
 import MongoDB from "./mongodb";
 import { SourceData } from "./sources";
 import { parseCookie } from "./utils";

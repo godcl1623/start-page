@@ -1,7 +1,7 @@
 import { memo, MouseEvent, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 
-import { ParsedFeedsDataType } from "pages";
+import { ParsedFeedsDataType } from 'app/main';
 
 import RequestControllers from "controllers/requestControllers";
 
@@ -15,7 +15,11 @@ interface CardProps {
 
 export type CallbackType = (value: any) => void;
 
-export default memo(function Card({ cardData, refetchFeeds, userId }: CardProps) {
+export default memo(function Card({
+    cardData,
+    refetchFeeds,
+    userId,
+}: CardProps) {
     const { link, origin, isFavorite, id } = cardData ?? {};
     const { patchDataTo } = new RequestControllers();
     const mutationFn = (newData: ParsedFeedsDataType) =>

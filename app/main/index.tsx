@@ -1,15 +1,13 @@
+'use client';
+
+import MainView from './MainView';
 import { useCallback, useEffect, useState } from "react";
 import RequestControllers from "controllers/requestControllers";
 import { AxiosResponse } from "axios";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import useFilters from "hooks/useFilters";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
-import MainPage from "components/main";
 import { SORT_STANDARD } from "common/constants";
-import { GetServerSidePropsContext } from "next";
-import { encryptCookie, getNewUserId } from "controllers/utils";
-import { setCookie } from "cookies-next";
-import { getToken } from "next-auth/jwt";
 
 export interface ParsedFeedsDataType {
     id: string;
@@ -32,7 +30,7 @@ export interface ParseResultType {
     feeds?: ParsedFeedsDataType[];
 }
 
-interface IndexProps {
+interface MainProps {
     feeds: string;
     sources: string;
     userId: string;
@@ -43,7 +41,8 @@ interface RenewedFeedsData {
     count: number;
 }
 
-export default function Index({ feeds, sources, userId }: IndexProps) {
+
+export default function Main({ feeds, sources, userId }: MainProps) {
     const { getDataFrom } = new RequestControllers();
     const [currentSort, setCurrentSort] = useState(0);
     const [isFilterFavorite, setIsFilterFavorite] = useState<boolean>(false);
@@ -279,7 +278,7 @@ export default function Index({ feeds, sources, userId }: IndexProps) {
     }, [observerElement, hasNextPage]);
 
     return (
-        <MainPage
+        <MainView
             feedsFromServer={feedsFromServer}
             currentPage={currentPage}
             setCurrentPage={updateCurrentPage}
@@ -296,44 +295,4 @@ export default function Index({ feeds, sources, userId }: IndexProps) {
             filterFavorites={filterFavorites}
         />
     );
-}
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-    const { getDataFrom } = new RequestControllers();
-    try {
-        const token = await getToken({
-            req: context.req,
-            secret: process.env.NEXTAUTH_SECRET,
-        });
-        let userId: string = "";
-
-        if (token?.email != null) {
-            userId = encryptCookie({ userId: token?.email });
-        } else if (context.req.cookies.mw != null) {
-            userId = context.req.cookies.mw;
-        } else {
-            const newUserId = getNewUserId();
-            const encryptedId = encryptCookie({ userId: newUserId });
-            setCookie("mw", encryptedId, {
-                req: context.req,
-                res: context.res,
-                maxAge: 60 * 60 * 24 * 30,
-            });
-        }
-
-        const { data: feeds } = await getDataFrom(`/feeds?userId=${userId}`);
-        const { data: sources } = await getDataFrom(
-            `/sources?userId=${userId}`
-        );
-
-        return {
-            props: {
-                feeds,
-                sources,
-                userId,
-            },
-        };
-    } catch (error) {
-        if (error instanceof Error) throw new Error(error.message);
-    }
 }

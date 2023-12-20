@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { areEqual } from "common/capsuledConditions";
-import { ParsedFeedsDataType, ParseResultType } from "pages";
+import { ParsedFeedsDataType, ParseResultType } from "app/main";
 import { CustomError } from "controllers/sources";
 import { extractUserIdFrom, initializeMongoDBWith } from "controllers/common";
 import { extractStoredFeedsFromRemote } from "controllers/feeds/new";

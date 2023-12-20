@@ -1,7 +1,7 @@
 import { useSession, signOut } from "next-auth/react";
 import UserInfo from "./UserInfo";
 import LoginHandleButton from "./LoginHandleButton";
-import { ModalKeys } from "..";
+import { ModalKeys } from '../MainView';
 import Button from "components/common/Button";
 
 interface Props {

@@ -1,6 +1,8 @@
+"use client";
+
 import { memo, useEffect, useRef, useState } from "react";
 
-import { ParsedFeedsDataType } from "pages";
+import { ParsedFeedsDataType } from '.';
 import { FilterType } from "hooks/useFilters";
 import { SourceData } from "controllers/sources";
 
@@ -49,7 +51,7 @@ export interface SourcesList {
     sources: SourceData[];
 }
 
-export default memo(function MainPage({
+export default memo(function MainView({
     feedsFromServer,
     currentPage,
     setCurrentPage,

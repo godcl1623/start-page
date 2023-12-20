@@ -6,9 +6,9 @@ import {
     AiFillRead as CheckIcon,
 } from "react-icons/ai";
 import useDerivedStateFromProps from "./hooks/useDerivedStateFromProps";
-import useClientSideDate from './hooks/useClientSideDate';
-import useCheckIfDataIsNew from './hooks/useCheckIfDataIsNew';
-import { ParsedFeedsDataType } from "pages";
+import useClientSideDate from "./hooks/useClientSideDate";
+import useCheckIfDataIsNew from "./hooks/useCheckIfDataIsNew";
+import { ParsedFeedsDataType } from 'app/main';
 
 interface Props {
     cardData: ParsedFeedsDataType;

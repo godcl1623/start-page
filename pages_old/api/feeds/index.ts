@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { areEqual } from "common/capsuledConditions";
-import { ParseResultType } from "pages";
+import { ParseResultType } from "app/main";
 import { handleSort, checkShouldSortByReverse } from "common/helpers";
 import {
     initializeMongoDBWith,

@@ -2,7 +2,7 @@ import { SORT_STANDARD } from "common/constants";
 import SelectBox from "components/common/SelectBox";
 import FilterByText from "components/feeds/FilterByText";
 import { memo, useMemo } from "react";
-import { ModalKeys } from "..";
+import { ModalKeys } from '../MainView';
 import SubscriptionOptions from "./SubscriptionOptions";
 
 interface Props {
