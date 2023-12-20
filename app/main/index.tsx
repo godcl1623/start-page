@@ -42,7 +42,7 @@ interface RenewedFeedsData {
 }
 
 
-export default function Main({ feeds, sources, userId }: MainProps) {
+export default function MainPage({ feeds, sources, userId }: MainProps) {
     const { getDataFrom } = new RequestControllers();
     const [currentSort, setCurrentSort] = useState(0);
     const [isFilterFavorite, setIsFilterFavorite] = useState<boolean>(false);

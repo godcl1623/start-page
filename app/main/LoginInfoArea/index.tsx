@@ -1,7 +1,7 @@
 import { useSession, signOut } from "next-auth/react";
 import UserInfo from "./UserInfo";
 import LoginHandleButton from "./LoginHandleButton";
-import { ModalKeys } from '../MainView';
+import { ModalKeys } from "../MainView";
 import Button from "components/common/Button";
 
 interface Props {
@@ -9,7 +9,8 @@ interface Props {
 }
 
 export default function LoginInfoArea({ handleAuthenticationModal }: Props) {
-    const { data: session } = useSession();
+    // const { data: session } = useSession();
+    const session = { user: { email: "" } };
 
     return (
         <section className="flex flex-col items-end gap-4 w-full md:flex-row md:gap-8 md:items-center md:justify-end">

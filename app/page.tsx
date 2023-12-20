@@ -1,8 +1,6 @@
-import RequestControllers from 'controllers/requestControllers';
-import { getToken } from 'next-auth/jwt';
-import { cookies } from 'next/headers';
+import MainPage from './main';
 
-export default async function MainPage() {
+export default async function Main() {
     
-    return <h1>main</h1>;
+    return <MainPage feeds="" sources="" userId="" />;
 }
