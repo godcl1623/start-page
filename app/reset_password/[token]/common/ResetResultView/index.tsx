@@ -1,13 +1,11 @@
-import Button from "components/common/Button";
+import ClientButton from "./ClientButton";
 
 interface Props {
     resultHeader: string;
-    handleClick: () => void;
     isSuccess: boolean;
 }
 
 export default function ResetResultView({
-    handleClick,
     resultHeader,
     isSuccess,
 }: Props) {
@@ -21,13 +19,9 @@ export default function ResetResultView({
                 <h1 className="w-full mb-8 text-2xl text-center">
                     {resultHeader}
                 </h1>
-                <Button
-                    type="button"
-                    customStyle={buttonStyle}
-                    clickHandler={handleClick}
-                >
+                <ClientButton buttonStyle={buttonStyle}>
                     {buttonText}
-                </Button>
+                </ClientButton>
             </section>
         </article>
     );

@@ -1,16 +1,9 @@
-import { useRouter } from "next/router";
-import CancelSubmitButtonSets from "components/authentication/common/CancelSubmitButtonSets";
 import TextInput, {
     Props as InputData,
 } from "components/authentication/common/TextInput";
+import ClientButtonSets from "./ClientButtonSets";
 
 export default function ResetPasswordView() {
-    const router = useRouter();
-
-    const goToMain = () => router.push("/");
-    const goToSuccess = () => router.push(`${router.asPath}/success`);
-    const goToError = () => router.push(`${router.asPath}/error`);
-
     const inputs = INPUT_DATA.map((inputData: InputData, index: number) => (
         <section key={`${inputData.name}_${index}`}>
             <TextInput {...inputData} />
@@ -27,10 +20,7 @@ export default function ResetPasswordView() {
                     새로운 비밀번호를 입력해주세요.
                 </h1>
                 <section className="mb-8">{inputs}</section>
-                <CancelSubmitButtonSets
-                    handleCancel={goToMain}
-                    handleSubmit={goToSuccess}
-                />
+                <ClientButtonSets />
             </form>
         </article>
     );
