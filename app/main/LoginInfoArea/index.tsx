@@ -10,7 +10,8 @@ interface Props {
 
 export default function LoginInfoArea({ handleAuthenticationModal }: Props) {
     // const { data: session } = useSession();
-    const session = { user: { email: "" } };
+    // const session = { user: { email: "" } };
+    const session = null;
 
     return (
         <section className="flex flex-col items-end gap-4 w-full md:flex-row md:gap-8 md:items-center md:justify-end">

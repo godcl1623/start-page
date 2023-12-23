@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
-    const { nextUrl } = req;
-    const { searchParams } = nextUrl;
+    try {
+        console.log('sources req: ', req.nextUrl)
+        const response = NextResponse;
+        const token = null;
 
-    return NextResponse.json({ doh: 'doz' });
+        return response.json({ doh: 'doz', token });
+    } catch (error) {
+        return NextResponse.error();
+    }
 }

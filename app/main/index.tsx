@@ -8,6 +8,7 @@ import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import useFilters from "hooks/useFilters";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import { SORT_STANDARD } from "common/constants";
+import { setCookie } from 'cookies-next';
 
 export interface ParsedFeedsDataType {
     id: string;
@@ -34,6 +35,7 @@ interface MainProps {
     feeds: string;
     sources: string;
     userId: string;
+    isNewUser: boolean;
 }
 
 interface RenewedFeedsData {
@@ -42,7 +44,7 @@ interface RenewedFeedsData {
 }
 
 
-export default function MainPage({ feeds, sources, userId }: MainProps) {
+export default function MainPage({ feeds, sources, userId, isNewUser }: MainProps) {
     const { getDataFrom } = new RequestControllers();
     const [currentSort, setCurrentSort] = useState(0);
     const [isFilterFavorite, setIsFilterFavorite] = useState<boolean>(false);
@@ -276,6 +278,12 @@ export default function MainPage({ feeds, sources, userId }: MainProps) {
             return () => observer.unobserve(observerElement);
         }
     }, [observerElement, hasNextPage]);
+
+    useEffect(() => {
+        if (isNewUser) {
+            setCookie('mw', userId, { maxAge: 60 * 60 * 24 * 30 });
+        }
+    }, [isNewUser, userId]);
 
     return (
         <MainView
