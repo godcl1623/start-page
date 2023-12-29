@@ -17,7 +17,7 @@ const useFilters = <T>(sourceString: string, defaultValue: T) => {
     };
 
     useEffect(() => {
-        if (sourceString != null) {
+        if (sourceString != null && sourceString !== '') {
             try {
                 const parseResult = JSON.parse(sourceString);
                 if (
@@ -40,7 +40,7 @@ const useFilters = <T>(sourceString: string, defaultValue: T) => {
                 return;
             }
         }
-    }, [sourceString]);
+    }, [sourceString, defaultValue]);
 
     return [innerState, updateInnerState] as const;
 };

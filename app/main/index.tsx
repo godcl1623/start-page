@@ -1,14 +1,15 @@
-'use client';
+"use client";
 
-import MainView from './MainView';
+import MainView from "./MainView";
 import { useCallback, useEffect, useState } from "react";
-import RequestControllers from "controllers/requestControllers";
 import { AxiosResponse } from "axios";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import useFilters from "hooks/useFilters";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import { SORT_STANDARD } from "common/constants";
-import { setCookie } from 'cookies-next';
+import { setCookie } from "cookies-next";
+import NewRequestControllers from "controllers/newRequestControllers";
+import { generateSearchParameters } from "controllers/utils";
 
 export interface ParsedFeedsDataType {
     id: string;
@@ -43,9 +44,13 @@ interface RenewedFeedsData {
     count: number;
 }
 
-
-export default function MainPage({ feeds, sources, userId, isNewUser }: MainProps) {
-    const { getDataFrom } = new RequestControllers();
+export default function MainPage({
+    feeds,
+    sources,
+    userId,
+    isNewUser,
+}: MainProps) {
+    const { getDataFrom } = new NewRequestControllers();
     const [currentSort, setCurrentSort] = useState(0);
     const [isFilterFavorite, setIsFilterFavorite] = useState<boolean>(false);
     const [observerElement, setObserverElement] =
@@ -62,10 +67,10 @@ export default function MainPage({ feeds, sources, userId, isNewUser }: MainProp
         JSON.stringify(Object.values(SEARCH_OPTIONS)),
         ""
     );
-    const newFeedsRequestResult = useQuery<AxiosResponse<RenewedFeedsData>>({
+    const newFeedsRequestResult = useQuery({
         queryKey: [`/feeds/new?userId=${userId}`],
         queryFn: () => getDataFrom(`/feeds/new?userId=${userId}`),
-    })?.data?.data;
+    })?.data;
     const {
         data: storedFeed,
         refetch: refetchStoredFeeds,
@@ -75,8 +80,8 @@ export default function MainPage({ feeds, sources, userId, isNewUser }: MainProp
         queryKey: [`/feeds?userId=${userId}`, { isMobileLayout, currentPage }],
         initialPageParam: currentPage,
         queryFn: ({ pageParam }) =>
-            getDataFrom(`/feeds?userId=${userId}`, {
-                params: {
+            getDataFrom(
+                `/feeds?userId=${userId}${generateSearchParameters({
                     ...(isFilterFavorite && { favorites: isFilterFavorite }),
                     ...(Object.values(sourceDisplayState).includes(false) && {
                         displayOption: sourceDisplayState,
@@ -86,10 +91,11 @@ export default function MainPage({ feeds, sources, userId, isNewUser }: MainProp
                     ) && { textOption: searchTexts }),
                     ...(currentSort > 0 && { sortOption: currentSort }),
                     page: pageParam,
-                },
-            }),
+                })}`
+            ),
         getNextPageParam: (lastPage) => {
-            const totalCount = JSON.parse(lastPage.data).count;
+            if (!lastPage.data) return 1;
+            const totalCount = JSON.parse(lastPage?.data)?.count;
             if (currentPage >= Math.ceil(totalCount / 10)) return;
             return currentPage + 1;
         },
@@ -192,11 +198,11 @@ export default function MainPage({ feeds, sources, userId, isNewUser }: MainProp
 
     useEffect(() => {
         if (storedFeed && storedFeed.pages) {
-            const dataArray = JSON.parse(
-                storedFeed.pages[storedFeed.pages.length - 1].data
-            );
-            setTotalCount(dataArray.count);
-            updateFormerFeedsList(dataArray.data);
+            const { data, count } = JSON.parse(
+                storedFeed.pages[storedFeed.pages.length - 1]
+            ).data;
+            if (count != null) setTotalCount(count);
+            if (data != null) updateFormerFeedsList(data);
         }
     }, [storedFeed, isMobileLayout]);
 
@@ -281,7 +287,7 @@ export default function MainPage({ feeds, sources, userId, isNewUser }: MainProp
 
     useEffect(() => {
         if (isNewUser) {
-            setCookie('mw', userId, { maxAge: 60 * 60 * 24 * 30 });
+            setCookie("mw", userId, { maxAge: 60 * 60 * 24 * 30 });
         }
     }, [isNewUser, userId]);
 

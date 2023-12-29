@@ -15,13 +15,15 @@ import {
 } from "controllers/feeds";
 import { checkShouldSortByReverse, handleSort } from "common/helpers";
 import { SORT_STANDARD_STATE } from "common/constants";
+import { parseCookie } from "controllers/utils";
 
 export async function GET(req: NextRequest) {
     try {
         const userId = newExtractUserIdFrom(req);
         if (userId == null) throw NextResponse.error();
+        const rawId = parseCookie(userId);
         const { remoteData, Schema } = await initializeMongoDBWith(
-            userId,
+            rawId,
             "feeds"
         );
 
@@ -32,15 +34,16 @@ export async function GET(req: NextRequest) {
             customProperty: "data",
         });
 
-        const parsedContents: ParseResultType[] = remoteData;
-        const getFeedsSearchParams = (parameter: string) => req.nextUrl.searchParams.get(parameter);
+        const parsedContents: ParseResultType[] = remoteData ?? [];
+        const getFeedsSearchParams = (parameter: string) =>
+            req.nextUrl.searchParams.get(parameter);
         const params = {
-            favorites: getFeedsSearchParams("favorites") ?? '',
-            displayOption: getFeedsSearchParams("displayOption") ?? '',
-            textOption: getFeedsSearchParams("textOption") ?? '',
-            page: getFeedsSearchParams("page") ?? '',
-            per_page: getFeedsSearchParams("per_page") ?? '',
-            sortOption: getFeedsSearchParams("sortOption") ?? '',
+            favorites: getFeedsSearchParams("favorites") ?? null,
+            displayOption: getFeedsSearchParams("displayOption") ?? null,
+            textOption: getFeedsSearchParams("textOption") ?? null,
+            page: getFeedsSearchParams("page") ?? null,
+            per_page: getFeedsSearchParams("per_page") ?? null,
+            sortOption: getFeedsSearchParams("sortOption") ?? null,
         };
 
         const [paginationStartIndex, paginationEndIndex, sortIndex] =

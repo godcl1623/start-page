@@ -117,7 +117,7 @@ export default memo(function MainView({
             ? feedsFromServer?.map((feed: ParsedFeedsDataType) => (
                   <Card
                       cardData={feed}
-                      key={feed?.id}
+                      key={`${feed?.id}_${Math.random()}`}
                       refetchFeeds={refetchStoredFeeds}
                       userId={userId}
                   />
