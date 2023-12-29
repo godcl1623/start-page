@@ -10,7 +10,7 @@ interface Props {
 
 export default function LoginInfoArea({ handleAuthenticationModal }: Props) {
     // FIXME: 타입 오류 수정 필요
-    const { data: session } = useSession() ?? {};
+    const { data: session } = useSession();
 
     return (
         <section className="flex flex-col items-end gap-4 w-full md:flex-row md:gap-8 md:items-center md:justify-end">
