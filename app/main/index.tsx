@@ -39,9 +39,13 @@ interface MainProps {
     isNewUser: boolean;
 }
 
-interface RenewedFeedsData {
+interface PageParamData {
     data: ParsedFeedsDataType[];
     count: number;
+}
+
+interface FeedsCache {
+    [key: number]: ParsedFeedsDataType[];
 }
 
 export default function MainPage({
@@ -58,7 +62,7 @@ export default function MainPage({
     const [totalCount, setTotalCount] = useState<number>(0);
     const [isMobileLayout, setIsMobileLayout] = useState<boolean>(false);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [formerFeedsList, setFormerFeedsList] = useState<any>({});
+    const [formerFeedsList, setFormerFeedsList] = useState<FeedsCache>({});
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
@@ -69,7 +73,7 @@ export default function MainPage({
     );
     const newFeedsRequestResult = useQuery({
         queryKey: [`/feeds/new?userId=${userId}`],
-        queryFn: () => getDataFrom(`/feeds/new?userId=${userId}`),
+        queryFn: () => getDataFrom<string>(`/feeds/new?userId=${userId}`),
     })?.data;
     const {
         data: storedFeed,
@@ -80,7 +84,7 @@ export default function MainPage({
         queryKey: [`/feeds?userId=${userId}`, { isMobileLayout, currentPage }],
         initialPageParam: currentPage,
         queryFn: ({ pageParam }) =>
-            getDataFrom(
+            getDataFrom<string>(
                 `/feeds?userId=${userId}${generateSearchParameters({
                     ...(isFilterFavorite && { favorites: isFilterFavorite }),
                     ...(Object.values(sourceDisplayState).includes(false) && {
@@ -93,9 +97,9 @@ export default function MainPage({
                     page: pageParam,
                 })}`
             ),
-        getNextPageParam: (lastPage) => {
-            if (!lastPage.data) return 1;
-            const totalCount = JSON.parse(lastPage?.data)?.count;
+        getNextPageParam: (lastPage: string) => {
+            if (!JSON.parse(lastPage).data) return 1;
+            const totalCount = JSON.parse(lastPage)?.count;
             if (currentPage >= Math.ceil(totalCount / 10)) return;
             return currentPage + 1;
         },

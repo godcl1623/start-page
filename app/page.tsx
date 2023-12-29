@@ -1,5 +1,5 @@
-import MainPage from "./main";
-import { authOptions } from "./api/auth/[...nextauth]/route";
+import MainPage, { ParsedFeedsDataType } from "./main";
+import { authOptions } from './api/auth/[...nextauth]/setting';
 import { getServerSession } from "next-auth";
 import { encryptCookie, getNewUserId } from "controllers/utils";
 import { cookies } from "next/headers";
@@ -33,8 +33,8 @@ export default async function Main() {
             isNewUser = true;
         }
 
-        const feedsResponse = await getDataFrom(`/feeds?userId=${userId}`);
-        const sourcesResponse = await getDataFrom(`/sources?userId=${userId}`);
+        const feedsResponse = await getDataFrom<string>(`/feeds?userId=${userId}`);
+        const sourcesResponse = await getDataFrom<string>(`/sources?userId=${userId}`);
 
         return (
             <MainPage

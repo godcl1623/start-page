@@ -5,47 +5,53 @@ export default class NewRequestControllers {
         this.url = url ?? "/";
     }
 
-    getDataFrom = async (endPoint: string, option?: RequestInit) => {
+    getDataFrom = async <T>(
+        endPoint: string,
+        option?: RequestInit
+    ): Promise<T> => {
         const requestUrl = this.processEndPoint(endPoint);
         return await (
             await fetch(requestUrl, { ...option, method: "GET" })
         ).json();
     };
 
-    postDataTo = async (
+    postDataTo = async <T>(
         endPoint: string,
         data?: BodyInit,
         option?: RequestInit
-    ) => {
+    ): Promise<T> => {
         const requestUrl = this.processEndPoint(endPoint);
         return await (
             await fetch(requestUrl, { ...option, body: data, method: "POST" })
         ).json();
     };
 
-    putDataTo = async (
+    putDataTo = async <T>(
         endPoint: string,
         data?: BodyInit,
         option?: RequestInit
-    ) => {
+    ): Promise<T> => {
         const requestUrl = this.processEndPoint(endPoint);
         return await (
             await fetch(requestUrl, { ...option, body: data, method: "PUT" })
         ).json();
     };
 
-    patchDataTo = async (
+    patchDataTo = async <T>(
         endPoint: string,
         data?: BodyInit,
         option?: RequestInit
-    ) => {
+    ): Promise<T> => {
         const requestUrl = this.processEndPoint(endPoint);
         return await (
             await fetch(requestUrl, { ...option, body: data, method: "PATCH" })
         ).json();
     };
 
-    deleteDataOf = async (endPoint: string, option?: RequestInit) => {
+    deleteDataOf = async <T>(
+        endPoint: string,
+        option?: RequestInit
+    ): Promise<T> => {
         const requestUrl = this.processEndPoint(endPoint);
         return await (
             await fetch(requestUrl, { ...option, method: "DELETE" })
