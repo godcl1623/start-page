@@ -1,9 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
     try {
-        const url = await req.json();
-        return NextResponse.json({ url });
+        const { url } = await req.json();
+        const fetchResponse = await (await fetch(url)).text();
+        const checkResult = fetchResponse.startsWith("<?xml");
+        return NextResponse.json({
+            result: checkResult,
+            data: checkResult ? fetchResponse : null,
+        });
     } catch (error) {
         return NextResponse.error();
     }

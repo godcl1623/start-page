@@ -77,3 +77,6 @@ export const generateSearchParameters = (options: ParameterOptions) => {
         ""
     );
 };
+
+export const convertToString = (data: unknown): string =>
+    typeof data === "string" ? data : JSON.stringify(data);

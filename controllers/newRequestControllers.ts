@@ -1,3 +1,5 @@
+import { convertToString } from "./utils";
+
 export default class NewRequestControllers {
     private url: string;
 
@@ -17,34 +19,46 @@ export default class NewRequestControllers {
 
     postDataTo = async <T>(
         endPoint: string,
-        data?: BodyInit,
+        data?: unknown,
         option?: RequestInit
     ): Promise<T> => {
         const requestUrl = this.processEndPoint(endPoint);
         return await (
-            await fetch(requestUrl, { ...option, body: data, method: "POST" })
+            await fetch(requestUrl, {
+                ...option,
+                body: convertToString(data),
+                method: "POST",
+            })
         ).json();
     };
 
     putDataTo = async <T>(
         endPoint: string,
-        data?: BodyInit,
+        data?: unknown,
         option?: RequestInit
     ): Promise<T> => {
         const requestUrl = this.processEndPoint(endPoint);
         return await (
-            await fetch(requestUrl, { ...option, body: data, method: "PUT" })
+            await fetch(requestUrl, {
+                ...option,
+                body: convertToString(data),
+                method: "PUT",
+            })
         ).json();
     };
 
     patchDataTo = async <T>(
         endPoint: string,
-        data?: BodyInit,
+        data?: unknown,
         option?: RequestInit
     ): Promise<T> => {
         const requestUrl = this.processEndPoint(endPoint);
         return await (
-            await fetch(requestUrl, { ...option, body: data, method: "PATCH" })
+            await fetch(requestUrl, {
+                ...option,
+                body: convertToString(data),
+                method: "PATCH",
+            })
         ).json();
     };
 

@@ -1,5 +1,15 @@
-import { defendDataEmptyException, initializeMongoDBWith, newExtractUserIdFrom } from "controllers/common";
-import { SourceDataInput } from 'controllers/sources';
+import {
+    defendDataEmptyException,
+    initializeMongoDBWith,
+    newExtractUserIdFrom,
+} from "controllers/common";
+import {
+    CustomError,
+    SourceData,
+    SourceDataInput,
+    checkIfDataExists,
+} from "controllers/sources";
+import { parseCookie } from "controllers/utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -8,7 +18,6 @@ export async function GET(req: NextRequest) {
         if (userId == null) throw NextResponse.error();
         const { remoteData: sources, Schema: Sources } =
             await initializeMongoDBWith(userId, "sources");
-        const response = NextResponse;
 
         defendDataEmptyException({
             condition: sources == null,
@@ -17,7 +26,9 @@ export async function GET(req: NextRequest) {
             customProperty: "sources",
         });
 
-        return response.json(sources != null ? JSON.stringify(sources) : '');
+        return NextResponse.json(
+            sources != null ? JSON.stringify(sources) : ""
+        );
     } catch (error) {
         return NextResponse.error();
     }
@@ -27,10 +38,47 @@ export async function POST(req: NextRequest) {
     try {
         const userId = newExtractUserIdFrom(req);
         if (userId == null) throw NextResponse.error();
-        // const { remoteData: sources, Schema: Sources } =
-        //     await initializeMongoDBWith(userId, "sources");
+        const rawId = parseCookie(userId);
+        const { remoteData: sources, Schema: Sources } =
+            await initializeMongoDBWith(rawId, "sources");
         const sourceDataInput: SourceDataInput = await req.json();
-        return NextResponse.json({ sourceDataInput });
+        const urlsList = sources.map(
+            (sourceData: SourceData) => sourceData.url
+        );
+        if (checkIfDataExists(urlsList, sourceDataInput.url)) {
+            return NextResponse.json(
+                JSON.stringify({
+                    message: "source already exists.",
+                    status: 409,
+                }),
+                {
+                    statusText: "source already exists.",
+                    status: 409,
+                }
+            );
+        }
+
+        const updateResult = await Sources.updateOne(
+            { _uuid: rawId },
+            { $push: { sources: sourceDataInput } }
+        );
+        if (updateResult.acknowledged) {
+            return NextResponse.json(
+                JSON.stringify({ message: "success", status: 201 }),
+                { status: 201 }
+            );
+        } else {
+            return NextResponse.json(
+                JSON.stringify({
+                    message: "update failed",
+                    status: 400,
+                }),
+                {
+                    statusText: "update failed",
+                    status: 400,
+                }
+            );
+        }
     } catch (error) {
         return NextResponse.error();
     }
