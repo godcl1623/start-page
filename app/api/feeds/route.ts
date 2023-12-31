@@ -15,21 +15,19 @@ import {
 } from "controllers/feeds";
 import { checkShouldSortByReverse, handleSort } from "common/helpers";
 import { SORT_STANDARD_STATE } from "common/constants";
-import { parseCookie } from "controllers/utils";
 
 export async function GET(req: NextRequest) {
     try {
-        const userId = newExtractUserIdFrom(req);
+        const [userId] = newExtractUserIdFrom(req);
         if (userId == null) throw NextResponse.error();
-        const rawId = parseCookie(userId);
         const { remoteData, Schema } = await initializeMongoDBWith(
-            rawId,
+            userId,
             "feeds"
         );
 
         defendDataEmptyException({
             condition: remoteData == null,
-            userId: rawId,
+            userId,
             Schema,
             customProperty: "data",
         });

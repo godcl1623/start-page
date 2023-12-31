@@ -6,16 +6,14 @@ import {
 } from "controllers/common";
 import { extractStoredFeedsFromRemote } from "controllers/feeds/new";
 import { checkIfDataExists } from "controllers/sources";
-import { parseCookie } from "controllers/utils";
 import { NextResponse, NextRequest } from "next/server";
 
 export async function DELETE(req: NextRequest, context: RouteContext) {
     try {
-        const userId = newExtractUserIdFrom(req);
+        const [userId] = newExtractUserIdFrom(req);
         if (userId == null) return NextResponse.error();
-        const rawId = parseCookie(userId);
         const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
-            rawId,
+            userId,
             "feeds"
         );
         const { feedsSetId } = context.params;
@@ -34,7 +32,7 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
         );
 
         const updateResult = await Feeds?.updateOne(
-            { _uuid: rawId },
+            { _uuid: userId },
             { $set: { data: filteredList } }
         );
 

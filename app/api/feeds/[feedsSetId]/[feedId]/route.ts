@@ -9,16 +9,14 @@ import {
     findRequestedFeedSetIndex,
 } from "controllers/feeds/feedsSetId/feedId";
 import { extractStoredFeedsFromRemote } from "controllers/feeds/new";
-import { parseCookie } from "controllers/utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(req: NextRequest) {
     try {
-        const userId = newExtractUserIdFrom(req);
+        const [userId] = newExtractUserIdFrom(req);
         if (userId == null) return NextResponse.error();
-        const rawId = parseCookie(userId);
         const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
-            rawId,
+            userId,
             "feeds"
         );
         const dataToChange: ParsedFeedsDataType = await req.json();
@@ -50,7 +48,7 @@ export async function PATCH(req: NextRequest) {
 
             storedFeeds[feedSetIndex] = newFeedsSetRelatedToRequest;
             const updateResult = await Feeds?.updateOne(
-                { _uuid: rawId },
+                { _uuid: userId },
                 { $set: { data: storedFeeds } }
             );
             if (updateResult?.acknowledged) {

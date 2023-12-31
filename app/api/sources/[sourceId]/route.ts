@@ -16,11 +16,10 @@ export interface RouteContext {
 export async function DELETE(req: NextRequest, context: RouteContext) {
     const { deleteDataOf } = new NewRequestControllers();
     try {
-        const userId = newExtractUserIdFrom(req);
+        const [userId] = newExtractUserIdFrom(req);
         if (userId == null) return NextResponse.error();
-        const rawId = parseCookie(userId);
         const { remoteData: sources, Schema: Sources } =
-            await initializeMongoDBWith(rawId, "sources");
+            await initializeMongoDBWith(userId, "sources");
         const idList = sources?.map((sourceData: SourceData) => sourceData.id);
         const { sourceId } = context.params;
 
@@ -39,7 +38,7 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
             .concat(sources.slice(deleteTargetCurrentIndex + 1));
 
         const updateResult = await Sources?.updateOne(
-            { _uuid: rawId },
+            { _uuid: userId },
             { $set: { sources: listAfterDelete } }
         );
         if (updateResult?.acknowledged) {

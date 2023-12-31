@@ -17,9 +17,8 @@ import { ParseResultType } from 'app/main';
 
 export async function GET(req: NextRequest) {
     try {
-        const userId = newExtractUserIdFrom(req);
+        const [userId, rawId] = newExtractUserIdFrom(req);
         if (userId == null) throw NextResponse.error();
-        const rawId = parseCookie(userId);
         const { remoteData } = await initializeMongoDBWith(userId, "feeds");
 
         const [paginationStartIndex, paginationEndIndex] = getPaginationIndexes(
@@ -27,7 +26,7 @@ export async function GET(req: NextRequest) {
             "10"
         );
         const sourceResponse = await fetch(
-            `http://localhost:3000/api/sources?userId=${userId}`
+            `http://localhost:3000/api/sources?userId=${rawId}`
         );
 
         const sources: SourceData[] = JSON.parse(await sourceResponse.json());
@@ -88,7 +87,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const userId = newExtractUserIdFrom(req);
+        const [userId] = newExtractUserIdFrom(req);
         if (userId == null) throw NextResponse.error();
         const { Schema: Feeds } = await initializeMongoDBWith(userId, "feeds");
         const dataToWrite: ParseResultType[] = await req.json();

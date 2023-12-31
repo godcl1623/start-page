@@ -12,7 +12,8 @@ export const extractUserIdFrom = (request: NextApiRequest) => {
 };
 
 export const newExtractUserIdFrom = (request: NextRequest) => {
-    return request.nextUrl.searchParams.get("userId")?.replace(/\s/g, "+");
+    const userId = request.nextUrl.searchParams.get("userId")?.replace(/\s/g, "+");
+    return [parseCookie(userId), userId];
 };
 
 interface InitializeMongoDBWithReturn<RemoteDataType> {

@@ -14,15 +14,14 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
     try {
-        const userId = newExtractUserIdFrom(req);
+        const [userId] = newExtractUserIdFrom(req);
         if (userId == null) throw NextResponse.error();
-        const rawId = parseCookie(userId);
         const { remoteData: sources, Schema: Sources } =
-            await initializeMongoDBWith(rawId, "sources");
+            await initializeMongoDBWith(userId, "sources");
 
         defendDataEmptyException({
             condition: sources == null,
-            userId: rawId,
+            userId,
             Schema: Sources,
             customProperty: "sources",
         });
@@ -37,11 +36,10 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const userId = newExtractUserIdFrom(req);
+        const [userId] = newExtractUserIdFrom(req);
         if (userId == null) throw NextResponse.error();
-        const rawId = parseCookie(userId);
         const { remoteData: sources, Schema: Sources } =
-            await initializeMongoDBWith(rawId, "sources");
+            await initializeMongoDBWith(userId, "sources");
         const sourceDataInput: SourceDataInput = await req.json();
         const urlsList = sources.map(
             (sourceData: SourceData) => sourceData.url
@@ -60,7 +58,7 @@ export async function POST(req: NextRequest) {
         }
 
         const updateResult = await Sources.updateOne(
-            { _uuid: rawId },
+            { _uuid: userId },
             { $push: { sources: sourceDataInput } }
         );
         if (updateResult.acknowledged) {
