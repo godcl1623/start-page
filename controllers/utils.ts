@@ -61,9 +61,9 @@ export const parseCookie = (rawCookie: string | string[] | undefined) => {
 
 interface ParameterOptions {
     favorites?: boolean;
-    displayOption?: FilterType<boolean>;
+    displayOption?: string;
     searchText?: string;
-    textOption?: FilterType<string>;
+    textOption?: string;
     sortOption?: number;
     page?: number;
 }

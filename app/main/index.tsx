@@ -88,11 +88,11 @@ export default function MainPage({
                 `/feeds?userId=${userId}${generateSearchParameters({
                     ...(isFilterFavorite && { favorites: isFilterFavorite }),
                     ...(Object.values(sourceDisplayState).includes(false) && {
-                        displayOption: sourceDisplayState,
+                        displayOption: JSON.stringify(sourceDisplayState),
                     }),
                     ...(Object.values(searchTexts).some(
                         (searchText: string) => searchText.length >= 2
-                    ) && { textOption: searchTexts }),
+                    ) && { textOption: JSON.stringify(searchTexts) }),
                     ...(currentSort > 0 && { sortOption: currentSort }),
                     page: pageParam,
                 })}`
@@ -157,6 +157,7 @@ export default function MainPage({
     const filterFavorites = () => {
         setIsFilterFavorite(!isFilterFavorite);
         setCurrentPage(1);
+        refetchStoredFeeds();
     };
 
     const updateObserverElement = (element: HTMLDivElement) => {
@@ -204,7 +205,7 @@ export default function MainPage({
         if (storedFeed && storedFeed.pages) {
             const { data, count } = JSON.parse(
                 storedFeed.pages[storedFeed.pages.length - 1]
-            ).data;
+            );
             if (count != null) setTotalCount(count);
             if (data != null) updateFormerFeedsList(data);
         }

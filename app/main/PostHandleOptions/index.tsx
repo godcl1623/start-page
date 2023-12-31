@@ -25,11 +25,11 @@ export default memo(function PostHandleOptions({
                 handleClick={handleClick}
             />
         ),
-        [filterFavorites]
+        [filterFavorites, handleClick]
     );
     const filterByText = useMemo(
         () => <FilterByText setTextFilter={setSearchTexts} />,
-        []
+        [setSearchTexts]
     );
     const selectBox = useMemo(
         () => (
