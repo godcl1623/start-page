@@ -16,12 +16,13 @@ export async function GET(req: NextRequest) {
     try {
         const userId = newExtractUserIdFrom(req);
         if (userId == null) throw NextResponse.error();
+        const rawId = parseCookie(userId);
         const { remoteData: sources, Schema: Sources } =
-            await initializeMongoDBWith(userId, "sources");
+            await initializeMongoDBWith(rawId, "sources");
 
         defendDataEmptyException({
             condition: sources == null,
-            userId,
+            userId: rawId,
             Schema: Sources,
             customProperty: "sources",
         });

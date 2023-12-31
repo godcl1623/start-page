@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
             "10"
         );
         const sourceResponse = await fetch(
-            `http://localhost:3000/api/sources?userId=${rawId}`
+            `http://localhost:3000/api/sources?userId=${userId}`
         );
 
         const sources: SourceData[] = JSON.parse(await sourceResponse.json());

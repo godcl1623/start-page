@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
         defendDataEmptyException({
             condition: remoteData == null,
-            userId,
+            userId: rawId,
             Schema,
             customProperty: "data",
         });

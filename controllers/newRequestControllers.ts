@@ -7,7 +7,7 @@ export default class NewRequestControllers {
         this.url = url ?? "/";
     }
 
-    getDataFrom = async <T>(
+    getDataFrom = async <T = unknown>(
         endPoint: string,
         option?: RequestInit
     ): Promise<T> => {
@@ -17,7 +17,7 @@ export default class NewRequestControllers {
         ).json();
     };
 
-    postDataTo = async <T>(
+    postDataTo = async <T = unknown>(
         endPoint: string,
         data?: unknown,
         option?: RequestInit
@@ -32,7 +32,7 @@ export default class NewRequestControllers {
         ).json();
     };
 
-    putDataTo = async <T>(
+    putDataTo = async <T = unknown>(
         endPoint: string,
         data?: unknown,
         option?: RequestInit
@@ -47,7 +47,7 @@ export default class NewRequestControllers {
         ).json();
     };
 
-    patchDataTo = async <T>(
+    patchDataTo = async <T = unknown>(
         endPoint: string,
         data?: unknown,
         option?: RequestInit
@@ -62,7 +62,7 @@ export default class NewRequestControllers {
         ).json();
     };
 
-    deleteDataOf = async <T>(
+    deleteDataOf = async <T = unknown>(
         endPoint: string,
         option?: RequestInit
     ): Promise<T> => {
