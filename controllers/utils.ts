@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { GetServerSidePropsContext } from "next";
 import CryptoJS from "crypto-js";
+import { FilterType } from "hooks/useFilters";
 
 export const getUserId = (context: GetServerSidePropsContext) => {
     let userId = "";
@@ -50,8 +51,32 @@ export const decryptCookie = (target: string) => {
 
 export const parseCookie = (rawCookie: string | string[] | undefined) => {
     if (typeof rawCookie === "string" && rawCookie.length > 0) {
-        const { userId } = JSON.parse(decryptCookie(rawCookie.replaceAll(" ", "+")));
+        const { userId } = JSON.parse(
+            decryptCookie(rawCookie.replaceAll(" ", "+"))
+        );
         return userId;
     }
     return;
 };
+
+interface ParameterOptions {
+    favorites?: boolean;
+    displayOption?: string;
+    searchText?: string;
+    textOption?: string;
+    sortOption?: number;
+    page?: number;
+}
+
+export const generateSearchParameters = (options: ParameterOptions) => {
+    return Object.entries(options).reduce(
+        (resultParameter: string, currentValue: [string, unknown]) => {
+            const [key, value] = currentValue;
+            return resultParameter + `&${key}=${value}`;
+        },
+        ""
+    );
+};
+
+export const convertToString = (data: unknown): string =>
+    typeof data === "string" ? data : JSON.stringify(data);

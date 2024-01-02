@@ -1,9 +1,9 @@
-import { ParsedFeedsDataType, ParseResultType } from "pages";
+import { ParsedFeedsDataType, ParseResultType } from "app/main";
 
 export const getPaginationIndexes = (
-    page: string | string[] | undefined,
-    perPage: string | string[] | undefined,
-    sortOption?: string | string[] | undefined
+    page: string | string[] | null,
+    perPage: string | string[] | null,
+    sortOption?: string | string[] | null
 ) => {
     let pageValue =
         page != null && typeof page === "string" ? parseInt(page) : 1;

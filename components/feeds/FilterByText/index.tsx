@@ -25,7 +25,7 @@ export default memo(function FilterByText({ setTextFilter }: Props) {
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const [searchOptionKey, inputValue] = extractFormValues(event);
-        if (inputValue.length < 2) {
+        if (inputValue.length > 0 && inputValue.length < 2) {
             alert("검색어는 두 글자 이상 입력해주세요.");
             return;
         }
@@ -37,7 +37,6 @@ export default memo(function FilterByText({ setTextFilter }: Props) {
             setIsInputFilled(true);
         } else {
             setIsInputFilled(false);
-            setTextFilter(SEARCH_OPTIONS["제목"], "");
         }
     };
 

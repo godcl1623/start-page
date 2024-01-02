@@ -1,3 +1,4 @@
+// * migration completed
 import Head from "next/head";
 
 interface SeoInterface {

@@ -1,12 +1,18 @@
 import { Model } from "mongoose";
 import { NextApiRequest } from "next";
-import { ParseResultType } from "pages";
+import { ParseResultType } from "app/main";
 import MongoDB from "./mongodb";
 import { SourceData } from "./sources";
 import { parseCookie } from "./utils";
+import { NextRequest } from "next/server";
 
 export const extractUserIdFrom = (request: NextApiRequest) => {
     const { userId } = request.query;
+    return [parseCookie(userId), userId];
+};
+
+export const newExtractUserIdFrom = (request: NextRequest) => {
+    const userId = request.nextUrl.searchParams.get("userId")?.replace(/\s/g, "+");
     return [parseCookie(userId), userId];
 };
 
