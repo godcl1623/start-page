@@ -1,4 +1,7 @@
-import { initializeMongoDBWith, newExtractUserIdFrom } from "controllers/common";
+import {
+    initializeMongoDBWith,
+    newExtractUserIdFrom,
+} from "controllers/common";
 import { getPaginationIndexes } from "controllers/feeds";
 import { parseCookie } from "controllers/utils";
 import { NextRequest, NextResponse } from "next/server";
@@ -13,7 +16,7 @@ import {
     parseFeedsFromSources,
     updateFeedSetsDataBy,
 } from "controllers/feeds/new";
-import { ParseResultType } from 'app/main';
+import { ParseResultType } from "app/main";
 
 export async function GET(req: NextRequest) {
     try {
@@ -26,7 +29,7 @@ export async function GET(req: NextRequest) {
             "10"
         );
         const sourceResponse = await fetch(
-            `http://localhost:3000/api/sources?userId=${rawId}`
+            `${process.env.NEXT_PUBLIC_REQUEST_URL}/sources?userId=${rawId}`
         );
 
         const sources: SourceData[] = JSON.parse(await sourceResponse.json());
@@ -69,10 +72,13 @@ export async function GET(req: NextRequest) {
             );
 
             if (storedFeeds.length === 0 || differentiateResult.length > 0) {
-                fetch(`http://localhost:3000/api/feeds/new?userId=${rawId}`, {
-                    body: JSON.stringify(updatedFeedSets),
-                    method: "POST",
-                });
+                fetch(
+                    `${process.env.NEXT_PUBLIC_REQUEST_URL}/feeds/new?userId=${rawId}`,
+                    {
+                        body: JSON.stringify(updatedFeedSets),
+                        method: "POST",
+                    }
+                );
                 return NextResponse.json(responseBody);
             } else {
                 return NextResponse.json("no new feeds available");
@@ -96,7 +102,7 @@ export async function POST(req: NextRequest) {
             { $set: { data: dataToWrite } }
         );
         if (updateResult?.acknowledged) {
-            return NextResponse.json('success');
+            return NextResponse.json("success");
         } else {
             return NextResponse.error();
         }
