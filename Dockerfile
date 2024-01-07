@@ -34,9 +34,12 @@ RUN yarn build
 # COPY --from=builder /app/public ./public
 # COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 # COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY .next/static .next/standalone/.next/static
-COPY public .next/standalone/public
+# static, public을 이 상태로 복사할 경우 사용자 로컬 파일이 도커 컨테이너로 복사됨
+# COPY --chown=nextjs:nodejs .next/static .next/standalone/.next/static
+# COPY --chown=nextjs:nodejs public .next/standalone/public
 # USER nextjs
+RUN mv .next/static .next/standalone/.next/static
+RUN mv public .next/standalone/public
 
 EXPOSE 3000
 
