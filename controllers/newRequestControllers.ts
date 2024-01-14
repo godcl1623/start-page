@@ -3,7 +3,7 @@ import { convertToString } from "./utils";
 export default class NewRequestControllers {
     private url: string;
 
-    constructor(url = process.env.NEXT_PUBLIC_REQUEST_URL) {
+    constructor(url = process.env.NEXT_PUBLIC_REQUEST_API) {
         this.url = url ?? "/";
     }
 

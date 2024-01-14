@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
             "10"
         );
         const sourceResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_REQUEST_URL}/sources?userId=${rawId}`
+            `${process.env.NEXT_PUBLIC_REQUEST_API}/sources?userId=${rawId}`
         );
 
         const sources: SourceData[] = JSON.parse(await sourceResponse.json());
@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
 
             if (storedFeeds.length === 0 || differentiateResult.length > 0) {
                 fetch(
-                    `${process.env.NEXT_PUBLIC_REQUEST_URL}/feeds/new?userId=${rawId}`,
+                    `${process.env.NEXT_PUBLIC_REQUEST_API}/feeds/new?userId=${rawId}`,
                     {
                         body: JSON.stringify(updatedFeedSets),
                         method: "POST",
