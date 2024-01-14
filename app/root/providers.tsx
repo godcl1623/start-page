@@ -3,9 +3,11 @@
 import { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
+import { Session } from 'next-auth';
 
 interface Props {
     readonly children: ReactNode;
+    readonly session: Session | null;
 }
 
 const queryClient = new QueryClient({
@@ -16,9 +18,9 @@ const queryClient = new QueryClient({
     },
 });
 
-export default function Providers({ children }: Props) {
+export default function Providers({ children, session }: Props) {
     return (
-        <SessionProvider>
+        <SessionProvider session={session}>
             <QueryClientProvider client={queryClient}>
                 {children}
             </QueryClientProvider>
