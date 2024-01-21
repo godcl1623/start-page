@@ -1,14 +1,18 @@
 version: "3.9"
 
 services:
-  prototype:
-    container_name: next-dockerized
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - ".:/app"
-    ports:
-      - "3001:3000"
-    environment:
-      - NODE_ENV=production
+    start-page:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        user: nextjs
+        working_dir: /app
+        ports:
+            - 80:3000
+            - 443:3000
+        runtime: runc
+        environment:
+            - NODE_ENV=production
+            - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            - NODE_VERSION=21.5.0
+            - YARN_VERSION=1.22.19

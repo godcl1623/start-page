@@ -29,6 +29,8 @@ FROM node:alpine AS runner
 WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+RUN npm install -g pm2
+COPY ecosystem.config.js ./ecosystem.config.js
 COPY --from=deps /app/.pnp.cjs ./.pnp.cjs
 COPY --from=builder /app/.yarn ./.yarn
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./build
@@ -41,4 +43,5 @@ USER nextjs
 
 EXPOSE 3000
 
-CMD ["node", "-r", "./.pnp.cjs", "build/server.js"]
+# CMD ["node", "-r", "./.pnp.cjs", "build/server.js"]
+CMD ["pm2-runtime", "start", "ecosystem.config.js"]
