@@ -38,10 +38,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./build/.next/static
 COPY --from=builder /app/public ./build/public
 
 USER nextjs
-# RUN mv .next/static .next/standalone/.next/static
-# RUN mv public .next/standalone/public
 
 EXPOSE 3000
 
-# CMD ["node", "-r", "./.pnp.cjs", "build/server.js"]
 CMD ["pm2-runtime", "start", "ecosystem.config.js"]
