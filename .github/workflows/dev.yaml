@@ -1,0 +1,61 @@
+# on:
+#     push:
+#         branches:
+#             - develop
+#     pull_request:
+#         branches:
+#             - develop
+# jobs:
+#     deploy:
+#         name: Deploy
+#         runs-on: ubuntu-latest
+#         environment: production
+#         env:
+#             OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
+#             OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
+#             OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
+#             OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+#             OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
+#             OCIR_REPOSITORY: ${{ secrets.OCIR_REPOSITORY }}
+
+#         steps:
+#             - name: Checkout
+#               uses: actions/checkout@v2
+
+#             - name: Login to Oracle Cloud Infrastructure Registry (OCIR)
+#               id: login-oci
+#               uses: oracle-actions/login-ocir@v1.2.1
+#               with:
+#                   auth_token: ${{ secrets.OCI_AUTH_TOKEN }}
+
+#             - name: Build, Tag, Push the Docker Image
+#               id: build-image
+#               env:
+#                   OCIR_ENDPOINT: ${{ steps.login-oci.outputs.ocir_endpoint }}
+#                   OCIR_USERNAME: ${{ steps.login-oci.outputs.ocir_username }}
+#               run: |
+#                   docker build -t $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest .
+#                   docker push $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest
+
+#             - name: Pull the Pushed Image
+#               uses: oracle-actions/run-oci-cli-command@v1.1.1
+#               env:
+#                   OCIR_ENDPOINT: ${{ steps.login-oci.outputs.ocir_endpoint }}
+#                   OCIR_USERNAME: ${{ steps.login-oci.outputs.ocir_username }}
+#               with:
+#                   command: "docker pull image $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest"
+
+#             - name: Stop Current Image
+#               uses: oracle-actions/run-oci-cli-command@v1.1.1
+#               with:
+#                   command: "docker compose down"
+
+#             - name: Move to Compose Directory
+#               uses: oracle-actions/run-oci-cli-command@v1.1.1
+#               with:
+#                   command: "cd ${{ secrets.OCI_COMPOSE_DIRECTORY }}"
+
+#             - name: Run Docker Compose
+#               uses: oracle-actions/run-oci-cli-command@v1.1.1
+#               with:
+#                   command: "docker compose up -d"
