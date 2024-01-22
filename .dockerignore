@@ -1,1 +1,11 @@
-node_modules
+.github
+.history
+.next
+.vscode
+.dockerignore
+docker-compose.yml
+Dockerfile
+README.md
+.gitignore
+.eslintrc.json
+.prettierrc.js

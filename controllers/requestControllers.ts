@@ -3,7 +3,7 @@ import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 export default class RequestControllers {
     private instance: AxiosInstance;
 
-    constructor(baseURL = process.env.NEXT_PUBLIC_REQUEST_URL) {
+    constructor(baseURL = process.env.NEXT_PUBLIC_REQUEST_API) {
         this.instance = axios.create({
             baseURL,
         });
