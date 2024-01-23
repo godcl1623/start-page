@@ -1,16 +1,16 @@
 on:
   push:
     branches:
-      - master
+      - develop
   pull_request:
     branches:
-      - master
+      - develop
 
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    environment: production
+    environment: development
     env:
       OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
       OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
@@ -39,8 +39,8 @@ jobs:
       - name: Create env file
         run: |
           touch .env
-          echo NEXT_PUBLIC_REQUEST_API=${{ secrets.NEXT_PUBLIC_REQUEST_API }} >> .env
-          echo NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }} >> .env
+          echo NEXT_PUBLIC_REQUEST_API=${{ secrets.NEXT_PUBLIC_REQUEST_API_DEV }} >> .env
+          echo NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL_DEV }} >> .env
           echo MONGO_DB_USER=${{ secrets.MONGO_DB_USER }} >> .env
           echo MONGO_DB_KEY=${{ secrets.MONGO_DB_KEY }} >> .env
           echo MONGO_DB_URI=${{ secrets.MONGO_DB_URI }} >> .env
@@ -58,8 +58,8 @@ jobs:
       - name: Build, Tag, Push the Docker Image
         id: build-image
         run: |
-          docker build --platform arm64 -t $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest .
-          docker push $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest
+          docker build --platform arm64 -t $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest-dev .
+          docker push $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest-dev
 
       - name: Deploy to OCI Compute Instance
         uses: appleboy/ssh-action@master
@@ -71,5 +71,5 @@ jobs:
           script: |
             cd ${{ secrets.OCI_COMPOSE_DIRECTORY }}
             docker compose down
-            docker pull $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest
-            docker compose -f docker-compose-prod.yml up -d
+            docker pull $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest-dev
+            docker compose -f docker-compose-dev.yml up -d
