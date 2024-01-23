@@ -59,19 +59,19 @@ jobs:
       - name: Pull the Pushed Image
         uses: oracle-actions/run-oci-cli-command@v1.1.1
         with:
-          command: "docker pull image $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest"
+          command: 'docker pull image $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest'
 
       - name: Stop Current Image
         uses: oracle-actions/run-oci-cli-command@v1.1.1
         with:
-          command: "docker compose down"
+          command: 'docker compose down'
 
       - name: Move to Compose Directory
         uses: oracle-actions/run-oci-cli-command@v1.1.1
         with:
-          command: "cd ${{ secrets.OCI_COMPOSE_DIRECTORY }}"
+          command: 'cd ${{ secrets.OCI_COMPOSE_DIRECTORY }}'
 
       - name: Run Docker Compose
         uses: oracle-actions/run-oci-cli-command@v1.1.1
         with:
-          command: "docker compose up -d"
+          command: 'docker compose up -d'
