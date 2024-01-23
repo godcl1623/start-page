@@ -25,6 +25,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Enable ARM64 Architecture
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: 'arm64,arm'
+
       - name: Login to Oracle Cloud Infrastructure Registry (OCIR)
         id: login-oci
         uses: oracle-actions/login-ocir@v1.2.1
