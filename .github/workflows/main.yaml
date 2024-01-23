@@ -56,6 +56,11 @@ jobs:
           docker build -t $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest .
           docker push $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest
 
+      - name: OCI-CLI Install test
+        uses: oracle-actions/run-oci-cli-command@v1.1.1
+        with:
+          command: 'oci os ns get'
+
       - name: Pull the Pushed Image
         uses: oracle-actions/run-oci-cli-command@v1.1.1
         with:
