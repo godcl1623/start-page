@@ -1,57 +1,77 @@
 on:
-    push:
-        branches:
-            - feature/20240123-enble-workflow
-    pull_request:
-        branches:
-            - feature/20240123-enble-workflow
+  push:
+    branches:
+      - feature/20240123-enble-workflow
+  pull_request:
+    branches:
+      - feature/20240123-enble-workflow
+
 jobs:
-    deploy:
-        name: Deploy
-        runs-on: ubuntu-latest
-        environment: production
-        env:
-            OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
-            OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
-            OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
-            OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
-            OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
-            OCIR_REPOSITORY: ${{ secrets.OCIR_REPOSITORY }}
-            OCIR_ENDPOINT: ${{ secrets.OCIR_ENDPOINT }}
-            OCIR_USERNAME: ${{ secrets.OCIR_USERNAME }}
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
+      OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
+      OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
+      OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+      OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
+      OCIR_REPOSITORY: ${{ secrets.OCIR_REPOSITORY }}
+      OCIR_ENDPOINT: ${{ secrets.OCIR_ENDPOINT }}
+      OCIR_USERNAME: ${{ secrets.OCIR_USERNAME }}
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-            - name: Login to Oracle Cloud Infrastructure Registry (OCIR)
-              id: login-oci
-              uses: oracle-actions/login-ocir@v1.2.1
-              with:
-                  auth_token: ${{ secrets.OCI_AUTH_TOKEN }}
+      - name: Login to Oracle Cloud Infrastructure Registry (OCIR)
+        id: login-oci
+        uses: oracle-actions/login-ocir@v1.2.1
+        with:
+          auth_token: ${{ secrets.OCI_AUTH_TOKEN }}
 
-            - name: Build, Tag, Push the Docker Image
-              id: build-image
-              run: |
-                  docker build -t $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest .
-                  docker push $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest
+      - name: Create env file
+        run: |
+          touch .env.production
+          echo NEXT_PUBLIC_REQUEST_API=${{ secrets.NEXT_PUBLIC_REQUEST_API }} >> .env.production
+          echo NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }} >> .env.production
+          echo MONGO_DB_USER=${{ secrets.MONGO_DB_USER }} >> .env.production
+          echo MONGO_DB_KEY=${{ secrets.MONGO_DB_KEY }} >> .env.production
+          echo MONGO_DB_URI=${{ secrets.MONGO_DB_URI }} >> .env.production
+          echo MAGIC_WORD=${{ secrets.MAGIC_WORD }} >> .env.production
+          echo NEXT_PUBLIC_MAGIC_WORD=${{ secrets.NEXT_PUBLIC_MAGIC_WORD }} >> .env.production
+          echo GOOGLE_OAUTH_CLIENTID=${{ secrets.GOOGLE_OAUTH_CLIENTID }} >> .env.production
+          echo GOOGLE_OAUTH_CLIENT_SECRET=${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }} >> .env.production
+          echo NAVER_OAUTH_CLIENTID=${{ secrets.NAVER_OAUTH_CLIENTID }} >> .env.production
+          echo NAVER_OAUTH_CLIENT_SECRET=${{ secrets.NAVER_OAUTH_CLIENT_SECRET }} >> .env.production
+          echo KAKAO_OAUTH_CLIENTID=${{ secrets.KAKAO_OAUTH_CLIENTID }} >> .env.production
+          echo KAKAO_OAUTH_CLIENT_SECRET=${{ secrets.KAKAO_OAUTH_CLIENT_SECRET }} >> .env.production
+          echo NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }} >> .env.production
+          cat .env.production
 
-            - name: Pull the Pushed Image
-              uses: oracle-actions/run-oci-cli-command@v1.1.1
-              with:
-                  command: "docker pull image $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest"
+      - name: Build, Tag, Push the Docker Image
+        id: build-image
+        run: |
+          docker build -t $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest .
+          docker push $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest
 
-            - name: Stop Current Image
-              uses: oracle-actions/run-oci-cli-command@v1.1.1
-              with:
-                  command: "docker compose down"
+      - name: Pull the Pushed Image
+        uses: oracle-actions/run-oci-cli-command@v1.1.1
+        with:
+          command: "docker pull image $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest"
 
-            - name: Move to Compose Directory
-              uses: oracle-actions/run-oci-cli-command@v1.1.1
-              with:
-                  command: "cd ${{ secrets.OCI_COMPOSE_DIRECTORY }}"
+      - name: Stop Current Image
+        uses: oracle-actions/run-oci-cli-command@v1.1.1
+        with:
+          command: "docker compose down"
 
-            - name: Run Docker Compose
-              uses: oracle-actions/run-oci-cli-command@v1.1.1
-              with:
-                  command: "docker compose up -d"
+      - name: Move to Compose Directory
+        uses: oracle-actions/run-oci-cli-command@v1.1.1
+        with:
+          command: "cd ${{ secrets.OCI_COMPOSE_DIRECTORY }}"
+
+      - name: Run Docker Compose
+        uses: oracle-actions/run-oci-cli-command@v1.1.1
+        with:
+          command: "docker compose up -d"
