@@ -1,7 +1,7 @@
 ## Layer 1: Base image layer for dependencies
 # base image
 FROM node:alpine AS deps
-# RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat
 # set working directory
 WORKDIR /app
 # app dependencies, install, caching
