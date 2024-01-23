@@ -64,8 +64,7 @@ jobs:
           key: ${{ secrets.REMOTE_SSH_KEY }}
           port: ${{ secrets.REMOTE_SSH_PORT }}
           script: |
-            whoami
-            docker pull $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest
-            docker compose down
             cd ${{ secrets.OCI_COMPOSE_DIRECTORY }}
+            docker compose down
+            docker pull $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest
             docker compose up -d
