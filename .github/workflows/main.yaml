@@ -56,32 +56,16 @@ jobs:
           docker build -t $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest .
           docker push $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest
 
-      - name: OCI CLI test
-        uses: oracle-actions/run-oci-cli-command@v1.1.1
+      - name: Deploy to OCI Compute Instance
+        uses: appleboy/ssh-action@master
         with:
-          silent: 'False'
-          command: 'oci os ns get'
-
-      - name: Pull the Pushed Image
-        uses: oracle-actions/run-oci-cli-command@v1.1.1
-        with:
-          silent: 'False'
-          command: 'docker pull $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest'
-
-      - name: Stop Current Image
-        uses: oracle-actions/run-oci-cli-command@v1.1.1
-        with:
-          silent: 'False'
-          command: 'docker compose down'
-
-      - name: Move to Compose Directory
-        uses: oracle-actions/run-oci-cli-command@v1.1.1
-        with:
-          silent: 'False'
-          command: 'cd ${{ secrets.OCI_COMPOSE_DIRECTORY }}'
-
-      - name: Run Docker Compose
-        uses: oracle-actions/run-oci-cli-command@v1.1.1
-        with:
-          silent: 'False'
-          command: 'docker compose up -d'
+          host: ${{ secrets.REMOTE_SSH_HOST }}
+          username: ${{ secrets.REMOTE_SSH_USERNAME }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}
+          port: ${{ secrets.REMOTE_SSH_PORT }}
+          script: |
+            whoami
+            docker pull $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest
+            docker compose down
+            cd ${{ secrets.OCI_COMPOSE_DIRECTORY }}
+            docker compose up -d
