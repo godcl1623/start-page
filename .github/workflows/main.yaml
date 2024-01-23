@@ -56,22 +56,32 @@ jobs:
           docker build -t $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest .
           docker push $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest
 
+      - name: OCI CLI test
+        uses: oracle-actions/run-oci-cli-command@v1.1.1
+        with:
+          silent: 'False'
+          command: 'oci os ns get'
+
       - name: Pull the Pushed Image
         uses: oracle-actions/run-oci-cli-command@v1.1.1
         with:
+          silent: 'False'
           command: 'docker pull $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest'
 
       - name: Stop Current Image
         uses: oracle-actions/run-oci-cli-command@v1.1.1
         with:
+          silent: 'False'
           command: 'docker compose down'
 
       - name: Move to Compose Directory
         uses: oracle-actions/run-oci-cli-command@v1.1.1
         with:
+          silent: 'False'
           command: 'cd ${{ secrets.OCI_COMPOSE_DIRECTORY }}'
 
       - name: Run Docker Compose
         uses: oracle-actions/run-oci-cli-command@v1.1.1
         with:
+          silent: 'False'
           command: 'docker compose up -d'
