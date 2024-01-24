@@ -28,7 +28,7 @@ export default function LoginInfoArea({ handleAuthenticationModal }: Props) {
                     type="button"
                     clickHandler={() =>
                         signOut({
-                            callbackUrl: process.env.NEXT_PUBLIC_REQUEST_URL,
+                            callbackUrl: process.env.NEXTAUTH_URL,
                         })
                     }
                     customStyle="w-32 bg-red-500 text-base text-neutral-100  dark:bg-red-700 dark:text-gray-300"

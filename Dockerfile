@@ -20,7 +20,7 @@ FROM node:alpine AS builder
 WORKDIR /app
 COPY . .
 COPY --from=deps /app/.yarn ./.yarn
-COPY .env.production .env.production
+COPY .env .env
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN yarn build
 
