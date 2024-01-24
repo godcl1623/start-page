@@ -70,6 +70,6 @@ jobs:
           port: ${{ secrets.REMOTE_SSH_PORT }}
           script: |
             cd ${{ secrets.OCI_COMPOSE_DIRECTORY }}
-            docker compose down
+            docker compose -p start-page-dev down
             docker pull $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest-dev
-            docker compose -f docker-compose-dev.yml up -d
+            docker compose -f docker-compose-dev.yml -p start-page-dev up -d
