@@ -58,7 +58,7 @@ jobs:
       - name: Build, Tag, Push the Docker Image
         id: build-image
         run: |
-          docker build --platform arm64 -t $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest-dev .
+          docker build --platform arm64 -t $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest-dev -f Dockerfile.development .
           docker push $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest-dev
 
       - name: Deploy to OCI Compute Instance
