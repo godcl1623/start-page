@@ -153,6 +153,8 @@ export default memo(function MainView({
                     const metadata = {
                         name: "test.json",
                         mimeType: "application/json",
+                        /* For Delete Only */
+                        // trashed: true
                     };
                     const form = new FormData();
                     form.append(
@@ -162,16 +164,33 @@ export default memo(function MainView({
                         })
                     );
                     form.append("file", JSON.stringify({ foo: "bar" }));
-                    fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`, {
-                        headers: {
-                            Authorization: `Bearer ${
-                                (session.data as CustomSession)?.user
-                                    ?.access_token
-                            }`,
-                        },
-                        method: "POST",
-                        body: form
-                    })
+                    // form.append(
+                    //     "file",
+                    //     JSON.stringify({ foo: "bar", doh: "doz" })
+                    // );
+                    fetch(
+                        `https://www.googleapis.com/drive/v3/files`,
+                        {
+                    /* Create */
+                    // fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`, {
+                    /* Read */
+                    // fetch(`https://www.googleapis.com/drive/v3/files?q=name+%3d+%27test.json%27`, {
+                    /* Update & Delete */
+                    // fetch(`https://www.googleapis.com/upload/drive/v3/files/<fileId>?uploadType=multipart`, {
+                            headers: {
+                                Authorization: `Bearer ${
+                                    (session.data as CustomSession)?.user
+                                        ?.access_token
+                                }`,
+                            },
+                            /* Create */
+                            // method: "POST",
+                            // body: form
+                            /* Update & Delete */
+                            // method: "PATCH",
+                            // body: form,
+                        }
+                    )
                         .then((res) => res.json())
                         .then((foo) => console.log(foo));
                 }}
