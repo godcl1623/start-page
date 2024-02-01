@@ -150,7 +150,19 @@ export default memo(function MainView({
         >
             <button
                 onClick={() => {
-                    fetch(`https://www.googleapis.com/drive/v3/files`, {
+                    const metadata = {
+                        name: "test.json",
+                        mimeType: "application/json",
+                    };
+                    const form = new FormData();
+                    form.append(
+                        "metadata",
+                        new Blob([JSON.stringify(metadata)], {
+                            type: "application/json",
+                        })
+                    );
+                    form.append("file", JSON.stringify({ foo: "bar" }));
+                    fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`, {
                         headers: {
                             Authorization: `Bearer ${
                                 (session.data as CustomSession)?.user
@@ -158,6 +170,7 @@ export default memo(function MainView({
                             }`,
                         },
                         method: "POST",
+                        body: form
                     })
                         .then((res) => res.json())
                         .then((foo) => console.log(foo));
