@@ -1,10 +1,10 @@
 import MainPage, { ParsedFeedsDataType } from "./main";
-import { authOptions } from './api/auth/[...nextauth]/setting';
+import { authOptions } from "./api/auth/[...nextauth]/setting";
 import { getServerSession } from "next-auth";
 import { encryptCookie, getNewUserId } from "controllers/utils";
 import { cookies } from "next/headers";
 import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
-import NewRequestControllers from "controllers/newRequestControllers";
+import RequestControllers from "controllers/requestControllers";
 
 interface LoginInfo {
     user: UserInfo;
@@ -17,7 +17,7 @@ interface UserInfo {
 }
 
 export default async function Main() {
-    const { getDataFrom } = new NewRequestControllers();
+    const { getDataFrom } = new RequestControllers();
     let userId: string = "";
     let isNewUser = false;
     try {
@@ -33,8 +33,12 @@ export default async function Main() {
             isNewUser = true;
         }
 
-        const feedsResponse = await getDataFrom<string>(`/feeds?userId=${userId}`);
-        const sourcesResponse = await getDataFrom<string>(`/sources?userId=${userId}`);
+        const feedsResponse = await getDataFrom<string>(
+            `/feeds?userId=${userId}`
+        );
+        const sourcesResponse = await getDataFrom<string>(
+            `/sources?userId=${userId}`
+        );
 
         return (
             <MainPage
