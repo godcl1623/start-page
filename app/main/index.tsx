@@ -36,7 +36,7 @@ interface MainProps {
     feeds: string;
     sources: string;
     userId: string;
-    isNewUser: boolean;
+    isLocal: boolean;
 }
 
 interface PageParamData {
@@ -52,7 +52,7 @@ export default function MainPage({
     feeds,
     sources,
     userId,
-    isNewUser,
+    isLocal,
 }: MainProps) {
     const { getDataFrom } = new RequestControllers();
     const [currentSort, setCurrentSort] = useState(0);
@@ -73,7 +73,8 @@ export default function MainPage({
     );
     const newFeedsRequestResult = useQuery({
         queryKey: [`/feeds/new?userId=${userId}`],
-        queryFn: () => getDataFrom<string>(`/feeds/new?userId=${userId}`),
+        queryFn: () =>
+            isLocal ? null : getDataFrom<string>(`/feeds/new?userId=${userId}`),
     })?.data;
     const {
         data: storedFeed,
@@ -84,21 +85,27 @@ export default function MainPage({
         queryKey: [`/feeds?userId=${userId}`, { isMobileLayout, currentPage }],
         initialPageParam: currentPage,
         queryFn: ({ pageParam }) =>
-            getDataFrom<string>(
-                `/feeds?userId=${userId}${generateSearchParameters({
-                    ...(isFilterFavorite && { favorites: isFilterFavorite }),
-                    ...(Object.values(sourceDisplayState).includes(false) && {
-                        displayOption: JSON.stringify(sourceDisplayState),
-                    }),
-                    ...(Object.values(searchTexts).some(
-                        (searchText: string) => searchText.length >= 2
-                    ) && { textOption: JSON.stringify(searchTexts) }),
-                    ...(currentSort > 0 && { sortOption: currentSort }),
-                    page: pageParam,
-                })}`
-            ),
+            isLocal
+                ? '{}'
+                : getDataFrom<string>(
+                      `/feeds?userId=${userId}${generateSearchParameters({
+                          ...(isFilterFavorite && {
+                              favorites: isFilterFavorite,
+                          }),
+                          ...(Object.values(sourceDisplayState).includes(
+                              false
+                          ) && {
+                              displayOption: JSON.stringify(sourceDisplayState),
+                          }),
+                          ...(Object.values(searchTexts).some(
+                              (searchText: string) => searchText.length >= 2
+                          ) && { textOption: JSON.stringify(searchTexts) }),
+                          ...(currentSort > 0 && { sortOption: currentSort }),
+                          page: pageParam,
+                      })}`
+                  ),
         getNextPageParam: (lastPage: string) => {
-            if (!JSON.parse(lastPage).data) return 1;
+            if (lastPage === '' || !JSON.parse(lastPage).data) return 1;
             const totalCount = JSON.parse(lastPage)?.count;
             if (currentPage >= Math.ceil(totalCount / 10)) return;
             return currentPage + 1;
@@ -289,12 +296,6 @@ export default function MainPage({
             return () => observer.unobserve(observerElement);
         }
     }, [observerElement, hasNextPage]);
-
-    useEffect(() => {
-        if (isNewUser) {
-            setCookie("mw", userId, { maxAge: 60 * 60 * 24 * 30 });
-        }
-    }, [isNewUser, userId]);
 
     return (
         <MainView

@@ -25,37 +25,40 @@ export default async function Main() {
 
         if (loginInfo != null) {
             userId = encryptCookie({ userId: loginInfo.user.email });
-        } else if (cookies().get("mw") != null) {
-            userId = (cookies().get("mw") as RequestCookie).value;
+            const feedsResponse = await getDataFrom<string>(
+                `/feeds?userId=${userId}`
+            );
+            const sourcesResponse = await getDataFrom<string>(
+                `/sources?userId=${userId}`
+            );
+    
+            return (
+                <MainPage
+                    feeds={feedsResponse}
+                    sources={sourcesResponse}
+                    userId={userId}
+                    isLocal={loginInfo === null}
+                />
+            );
         } else {
-            const newUserId = getNewUserId();
-            userId = encryptCookie({ userId: newUserId });
-            isNewUser = true;
+            return (
+                <MainPage
+                    feeds={''}
+                    sources={''}
+                    userId={userId}
+                    isLocal={loginInfo === null}
+                />
+            );
         }
-
-        const feedsResponse = await getDataFrom<string>(
-            `/feeds?userId=${userId}`
-        );
-        const sourcesResponse = await getDataFrom<string>(
-            `/sources?userId=${userId}`
-        );
-
-        return (
-            <MainPage
-                feeds={feedsResponse}
-                sources={sourcesResponse}
-                userId={userId}
-                isNewUser={isNewUser}
-            />
-        );
     } catch (error) {
         console.error(error);
+        // TODO: Error 페이지로 수정
         return (
             <MainPage
                 feeds={""}
                 sources={""}
                 userId={userId}
-                isNewUser={isNewUser}
+                isLocal
             />
         );
     }
