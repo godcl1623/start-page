@@ -10,7 +10,7 @@ import { NextResponse, NextRequest } from "next/server";
 
 export async function DELETE(req: NextRequest, context: RouteContext) {
     try {
-        const [userId] = newExtractUserIdFrom(req);
+        const userId = req.nextUrl.searchParams.get("userId");
         if (userId == null) return NextResponse.error();
         const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
             userId,
@@ -48,7 +48,7 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
             );
         }
     } catch (error) {
-        console.error(error);
+        // console.error(error);
         return NextResponse.json(
             JSON.stringify({ status: 400, message: "update failed" }),
             { status: 400, statusText: "update failed" }
