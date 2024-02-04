@@ -6,11 +6,11 @@ import { sortFeedSets } from "..";
 import { getRssResponses, makeFeedDataArray, parseXml } from "./utils";
 
 export const extractFeedsFromSources = (
-    rawArray: PromiseSettledResult<AxiosResponse>[]
-): string[] =>
-    rawArray.map((resultData: PromiseSettledResult<AxiosResponse>) => {
+    rawArray: PromiseSettledResult<string>[]
+): (string | undefined)[] =>
+    rawArray.map((resultData: PromiseSettledResult<string>) => {
         if (resultData.status === "fulfilled") {
-            return resultData.value.data;
+            return resultData.value;
         }
     });
 
@@ -19,7 +19,7 @@ export const extractStoredFeedsFromRemote = (
 ): ParseResultType[] => (remoteData != null && remoteData[0] ? remoteData : []);
 
 interface ParseFeedsFromSourcesParameters {
-    totalFeedsFromSources: string[];
+    totalFeedsFromSources: (string | undefined)[];
     storedFeeds: ParseResultType[];
     sources: SourceData[];
     originId: number;
@@ -31,12 +31,12 @@ export const parseFeedsFromSources = ({
     sources,
     originId,
 }: ParseFeedsFromSourcesParameters) =>
-    totalFeedsFromSources.map((rawRss: string, index: number) => {
+    totalFeedsFromSources.map((rawRss: string | undefined, index: number) => {
         const indexedFeed =
             storedFeeds[index] != null ? storedFeeds[index].feeds : [];
         const id = indexedFeed != null ? indexedFeed.length : 0;
         const { feedOriginName, feedOriginParsedLink, rssFeeds } =
-            parseXml(rawRss);
+            parseXml(rawRss ?? '');
         const parsedFeedsArray = makeFeedDataArray(
             rssFeeds,
             feedOriginName,

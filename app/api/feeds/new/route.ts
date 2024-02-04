@@ -17,26 +17,49 @@ import {
     updateFeedSetsDataBy,
 } from "controllers/feeds/new";
 import { ParseResultType } from "app/main";
+import { getServerSession } from "next-auth";
+import { CustomSession, authOptions } from "app/api/auth/[...nextauth]/setting";
+import { headers } from "next/headers";
 
 export async function GET(req: NextRequest) {
     try {
         const [userId, rawId] = newExtractUserIdFrom(req);
+        const session = await getServerSession(authOptions);
         if (userId == null) throw NextResponse.error();
-        const { remoteData } = await initializeMongoDBWith(userId, "feeds");
+        // const { remoteData } = await initializeMongoDBWith(userId, "feeds");
+        const fileId = (session as CustomSession)?.user?.fileId;
+        const rawFileContent = await (
+            await fetch(
+                `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${
+                            (session as CustomSession)?.user?.access_token
+                        }`,
+                    },
+                }
+            )
+        ).json();
+        const remoteData = rawFileContent.data;
 
         const [paginationStartIndex, paginationEndIndex] = getPaginationIndexes(
             "1",
             "10"
         );
-        const sourceResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_REQUEST_API}/sources?userId=${rawId}`
-        );
+        const sourceResponse = await (await fetch(
+            `${process.env.NEXT_PUBLIC_REQUEST_API}/sources?userId=${rawId}`,
+            { headers: headers() }
+        )).json() ?? '[]';
 
-        const sources: SourceData[] = JSON.parse(await sourceResponse.json());
+        const sources: SourceData[] = JSON.parse(sourceResponse);
+        // if (sources.length === 0) {
+        //     return NextResponse.json("no new feeds available");
+        // }
+
         const urlsToGetFeeds = sources
             ? sources.map((sourceData: SourceData) => sourceData.url)
             : [];
-        const result: PromiseSettledResult<AxiosResponse>[] | undefined =
+        const result: PromiseSettledResult<string>[] | undefined =
             await getRssResponses(urlsToGetFeeds);
 
         if (result != null) {
@@ -77,6 +100,7 @@ export async function GET(req: NextRequest) {
                     {
                         body: JSON.stringify(updatedFeedSets),
                         method: "POST",
+                        headers: headers(),
                     }
                 );
                 return NextResponse.json(responseBody);
@@ -94,14 +118,60 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     try {
         const [userId] = newExtractUserIdFrom(req);
+        const session = await getServerSession(authOptions);
         if (userId == null) throw NextResponse.error();
-        const { Schema: Feeds } = await initializeMongoDBWith(userId, "feeds");
+        const fileId = (session as CustomSession)?.user?.fileId;
+        // const { Schema: Feeds } = await initializeMongoDBWith(userId, "feeds");
+        const rawFileContent = await (
+            await fetch(
+                `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${
+                            (session as CustomSession)?.user?.access_token
+                        }`,
+                    },
+                }
+            )
+        ).json();
         const dataToWrite: ParseResultType[] = await req.json();
-        const updateResult = await Feeds?.updateOne(
-            { _uuid: userId },
-            { $set: { data: dataToWrite } }
+        // const updateResult = await Feeds?.updateOne(
+        //     { _uuid: userId },
+        //     { $set: { data: dataToWrite } }
+        // );
+        // if (updateResult?.acknowledged) {
+        //     return NextResponse.json("success");
+        // } else {
+        //     return NextResponse.error();
+        // }
+        const metadata = {
+            name: "start-page-data.json",
+            mimeType: "application/json",
+        };
+        const form = new FormData();
+        form.append(
+            "metadata",
+            new Blob([JSON.stringify(metadata)], {
+                type: "application/json",
+            })
         );
-        if (updateResult?.acknowledged) {
+        form.append(
+            "file",
+            JSON.stringify({ ...rawFileContent, data: dataToWrite })
+        );
+        const updateResult = await (await fetch(
+            `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`,
+            {
+                headers: {
+                    Authorization: `Bearer ${
+                        (session as CustomSession)?.user?.access_token
+                    }`,
+                },
+                method: 'PATCH',
+                body: form,
+            }
+        )).json();
+        if (updateResult?.id === fileId) {
             return NextResponse.json("success");
         } else {
             return NextResponse.error();

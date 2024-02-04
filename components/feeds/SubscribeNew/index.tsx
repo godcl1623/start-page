@@ -1,7 +1,7 @@
 import { useRouter } from "next/navigation";
 
 import { extractInputValue, checkIfStringPassesRule } from "../utils/helpers";
-import NewRequestControllers from "controllers/newRequestControllers";
+import RequestControllers from "controllers/requestControllers";
 import SubscriptionForm from "./SubscriptionForm";
 
 interface Props {
@@ -15,7 +15,7 @@ interface CheckResult {
 
 export default function SubscribeNew({ userId }: Props) {
     const router = useRouter();
-    const { getDataFrom, postDataTo } = new NewRequestControllers();
+    const { getDataFrom, postDataTo } = new RequestControllers();
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();

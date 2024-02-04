@@ -2,7 +2,7 @@ import {
     initializeMongoDBWith,
     newExtractUserIdFrom,
 } from "controllers/common";
-import NewRequestControllers from "controllers/newRequestControllers";
+import RequestControllers from "controllers/requestControllers";
 import { SourceData, checkIfDataExists } from "controllers/sources";
 import { parseCookie } from "controllers/utils";
 import { NextRequest, NextResponse } from "next/server";
@@ -14,12 +14,12 @@ export interface RouteContext {
 }
 
 export async function DELETE(req: NextRequest, context: RouteContext) {
-    const { deleteDataOf } = new NewRequestControllers();
+    const { deleteDataOf } = new RequestControllers();
     try {
-        const [userId] = newExtractUserIdFrom(req);
+        const [userId, rawId] = newExtractUserIdFrom(req);
         if (userId == null) return NextResponse.error();
-        const { remoteData: sources, Schema: Sources } =
-            await initializeMongoDBWith(userId, "sources");
+        // const { remoteData: sources, Schema: Sources } =
+        //     await initializeMongoDBWith(userId, "sources");
         const idList = sources?.map((sourceData: SourceData) => sourceData.id);
         const { sourceId } = context.params;
 
@@ -43,7 +43,7 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
         );
         if (updateResult?.acknowledged) {
             const deleteResult = await deleteDataOf<string>(
-                `/feeds/${sourceId}?userId=${userId}`
+                `/feeds/${sourceId}?userId=${rawId}`
             );
             const { status } = JSON.parse(deleteResult);
             if (status === 200) {
