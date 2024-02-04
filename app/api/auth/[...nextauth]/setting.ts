@@ -98,7 +98,7 @@ export const authOptions: NextAuthOptions = {
                         }
                     )
                 ).json();
-                if (session?.user) {
+                if (session?.user && fileSearchQueryResult.files.length > 0) {
                     session.user.fileId = fileSearchQueryResult.files[0].id;
                 }
             } catch (error) {
