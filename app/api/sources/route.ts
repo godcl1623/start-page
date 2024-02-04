@@ -16,8 +16,8 @@ export async function GET(req: NextRequest) {
     try {
         const [userId] = newExtractUserIdFrom(req);
         if (userId == null) throw NextResponse.error();
-        const { remoteData: sources, Schema: Sources } =
-            await initializeMongoDBWith(userId, "sources");
+        // const { remoteData: sources, Schema: Sources } =
+        //     await initializeMongoDBWith(userId, "sources");
 
         defendDataEmptyException({
             condition: sources == null,
@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
     try {
         const [userId] = newExtractUserIdFrom(req);
         if (userId == null) throw NextResponse.error();
-        const { remoteData: sources, Schema: Sources } =
-            await initializeMongoDBWith(userId, "sources");
+        // const { remoteData: sources, Schema: Sources } =
+        //     await initializeMongoDBWith(userId, "sources");
         const sourceDataInput: SourceDataInput = await req.json();
         const urlsList = sources.map(
             (sourceData: SourceData) => sourceData.url

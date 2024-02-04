@@ -12,10 +12,11 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
     try {
         const [userId] = newExtractUserIdFrom(req);
         if (userId == null) return NextResponse.error();
-        const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
-            userId,
-            "feeds"
-        );
+        // const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
+        //     userId,
+        //     "feeds"
+        // );
+        const remoteData = [];
         const { feedsSetId } = context.params;
         const data = extractStoredFeedsFromRemote(remoteData);
         const idList = data.map((feedsSet: ParseResultType) => feedsSet.id);

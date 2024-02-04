@@ -15,22 +15,71 @@ import {
 } from "controllers/feeds";
 import { checkShouldSortByReverse, handleSort } from "common/helpers";
 import { SORT_STANDARD_STATE } from "common/constants";
+import { getServerSession } from "next-auth";
+import { CustomSession, authOptions } from "../auth/[...nextauth]/setting";
 
 export async function GET(req: NextRequest) {
     try {
         const [userId] = newExtractUserIdFrom(req);
+        const session = await getServerSession(authOptions);
         if (userId == null) throw NextResponse.error();
-        const { remoteData, Schema } = await initializeMongoDBWith(
-            userId,
-            "feeds"
-        );
+        // const { remoteData, Schema } = await initializeMongoDBWith(
+        //     userId,
+        //     "feeds"
+        // );
+        const fileId = (session as CustomSession)?.user?.fileId;
+        const rawFileContent = await (
+            await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                headers: {
+                    Authorization: `Bearer ${
+                        (session as CustomSession)?.user?.access_token
+                    }`,
+                },
+            })
+        ).json();
+        const remoteData = rawFileContent.data;
 
-        defendDataEmptyException({
-            condition: remoteData == null,
-            userId,
-            Schema,
-            customProperty: "data",
-        });
+        // defendDataEmptyException({
+        //     condition: remoteData == null,
+        //     userId,
+        //     Schema,
+        //     customProperty: "data",
+        // });
+        /* defend data empty exception start */
+        if (fileId == null) {
+            const metadata = {
+                name: "start-page-data.json",
+                mimeType: "application/json",
+            };
+            const defaultFile = {
+                sources: [],
+                data: [],
+            };
+            const form = new FormData();
+            form.append(
+                "metadata",
+                new Blob([JSON.stringify(metadata)], {
+                    type: "application/json",
+                })
+            );
+            form.append("file", JSON.stringify(defaultFile));
+            const fetchResult = await (
+                await fetch(
+                    `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${
+                                (session as CustomSession)?.user?.access_token
+                            }`,
+                        },
+                        method: "POST",
+                        body: form,
+                    }
+                )
+            ).json();
+            if (fetchResult.error) throw NextResponse.error();
+        }
+        /* defend data empty exception end */
 
         const parsedContents: ParseResultType[] = remoteData ?? [];
         const getFeedsSearchParams = (parameter: string) =>

@@ -18,8 +18,8 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
     try {
         const [userId, rawId] = newExtractUserIdFrom(req);
         if (userId == null) return NextResponse.error();
-        const { remoteData: sources, Schema: Sources } =
-            await initializeMongoDBWith(userId, "sources");
+        // const { remoteData: sources, Schema: Sources } =
+        //     await initializeMongoDBWith(userId, "sources");
         const idList = sources?.map((sourceData: SourceData) => sourceData.id);
         const { sourceId } = context.params;
 

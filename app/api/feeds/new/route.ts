@@ -17,12 +17,26 @@ import {
     updateFeedSetsDataBy,
 } from "controllers/feeds/new";
 import { ParseResultType } from "app/main";
+import { getServerSession } from 'next-auth';
+import { CustomSession, authOptions } from 'app/api/auth/[...nextauth]/setting';
 
 export async function GET(req: NextRequest) {
     try {
         const [userId, rawId] = newExtractUserIdFrom(req);
+        const session = await getServerSession(authOptions);
         if (userId == null) throw NextResponse.error();
-        const { remoteData } = await initializeMongoDBWith(userId, "feeds");
+        // const { remoteData } = await initializeMongoDBWith(userId, "feeds");
+        const fileId = (session as CustomSession)?.user?.fileId;
+        const rawFileContent = await (
+            await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                headers: {
+                    Authorization: `Bearer ${
+                        (session as CustomSession)?.user?.access_token
+                    }`,
+                },
+            })
+        ).json();
+        const remoteData = rawFileContent.data;
 
         const [paginationStartIndex, paginationEndIndex] = getPaginationIndexes(
             "1",
@@ -95,17 +109,17 @@ export async function POST(req: NextRequest) {
     try {
         const [userId] = newExtractUserIdFrom(req);
         if (userId == null) throw NextResponse.error();
-        const { Schema: Feeds } = await initializeMongoDBWith(userId, "feeds");
+        // const { Schema: Feeds } = await initializeMongoDBWith(userId, "feeds");
         const dataToWrite: ParseResultType[] = await req.json();
-        const updateResult = await Feeds?.updateOne(
-            { _uuid: userId },
-            { $set: { data: dataToWrite } }
-        );
-        if (updateResult?.acknowledged) {
-            return NextResponse.json("success");
-        } else {
-            return NextResponse.error();
-        }
+        // const updateResult = await Feeds?.updateOne(
+        //     { _uuid: userId },
+        //     { $set: { data: dataToWrite } }
+        // );
+        // if (updateResult?.acknowledged) {
+        //     return NextResponse.json("success");
+        // } else {
+        //     return NextResponse.error();
+        // }
     } catch (error) {
         return NextResponse.error();
     }
