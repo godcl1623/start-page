@@ -16,7 +16,7 @@ export interface RouteContext {
 export async function DELETE(req: NextRequest, context: RouteContext) {
     const { deleteDataOf } = new RequestControllers();
     try {
-        const [userId, rawId] = newExtractUserIdFrom(req);
+        const [userId] = newExtractUserIdFrom(req);
         if (userId == null) return NextResponse.error();
         const { remoteData: sources, Schema: Sources } =
             await initializeMongoDBWith(userId, "sources");
@@ -43,7 +43,7 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
         );
         if (updateResult?.acknowledged) {
             const deleteResult = await deleteDataOf<string>(
-                `/feeds/${sourceId}?userId=${rawId}`
+                `/feeds/${sourceId}?userId=${userId}`
             );
             const { status } = JSON.parse(deleteResult);
             if (status === 200) {

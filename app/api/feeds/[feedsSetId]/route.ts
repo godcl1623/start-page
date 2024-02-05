@@ -10,7 +10,7 @@ import { NextResponse, NextRequest } from "next/server";
 
 export async function DELETE(req: NextRequest, context: RouteContext) {
     try {
-        const [userId] = newExtractUserIdFrom(req);
+        const userId = req.nextUrl.searchParams.get("userId");
         if (userId == null) return NextResponse.error();
         const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
             userId,
