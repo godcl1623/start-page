@@ -70,5 +70,5 @@ jobs:
           port: ${{ secrets.REMOTE_SSH_PORT }}
           script: |
             cd ${{ secrets.OCI_COMPOSE_DIRECTORY }}
-            docker pull $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest
+            docker pull ${{ secrets.OCIR_ENDPOINT }}/${{ secrets.OCIR_USERNAME }}/${{ secrets.OCIR_REPOSITORY }}:latest
             sh deploy-prod.sh
