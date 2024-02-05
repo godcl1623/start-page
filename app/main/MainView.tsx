@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 
-import { ParsedFeedsDataType } from ".";
+import { ParsedFeedsDataType } from '.';
 import { FilterType } from "hooks/useFilters";
 import { SourceData } from "controllers/sources";
 
@@ -19,7 +19,6 @@ import PostHandleOptions from "./PostHandleOptions";
 import PageButton from "./PageButton";
 import LoginInfoArea from "./LoginInfoArea";
 import Authentication from "components/authentication";
-import { useSession } from "next-auth/react";
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
@@ -76,7 +75,6 @@ export default memo(function MainView({
     });
     const startPageRef = useRef<HTMLElement | null>(null);
     const sourcesList = sources ? JSON.parse(sources) : [];
-    const session = useSession();
 
     const handleClick = (target: ModalKeys) => () => {
         document.documentElement.scrollTo({ top: 0 });
@@ -147,17 +145,6 @@ export default memo(function MainView({
             className="flex items-center space-between flex-col w-full h-max min-h-full p-8 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
             ref={startPageRef}
         >
-            <button
-                onClick={() => {
-                    fetch(`https://www.googleapis.com/drive/v3/files`, {
-                        headers: {
-                            Authorization: `Bearer ${session?.data?.user?.access_token}`,
-                        },
-                    }).then((res) => res.json()).then((foo) => console.log(foo))
-                }}
-            >
-                test
-            </button>
             <section
                 className={`flex flex-col items-center w-full h-max min-h-[calc(100vh_-_64px)] fhd:max-w-[1920px] ${
                     feedsFromServer?.length === 0 ? "fhd:min-h-[1080px]" : ""
