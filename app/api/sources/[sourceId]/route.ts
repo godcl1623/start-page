@@ -20,7 +20,6 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
         if (userId == null) return NextResponse.error();
         // const { remoteData: sources, Schema: Sources } =
         //     await initializeMongoDBWith(userId, "sources");
-        const sources: SourceData[] = [];
         const idList = sources?.map((sourceData: SourceData) => sourceData.id);
         const { sourceId } = context.params;
 
@@ -38,32 +37,32 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
             .slice(0, deleteTargetCurrentIndex)
             .concat(sources.slice(deleteTargetCurrentIndex + 1));
 
-        // const updateResult = await Sources?.updateOne(
-        //     { _uuid: userId },
-        //     { $set: { sources: listAfterDelete } }
-        // );
-        // if (updateResult?.acknowledged) {
-        //     const deleteResult = await deleteDataOf<string>(
-        //         `/feeds/${sourceId}?userId=${rawId}`
-        //     );
-        //     const { status } = JSON.parse(deleteResult);
-        //     if (status === 200) {
-        //         return NextResponse.json(
-        //             JSON.stringify({ status: 200, message: "success" }),
-        //             { status: 200, statusText: "success" }
-        //         );
-        //     } else {
-        //         return NextResponse.json(
-        //             JSON.stringify({ status: 400, message: "update failed" }),
-        //             { status: 400, statusText: "update failed" }
-        //         );
-        //     }
-        // } else {
-        //     return NextResponse.json(
-        //         JSON.stringify({ status: 400, message: "update failed" }),
-        //         { status: 400, statusText: "update failed" }
-        //     );
-        // }
+        const updateResult = await Sources?.updateOne(
+            { _uuid: userId },
+            { $set: { sources: listAfterDelete } }
+        );
+        if (updateResult?.acknowledged) {
+            const deleteResult = await deleteDataOf<string>(
+                `/feeds/${sourceId}?userId=${rawId}`
+            );
+            const { status } = JSON.parse(deleteResult);
+            if (status === 200) {
+                return NextResponse.json(
+                    JSON.stringify({ status: 200, message: "success" }),
+                    { status: 200, statusText: "success" }
+                );
+            } else {
+                return NextResponse.json(
+                    JSON.stringify({ status: 400, message: "update failed" }),
+                    { status: 400, statusText: "update failed" }
+                );
+            }
+        } else {
+            return NextResponse.json(
+                JSON.stringify({ status: 400, message: "update failed" }),
+                { status: 400, statusText: "update failed" }
+            );
+        }
     } catch (error) {
         console.error(error);
         return NextResponse.json(
