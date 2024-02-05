@@ -28,6 +28,23 @@ export async function GET(req: NextRequest) {
         //     "feeds"
         // );
         const fileId = (session as CustomSession)?.user?.fileId;
+        const rawFileContent = await (
+            await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                headers: {
+                    Authorization: `Bearer ${
+                        (session as CustomSession)?.user?.access_token
+                    }`,
+                },
+            })
+        ).json();
+        const remoteData = rawFileContent.data;
+
+        // defendDataEmptyException({
+        //     condition: remoteData == null,
+        //     userId,
+        //     Schema,
+        //     customProperty: "data",
+        // });
         /* defend data empty exception start */
         if (fileId == null) {
             const metadata = {
@@ -61,27 +78,8 @@ export async function GET(req: NextRequest) {
                 )
             ).json();
             if (fetchResult.error) throw NextResponse.error();
-            else return NextResponse.json(JSON.stringify(defaultFile));
         }
         /* defend data empty exception end */
-
-        const rawFileContent = await (
-            await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-                headers: {
-                    Authorization: `Bearer ${
-                        (session as CustomSession)?.user?.access_token
-                    }`,
-                },
-            })
-        ).json();
-        const remoteData = rawFileContent.data;
-
-        // defendDataEmptyException({
-        //     condition: remoteData == null,
-        //     userId,
-        //     Schema,
-        //     customProperty: "data",
-        // });
 
         const parsedContents: ParseResultType[] = remoteData ?? [];
         const getFeedsSearchParams = (parameter: string) =>
