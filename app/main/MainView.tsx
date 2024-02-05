@@ -20,7 +20,6 @@ import PageButton from "./PageButton";
 import LoginInfoArea from "./LoginInfoArea";
 import Authentication from "components/authentication";
 import { useSession } from "next-auth/react";
-import { CustomSession } from "app/api/auth/[...nextauth]/setting";
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
@@ -152,15 +151,9 @@ export default memo(function MainView({
                 onClick={() => {
                     fetch(`https://www.googleapis.com/drive/v3/files`, {
                         headers: {
-                            Authorization: `Bearer ${
-                                (session.data as CustomSession)?.user
-                                    ?.access_token
-                            }`,
+                            Authorization: `Bearer ${session?.data?.user?.access_token}`,
                         },
-                        method: "POST",
-                    })
-                        .then((res) => res.json())
-                        .then((foo) => console.log(foo));
+                    }).then((res) => res.json()).then((foo) => console.log(foo))
                 }}
             >
                 test

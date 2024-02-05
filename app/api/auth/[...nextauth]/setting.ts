@@ -1,29 +1,7 @@
-import { NextAuthOptions, Session } from "next-auth";
+import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import NaverProvider from "next-auth/providers/naver";
 import KakaoProvider from "next-auth/providers/kakao";
-import { JWT } from "next-auth/jwt";
-import { AdapterUser } from "next-auth/adapters";
-
-export interface CustomSession extends Session {
-    user?: {
-        name?: string | null;
-        email?: string | null;
-        image?: string | null;
-        access_token?: string | null;
-    };
-}
-
-export interface CustomSessionParams {
-    session: CustomSession;
-    token: JWT;
-    user: AdapterUser;
-}
-
-interface NewSessionParams {
-    newSession: any;
-    trigger: "update";
-}
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -64,15 +42,8 @@ export const authOptions: NextAuthOptions = {
             }
             return token;
         },
-        async session({
-            session,
-            token,
-        }: CustomSessionParams & NewSessionParams) {
-            if (
-                session?.user &&
-                token?.access_token &&
-                typeof token.access_token === "string"
-            ) {
+        async session({ session, token, user }) {
+            if (session?.user && token?.access_token) {
                 session.user.access_token = token.access_token;
             }
             return session;
