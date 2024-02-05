@@ -15,13 +15,12 @@ export async function PATCH(req: NextRequest) {
     try {
         const [userId] = newExtractUserIdFrom(req);
         if (userId == null) return NextResponse.error();
-        // const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
-        //     userId,
-        //     "feeds"
-        // );
+        const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
+            userId,
+            "feeds"
+        );
         const dataToChange: ParsedFeedsDataType = await req.json();
         const { id, origin } = dataToChange;
-        const remoteData: ParseResultType[] = [];
 
         const storedFeeds = extractStoredFeedsFromRemote(remoteData);
         const feedsSetRelatedToRequest = storedFeeds.find(
@@ -48,21 +47,21 @@ export async function PATCH(req: NextRequest) {
             };
 
             storedFeeds[feedSetIndex] = newFeedsSetRelatedToRequest;
-            // const updateResult = await Feeds?.updateOne(
-            //     { _uuid: userId },
-            //     { $set: { data: storedFeeds } }
-            // );
-            // if (updateResult?.acknowledged) {
-            //     return NextResponse.json(
-            //         JSON.stringify({ status: 200, message: "success" }),
-            //         { status: 200, statusText: "success" }
-            //     );
-            // } else {
-            //     return NextResponse.json(
-            //         JSON.stringify({ status: 400, message: "update failed" }),
-            //         { status: 400, statusText: "update failed" }
-            //     );
-            // }
+            const updateResult = await Feeds?.updateOne(
+                { _uuid: userId },
+                { $set: { data: storedFeeds } }
+            );
+            if (updateResult?.acknowledged) {
+                return NextResponse.json(
+                    JSON.stringify({ status: 200, message: "success" }),
+                    { status: 200, statusText: "success" }
+                );
+            } else {
+                return NextResponse.json(
+                    JSON.stringify({ status: 400, message: "update failed" }),
+                    { status: 400, statusText: "update failed" }
+                );
+            }
         } else {
             return NextResponse.json(
                 JSON.stringify({ status: 404, message: "feed not found" }),

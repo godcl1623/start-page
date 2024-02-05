@@ -86,7 +86,7 @@ export default function MainPage({
         initialPageParam: currentPage,
         queryFn: ({ pageParam }) =>
             isLocal
-                ? '{}'
+                ? "{}"
                 : getDataFrom<string>(
                       `/feeds?userId=${userId}${generateSearchParameters({
                           ...(isFilterFavorite && {
@@ -209,7 +209,6 @@ export default function MainPage({
     }, [feeds]);
 
     useEffect(() => {
-        console.log('stored feed: ', storedFeed)
         if (storedFeed && storedFeed.pages) {
             const { data, count } = JSON.parse(
                 storedFeed.pages[storedFeed.pages.length - 1]

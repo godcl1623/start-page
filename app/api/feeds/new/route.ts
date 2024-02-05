@@ -17,45 +17,22 @@ import {
     updateFeedSetsDataBy,
 } from "controllers/feeds/new";
 import { ParseResultType } from "app/main";
-import { getServerSession } from "next-auth";
-import { CustomSession, authOptions } from "app/api/auth/[...nextauth]/setting";
-import { headers } from "next/headers";
 
 export async function GET(req: NextRequest) {
     try {
         const [userId, rawId] = newExtractUserIdFrom(req);
-        const session = await getServerSession(authOptions);
         if (userId == null) throw NextResponse.error();
-        // const { remoteData } = await initializeMongoDBWith(userId, "feeds");
-        const fileId = (session as CustomSession)?.user?.fileId;
-        const rawFileContent = await (
-            await fetch(
-                `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${
-                            (session as CustomSession)?.user?.access_token
-                        }`,
-                    },
-                }
-            )
-        ).json();
-        const remoteData = rawFileContent.data;
+        const { remoteData } = await initializeMongoDBWith(userId, "feeds");
 
         const [paginationStartIndex, paginationEndIndex] = getPaginationIndexes(
             "1",
             "10"
         );
-        const sourceResponse = await (await fetch(
-            `${process.env.NEXT_PUBLIC_REQUEST_API}/sources?userId=${rawId}`,
-            { headers: headers() }
-        )).json() ?? '[]';
+        const sourceResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_REQUEST_API}/sources?userId=${rawId}`
+        );
 
-        const sources: SourceData[] = JSON.parse(sourceResponse);
-        // if (sources.length === 0) {
-        //     return NextResponse.json("no new feeds available");
-        // }
-
+        const sources: SourceData[] = JSON.parse(await sourceResponse.json());
         const urlsToGetFeeds = sources
             ? sources.map((sourceData: SourceData) => sourceData.url)
             : [];
@@ -100,7 +77,6 @@ export async function GET(req: NextRequest) {
                     {
                         body: JSON.stringify(updatedFeedSets),
                         method: "POST",
-                        headers: headers(),
                     }
                 );
                 return NextResponse.json(responseBody);
@@ -118,60 +94,14 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     try {
         const [userId] = newExtractUserIdFrom(req);
-        const session = await getServerSession(authOptions);
         if (userId == null) throw NextResponse.error();
-        const fileId = (session as CustomSession)?.user?.fileId;
-        // const { Schema: Feeds } = await initializeMongoDBWith(userId, "feeds");
-        const rawFileContent = await (
-            await fetch(
-                `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${
-                            (session as CustomSession)?.user?.access_token
-                        }`,
-                    },
-                }
-            )
-        ).json();
+        const { Schema: Feeds } = await initializeMongoDBWith(userId, "feeds");
         const dataToWrite: ParseResultType[] = await req.json();
-        // const updateResult = await Feeds?.updateOne(
-        //     { _uuid: userId },
-        //     { $set: { data: dataToWrite } }
-        // );
-        // if (updateResult?.acknowledged) {
-        //     return NextResponse.json("success");
-        // } else {
-        //     return NextResponse.error();
-        // }
-        const metadata = {
-            name: "start-page-data.json",
-            mimeType: "application/json",
-        };
-        const form = new FormData();
-        form.append(
-            "metadata",
-            new Blob([JSON.stringify(metadata)], {
-                type: "application/json",
-            })
+        const updateResult = await Feeds?.updateOne(
+            { _uuid: userId },
+            { $set: { data: dataToWrite } }
         );
-        form.append(
-            "file",
-            JSON.stringify({ ...rawFileContent, data: dataToWrite })
-        );
-        const updateResult = await (await fetch(
-            `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`,
-            {
-                headers: {
-                    Authorization: `Bearer ${
-                        (session as CustomSession)?.user?.access_token
-                    }`,
-                },
-                method: 'PATCH',
-                body: form,
-            }
-        )).json();
-        if (updateResult?.id === fileId) {
+        if (updateResult?.acknowledged) {
             return NextResponse.json("success");
         } else {
             return NextResponse.error();

@@ -19,7 +19,7 @@ interface UserInfo {
 export default async function Main() {
     const { getDataFrom } = new RequestControllers();
     let userId: string = "";
-    let isNewUser = false;
+
     try {
         const loginInfo: LoginInfo | null = await getServerSession(authOptions);
 
@@ -31,7 +31,7 @@ export default async function Main() {
             const sourcesResponse = await getDataFrom<string>(
                 `/sources?userId=${userId}`
             );
-    
+
             return (
                 <MainPage
                     feeds={feedsResponse}
@@ -43,8 +43,8 @@ export default async function Main() {
         } else {
             return (
                 <MainPage
-                    feeds={''}
-                    sources={''}
+                    feeds={""}
+                    sources={""}
                     userId={userId}
                     isLocal={loginInfo === null}
                 />

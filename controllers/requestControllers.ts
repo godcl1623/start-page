@@ -82,8 +82,9 @@ export default class RequestControllers {
     };
 
     private processFetchResponse = (response: Response) => {
-        if (response.headers.get("content-type") === "application/json")
+        if (response.headers.get("content-type") === "application/json") {
             return response.json();
-        else return response.text();
+        }
+        return response.text();
     };
 }
