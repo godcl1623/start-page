@@ -15,10 +15,10 @@ export async function PATCH(req: NextRequest) {
     try {
         const [userId] = newExtractUserIdFrom(req);
         if (userId == null) return NextResponse.error();
-        // const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
-        //     userId,
-        //     "feeds"
-        // );
+        const { remoteData, Schema: Feeds } = await initializeMongoDBWith(
+            userId,
+            "feeds"
+        );
         const dataToChange: ParsedFeedsDataType = await req.json();
         const { id, origin } = dataToChange;
 

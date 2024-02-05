@@ -11,7 +11,6 @@ export interface CustomSession extends Session {
         email?: string | null;
         image?: string | null;
         access_token?: string | null;
-        fileId?: string | null;
     };
 }
 
@@ -24,17 +23,6 @@ export interface CustomSessionParams {
 interface NewSessionParams {
     newSession: any;
     trigger: "update";
-}
-
-interface FileSearchQueryResult {
-    kind: string;
-    incompleteSearch: boolean;
-    files: {
-        kind: string;
-        mimeType: string;
-        id: string;
-        name: string;
-    }[];
 }
 
 export const authOptions: NextAuthOptions = {
@@ -87,25 +75,7 @@ export const authOptions: NextAuthOptions = {
             ) {
                 session.user.access_token = token.access_token;
             }
-            try {
-                const fileSearchQueryResult: FileSearchQueryResult = await (
-                    await fetch(
-                        "https://www.googleapis.com/drive/v3/files?q=name+%3d+%27start-page-data.json%27",
-                        {
-                            headers: {
-                                Authorization: `Bearer ${token.access_token}`,
-                            },
-                        }
-                    )
-                ).json();
-                if (session?.user) {
-                    session.user.fileId = fileSearchQueryResult.files[0].id;
-                }
-            } catch (error) {
-                console.error(error);
-            } finally {
-                return session;
-            }
+            return session;
         },
     },
 };
