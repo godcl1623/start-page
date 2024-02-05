@@ -1,8 +1,8 @@
 import { memo, MouseEvent, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 
-import { ParsedFeedsDataType } from "app/main";
-import RequestControllers from "controllers/requestControllers";
+import { ParsedFeedsDataType } from 'app/main';
+import NewRequestControllers from 'controllers/newRequestControllers';
 
 import CardView from "./CardView";
 
@@ -20,7 +20,7 @@ export default memo(function Card({
     userId,
 }: CardProps) {
     const { link, origin, isFavorite, id } = cardData ?? {};
-    const { patchDataTo } = new RequestControllers();
+    const { patchDataTo } = new NewRequestControllers();
     const mutationFn = (newData: ParsedFeedsDataType) =>
         patchDataTo(`/feeds/${origin}/${id}?userId=${userId}`, newData);
     const { mutate, isSuccess } = useMutation({

@@ -8,11 +8,11 @@ import { areEqual } from "common/capsuledConditions";
 
 export const getRssResponses = async (
     feedsUrls: string[]
-): Promise<PromiseSettledResult<string>[] | undefined> => {
+): Promise<PromiseSettledResult<AxiosResponse>[] | undefined> => {
     const { getDataFrom } = new RequestControllers();
     try {
         const rssRequests = feedsUrls.map((feedUrl: string) =>
-            getDataFrom<Promise<string>>(feedUrl)
+            getDataFrom(feedUrl)
         );
         const result = await Promise.allSettled(rssRequests);
         return result;

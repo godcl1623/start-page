@@ -1,9 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import RequestControllers from "controllers/requestControllers";
+import NewRequestControllers from 'controllers/newRequestControllers';
 
 const useCancelSubscription = (userId: string) => {
-    const { deleteDataOf } = new RequestControllers();
+    const { deleteDataOf } = new NewRequestControllers();
     const mutationFn = (deleteTarget: number) =>
         deleteDataOf(`/sources/${deleteTarget}?userId=${userId}`);
     const onSuccess = () => {

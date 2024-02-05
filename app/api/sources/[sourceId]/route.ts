@@ -2,7 +2,7 @@ import {
     initializeMongoDBWith,
     newExtractUserIdFrom,
 } from "controllers/common";
-import RequestControllers from "controllers/requestControllers";
+import NewRequestControllers from "controllers/newRequestControllers";
 import { SourceData, checkIfDataExists } from "controllers/sources";
 import { parseCookie } from "controllers/utils";
 import { NextRequest, NextResponse } from "next/server";
@@ -14,7 +14,7 @@ export interface RouteContext {
 }
 
 export async function DELETE(req: NextRequest, context: RouteContext) {
-    const { deleteDataOf } = new RequestControllers();
+    const { deleteDataOf } = new NewRequestControllers();
     try {
         const [userId] = newExtractUserIdFrom(req);
         if (userId == null) return NextResponse.error();

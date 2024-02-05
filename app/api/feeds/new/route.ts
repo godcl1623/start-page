@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
         const urlsToGetFeeds = sources
             ? sources.map((sourceData: SourceData) => sourceData.url)
             : [];
-        const result: PromiseSettledResult<string>[] | undefined =
+        const result: PromiseSettledResult<AxiosResponse>[] | undefined =
             await getRssResponses(urlsToGetFeeds);
 
         if (result != null) {

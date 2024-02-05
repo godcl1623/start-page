@@ -8,7 +8,7 @@ import useFilters from "hooks/useFilters";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import { SORT_STANDARD } from "common/constants";
 import { setCookie } from "cookies-next";
-import RequestControllers from "controllers/requestControllers";
+import NewRequestControllers from "controllers/newRequestControllers";
 import { generateSearchParameters } from "controllers/utils";
 
 export interface ParsedFeedsDataType {
@@ -54,7 +54,7 @@ export default function MainPage({
     userId,
     isNewUser,
 }: MainProps) {
-    const { getDataFrom } = new RequestControllers();
+    const { getDataFrom } = new NewRequestControllers();
     const [currentSort, setCurrentSort] = useState(0);
     const [isFilterFavorite, setIsFilterFavorite] = useState<boolean>(false);
     const [observerElement, setObserverElement] =
