@@ -7,7 +7,6 @@ import { parseCookie } from "controllers/utils";
 import { NextRequest, NextResponse } from "next/server";
 import { SourceData } from "controllers/sources";
 import { getRssResponses } from "controllers/feeds/new/utils";
-import { AxiosResponse } from "axios";
 import {
     differentiateArrays,
     extractFeedsFromSources,

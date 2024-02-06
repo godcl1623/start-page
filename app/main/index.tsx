@@ -2,7 +2,6 @@
 
 import MainView from "./MainView";
 import { useCallback, useEffect, useState } from "react";
-import { AxiosResponse } from "axios";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import useFilters from "hooks/useFilters";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
