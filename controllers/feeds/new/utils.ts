@@ -1,4 +1,3 @@
-import { AxiosResponse } from "axios";
 import { JSDOM } from "jsdom";
 
 import { ParsedFeedsDataType } from "app/main";

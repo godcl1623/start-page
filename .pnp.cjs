@@ -35,7 +35,6 @@ const RAW_RUNTIME_STATE =
           ["@types/react-dom", "npm:18.2.17"],\
           ["@yarnpkg/sdks", "npm:3.1.0"],\
           ["autoprefixer", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:10.4.16"],\
-          ["axios", "npm:1.6.2"],\
           ["cookies-next", "npm:4.1.0"],\
           ["crypto-js", "npm:4.2.0"],\
           ["eslint", "npm:8.55.0"],\
@@ -2257,18 +2256,6 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
-    ["axios", [\
-      ["npm:1.6.2", {\
-        "packageLocation": "./.yarn/cache/axios-npm-1.6.2-2334cb6eee-612bc93f8f.zip/node_modules/axios/",\
-        "packageDependencies": [\
-          ["axios", "npm:1.6.2"],\
-          ["follow-redirects", "virtual:2334cb6eeeb6b3dfd608966f28539c2de97a7f40c2b9762074181b72a63a8cdcab5646db63b491e1572f204e304748e40aff79a28dbdc8ee85d2dd16cd3803c7#npm:1.15.3"],\
-          ["form-data", "npm:4.0.0"],\
-          ["proxy-from-env", "npm:1.1.0"]\
-        ],\
-        "linkType": "HARD"\
-      }]\
-    ]],\
     ["axobject-query", [\
       ["npm:3.2.1", {\
         "packageLocation": "./.yarn/cache/axobject-query-npm-3.2.1-b147b3f32c-675af2548e.zip/node_modules/axobject-query/",\
@@ -3806,28 +3793,6 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "./.yarn/cache/flatted-npm-3.2.7-0da10b7c56-427633049d.zip/node_modules/flatted/",\
         "packageDependencies": [\
           ["flatted", "npm:3.2.7"]\
-        ],\
-        "linkType": "HARD"\
-      }]\
-    ]],\
-    ["follow-redirects", [\
-      ["npm:1.15.3", {\
-        "packageLocation": "./.yarn/cache/follow-redirects-npm-1.15.3-ca69c47b72-60d98693f4.zip/node_modules/follow-redirects/",\
-        "packageDependencies": [\
-          ["follow-redirects", "npm:1.15.3"]\
-        ],\
-        "linkType": "SOFT"\
-      }],\
-      ["virtual:2334cb6eeeb6b3dfd608966f28539c2de97a7f40c2b9762074181b72a63a8cdcab5646db63b491e1572f204e304748e40aff79a28dbdc8ee85d2dd16cd3803c7#npm:1.15.3", {\
-        "packageLocation": "./.yarn/__virtual__/follow-redirects-virtual-be1f4daa7b/0/cache/follow-redirects-npm-1.15.3-ca69c47b72-60d98693f4.zip/node_modules/follow-redirects/",\
-        "packageDependencies": [\
-          ["follow-redirects", "virtual:2334cb6eeeb6b3dfd608966f28539c2de97a7f40c2b9762074181b72a63a8cdcab5646db63b491e1572f204e304748e40aff79a28dbdc8ee85d2dd16cd3803c7#npm:1.15.3"],\
-          ["@types/debug", null],\
-          ["debug", null]\
-        ],\
-        "packagePeers": [\
-          "@types/debug",\
-          "debug"\
         ],\
         "linkType": "HARD"\
       }]\
@@ -6236,15 +6201,6 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
-    ["proxy-from-env", [\
-      ["npm:1.1.0", {\
-        "packageLocation": "./.yarn/cache/proxy-from-env-npm-1.1.0-c13d07f26b-f0bb4a87cf.zip/node_modules/proxy-from-env/",\
-        "packageDependencies": [\
-          ["proxy-from-env", "npm:1.1.0"]\
-        ],\
-        "linkType": "HARD"\
-      }]\
-    ]],\
     ["psl", [\
       ["npm:1.9.0", {\
         "packageLocation": "./.yarn/cache/psl-npm-1.9.0-a546edad1a-d07879d4bf.zip/node_modules/psl/",\
@@ -6866,7 +6822,6 @@ const RAW_RUNTIME_STATE =
           ["@types/react-dom", "npm:18.2.17"],\
           ["@yarnpkg/sdks", "npm:3.1.0"],\
           ["autoprefixer", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:10.4.16"],\
-          ["axios", "npm:1.6.2"],\
           ["cookies-next", "npm:4.1.0"],\
           ["crypto-js", "npm:4.2.0"],\
           ["eslint", "npm:8.55.0"],\

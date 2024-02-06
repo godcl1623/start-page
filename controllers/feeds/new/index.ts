@@ -1,4 +1,3 @@
-import { AxiosResponse } from "axios";
 import { areEqual } from "common/capsuledConditions";
 import { FileContentsInterface, SourceData } from "controllers/sources";
 import { ParseResultType, ParsedFeedsDataType } from "app/main";

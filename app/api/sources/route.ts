@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
         });
 
         return NextResponse.json(
-            sources != null ? JSON.stringify(sources) : ""
+            sources != null ? JSON.stringify(sources) : "[]"
         );
     } catch (error) {
         return NextResponse.error();
