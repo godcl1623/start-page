@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
     try {
-        if (req.nextUrl.origin !== process.env.NEXTAUTH_URL) {
+        if (req.nextUrl.origin !== process.env.REGISTER_ORIGIN) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
         const newUserId = getNewUserId();
