@@ -41,6 +41,7 @@ jobs:
           touch .env
           echo NEXT_PUBLIC_REQUEST_API=${{ secrets.NEXT_PUBLIC_REQUEST_API }} >> .env
           echo NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }} >> .env
+          echo REGISTER_ORIGIN=${{ secrets.REGISTER_ORIGIN }} >> .env
           echo MONGO_DB_USER=${{ secrets.MONGO_DB_USER }} >> .env
           echo MONGO_DB_KEY=${{ secrets.MONGO_DB_KEY }} >> .env
           echo MONGO_DB_URI=${{ secrets.MONGO_DB_URI }} >> .env
@@ -70,5 +71,5 @@ jobs:
           port: ${{ secrets.REMOTE_SSH_PORT }}
           script: |
             cd ${{ secrets.OCI_COMPOSE_DIRECTORY }}
-            docker pull $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest
+            docker pull ${{ secrets.OCIR_ENDPOINT }}/${{ secrets.OCIR_USERNAME }}/${{ secrets.OCIR_REPOSITORY }}:latest
             sh deploy-prod.sh

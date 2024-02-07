@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
 import RequestControllers from "controllers/requestControllers";
 
 const useCancelSubscription = (userId: string) => {
@@ -12,8 +11,7 @@ const useCancelSubscription = (userId: string) => {
     };
     const onError = (error: unknown) => {
         window.alert("오류가 발생했습니다.");
-        if (axios.isAxiosError(error)) return Promise.reject(error);
-        else if (error instanceof Error) throw new Error(error.message);
+        if (error instanceof Error) throw new Error(error.message);
     };
     const { mutate } = useMutation({
         mutationFn,

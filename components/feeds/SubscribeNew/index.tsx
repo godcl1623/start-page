@@ -1,8 +1,8 @@
-import { useRouter } from "next/navigation";
-
 import { extractInputValue, checkIfStringPassesRule } from "../utils/helpers";
-import NewRequestControllers from "controllers/newRequestControllers";
+import RequestControllers from "controllers/requestControllers";
 import SubscriptionForm from "./SubscriptionForm";
+import { parseCookie } from 'controllers/utils';
+import { setCookie } from 'cookies-next';
 
 interface Props {
     userId: string;
@@ -14,8 +14,7 @@ interface CheckResult {
 }
 
 export default function SubscribeNew({ userId }: Props) {
-    const router = useRouter();
-    const { getDataFrom, postDataTo } = new NewRequestControllers();
+    const { getDataFrom, postDataTo } = new RequestControllers();
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -38,6 +37,11 @@ export default function SubscribeNew({ userId }: Props) {
         if (!urlCheckResult || fetchData == null) {
             alert("유효하지 않은 주소입니다.");
             return;
+        }
+
+        if (userId === '') {
+            userId = (await getDataFrom<{ userCookie: string }>('/register')).userCookie
+            setCookie('mw', userId, { maxAge: 60 * 60 * 24 * 30 });
         }
 
         const parser = new DOMParser();

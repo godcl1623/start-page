@@ -1,4 +1,3 @@
-import { AxiosResponse } from "axios";
 import { JSDOM } from "jsdom";
 
 import { ParsedFeedsDataType } from "app/main";
@@ -8,11 +7,11 @@ import { areEqual } from "common/capsuledConditions";
 
 export const getRssResponses = async (
     feedsUrls: string[]
-): Promise<PromiseSettledResult<AxiosResponse>[] | undefined> => {
+): Promise<PromiseSettledResult<string>[] | undefined> => {
     const { getDataFrom } = new RequestControllers();
     try {
         const rssRequests = feedsUrls.map((feedUrl: string) =>
-            getDataFrom(feedUrl)
+            getDataFrom<Promise<string>>(feedUrl)
         );
         const result = await Promise.allSettled(rssRequests);
         return result;
