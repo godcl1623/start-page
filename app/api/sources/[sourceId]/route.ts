@@ -3,7 +3,7 @@ import {
     newExtractUserIdFrom,
 } from "controllers/common";
 import RequestControllers from "controllers/requestControllers";
-import { SourceData, checkIfDataExists } from "controllers/sources";
+import { SourceData, checkIfDataExists } from "controllers/sources/helpers";
 import { parseCookie } from "controllers/utils";
 import { NextRequest, NextResponse } from "next/server";
 

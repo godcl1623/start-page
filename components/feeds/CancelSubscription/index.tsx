@@ -1,4 +1,4 @@
-import { SourceData } from "controllers/sources";
+import { SourceData } from "controllers/sources/helpers";
 
 import useCancelSubscription from "./hooks/useCancelSubscription";
 
