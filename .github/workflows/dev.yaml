@@ -41,6 +41,7 @@ jobs:
           touch .env
           echo NEXT_PUBLIC_REQUEST_API=${{ secrets.NEXT_PUBLIC_REQUEST_API_DEV }} >> .env
           echo NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL_DEV }} >> .env
+          echo REGISTER_ORIGIN=${{ secrets.REGISTER_ORIGIN }} >> .env
           echo MONGO_DB_USER=${{ secrets.MONGO_DB_USER }} >> .env
           echo MONGO_DB_KEY=${{ secrets.MONGO_DB_KEY }} >> .env
           echo MONGO_DB_URI=${{ secrets.MONGO_DB_URI }} >> .env
