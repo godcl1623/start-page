@@ -21,21 +21,17 @@ export async function POST(req: NextRequest) {
         const filteredLink = filterRSSLinks(rawUrlTestResponse);
         processedLink =
             processRSSLinks(url, filteredLink) ?? processLinkExceptions(url);
-        if (processedLink == null) {
-            return NextResponse.json({
-                result: false,
-                data: null,
-                rssUrl: null,
-            });
-        }
-
-        const processedTestResponse = await (await fetch(processedLink)).text();
-        if (processedTestResponse.startsWith('<?xml')) {
-            return NextResponse.json({
-                result: true,
-                data: processedTestResponse,
-                rssUrl: processedLink,
-            });
+        if (processedLink != null) {
+            const processedTestResponse = await (
+                await fetch(processedLink)
+            ).text();
+            if (processedTestResponse.startsWith("<?xml")) {
+                return NextResponse.json({
+                    result: true,
+                    data: processedTestResponse,
+                    rssUrl: processedLink,
+                });
+            }
         }
 
         return NextResponse.json({
