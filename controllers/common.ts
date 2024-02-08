@@ -2,7 +2,7 @@ import { Model } from "mongoose";
 import { NextApiRequest } from "next";
 import { ParseResultType } from "app/main";
 import MongoDB from "./mongodb";
-import { SourceData } from "./sources";
+import { SourceData } from "./sources/helpers";
 import { parseCookie } from "./utils";
 import { NextRequest } from "next/server";
 
@@ -12,7 +12,9 @@ export const extractUserIdFrom = (request: NextApiRequest) => {
 };
 
 export const newExtractUserIdFrom = (request: NextRequest) => {
-    const userId = request.nextUrl.searchParams.get("userId")?.replace(/\s/g, "+");
+    const userId = request.nextUrl.searchParams
+        .get("userId")
+        ?.replace(/\s/g, "+");
     return [parseCookie(userId), userId];
 };
 

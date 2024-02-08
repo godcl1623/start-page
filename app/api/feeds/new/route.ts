@@ -5,7 +5,7 @@ import {
 import { getPaginationIndexes } from "controllers/feeds";
 import { parseCookie } from "controllers/utils";
 import { NextRequest, NextResponse } from "next/server";
-import { SourceData } from "controllers/sources";
+import { SourceData } from "controllers/sources/helpers";
 import { getRssResponses } from "controllers/feeds/new/utils";
 import {
     differentiateArrays,

@@ -1,5 +1,5 @@
 import { areEqual } from "common/capsuledConditions";
-import { FileContentsInterface, SourceData } from "controllers/sources";
+import { FileContentsInterface, SourceData } from "controllers/sources/helpers";
 import { ParseResultType, ParsedFeedsDataType } from "app/main";
 import { sortFeedSets } from "..";
 import { getRssResponses, makeFeedDataArray, parseXml } from "./utils";
@@ -34,8 +34,9 @@ export const parseFeedsFromSources = ({
         const indexedFeed =
             storedFeeds[index] != null ? storedFeeds[index].feeds : [];
         const id = indexedFeed != null ? indexedFeed.length : 0;
-        const { feedOriginName, feedOriginParsedLink, rssFeeds } =
-            parseXml(rawRss ?? '');
+        const { feedOriginName, feedOriginParsedLink, rssFeeds } = parseXml(
+            rawRss ?? ""
+        );
         const parsedFeedsArray = makeFeedDataArray(
             rssFeeds,
             feedOriginName,

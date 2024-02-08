@@ -1,13 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+    filterRSSLinks,
+    processLinkExceptions,
+    processRSSLinks,
+} from "controllers/sources/helpers";
 
 export async function POST(req: NextRequest) {
     try {
         const { url } = await req.json();
-        const fetchResponse = await (await fetch(url)).text();
-        const checkResult = fetchResponse.startsWith("<?xml");
+        const rawUrlTestResponse = await (await fetch(url)).text();
+        if (rawUrlTestResponse.startsWith("<?xml")) {
+            return NextResponse.json({
+                result: true,
+                data: rawUrlTestResponse,
+                rssUrl: url,
+            });
+        }
+
+        let processedLink;
+        const filteredLink = filterRSSLinks(rawUrlTestResponse);
+        processedLink =
+            processRSSLinks(url, filteredLink) ?? processLinkExceptions(url);
+        if (processedLink != null) {
+            const processedTestResponse = await (
+                await fetch(processedLink)
+            ).text();
+            if (processedTestResponse.startsWith("<?xml")) {
+                return NextResponse.json({
+                    result: true,
+                    data: processedTestResponse,
+                    rssUrl: processedLink,
+                });
+            }
+        }
+
         return NextResponse.json({
-            result: checkResult,
-            data: checkResult ? fetchResponse : null,
+            result: false,
+            data: null,
+            rssUrl: null,
         });
     } catch (error) {
         return NextResponse.error();
