@@ -8,7 +8,7 @@ import {
     SourceData,
     SourceDataInput,
     checkIfDataExists,
-} from "controllers/sources";
+} from "controllers/sources/helpers";
 import { parseCookie } from "controllers/utils";
 import { NextRequest, NextResponse } from "next/server";
 

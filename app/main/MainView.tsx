@@ -2,9 +2,9 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 
-import { ParsedFeedsDataType } from '.';
+import { ParsedFeedsDataType } from ".";
 import { FilterType } from "hooks/useFilters";
-import { SourceData } from "controllers/sources";
+import { SourceData } from "controllers/sources/helpers";
 
 import { calculateTotalPages, calculatePagesList } from "./utils";
 

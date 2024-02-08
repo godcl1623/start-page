@@ -1,4 +1,4 @@
-import { SourceData } from "controllers/sources";
+import { SourceData } from "controllers/sources/helpers";
 import Button from "../../common/Button";
 import ListItemBox from "../common/ListItemBox";
 import ModalTemplate from "../common/ModalTemplate";

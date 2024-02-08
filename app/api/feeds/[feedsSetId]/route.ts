@@ -5,7 +5,7 @@ import {
     newExtractUserIdFrom,
 } from "controllers/common";
 import { extractStoredFeedsFromRemote } from "controllers/feeds/new";
-import { checkIfDataExists } from "controllers/sources";
+import { checkIfDataExists } from "controllers/sources/helpers";
 import { NextResponse, NextRequest } from "next/server";
 
 export async function DELETE(req: NextRequest, context: RouteContext) {

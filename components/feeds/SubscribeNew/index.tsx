@@ -11,6 +11,7 @@ interface Props {
 interface CheckResult {
     result: boolean;
     data: string | null;
+    rssUrl: string | null;
 }
 
 export default function SubscribeNew({ userId }: Props) {
@@ -32,9 +33,9 @@ export default function SubscribeNew({ userId }: Props) {
             return;
         }
 
-        const { result: urlCheckResult, data: fetchData } =
+        const { result: urlCheckResult, data: fetchData, rssUrl } =
             await postDataTo<CheckResult>("/sources/check", { url });
-        if (!urlCheckResult || fetchData == null) {
+        if (!urlCheckResult || fetchData == null || rssUrl == null) {
             alert("유효하지 않은 주소입니다.");
             return;
         }
@@ -58,7 +59,7 @@ export default function SubscribeNew({ userId }: Props) {
                 await postDataTo<string>(`/sources?userId=${userId}`, {
                     id,
                     name: feedOriginTitle,
-                    url,
+                    url: rssUrl,
                 })
             );
             // TODO: 다른 오류 핸들링 방법 알아보기
