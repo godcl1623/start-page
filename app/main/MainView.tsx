@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 
-import { ParsedFeedsDataType } from ".";
+import { ParsedFeedsDataType, STATE_MESSAGE_STRINGS } from ".";
 import { FilterType } from "hooks/useFilters";
 import { SourceData } from "controllers/sources/helpers";
 
@@ -19,6 +19,7 @@ import PostHandleOptions from "./PostHandleOptions";
 import PageButton from "./PageButton";
 import LoginInfoArea from "./LoginInfoArea";
 import Authentication from "components/authentication";
+import { SvgSpinners90RingWithBg } from "components/common/Spinner";
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
@@ -35,6 +36,7 @@ interface Props {
     refetchStoredFeeds: () => void;
     setSearchTexts: (target: string, value: string) => void;
     filterFavorites: () => void;
+    renewState: string;
 }
 
 export type ModalKeys =
@@ -46,7 +48,6 @@ export type ModalKeys =
 type ModalStateType = {
     [key in ModalKeys]: boolean;
 };
-
 export interface SourcesList {
     sources: SourceData[];
 }
@@ -66,6 +67,7 @@ export default memo(function MainView({
     refetchStoredFeeds,
     setSearchTexts,
     filterFavorites,
+    renewState,
 }: Props) {
     const [modalState, setModalState] = useState<ModalStateType>({
         addSubscription: false,
@@ -73,6 +75,9 @@ export default memo(function MainView({
         filterBySource: false,
         handleAuthentication: false,
     });
+    const [shouldHideRenewState, setShouldHideRenewState] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [shouldStartLoad, setShouldStartLoad] = useState(false);
     const startPageRef = useRef<HTMLElement | null>(null);
     const sourcesList = sources ? JSON.parse(sources) : [];
 
@@ -111,6 +116,25 @@ export default memo(function MainView({
             document.documentElement.style.overflow = "auto";
         }
     }, [modalState, startPageRef]);
+
+    useEffect(() => {
+        if (
+            renewState !== STATE_MESSAGE_STRINGS.start &&
+            renewState !== STATE_MESSAGE_STRINGS.proceed
+        ) {
+            setIsLoaded(true);
+        } else if (renewState === STATE_MESSAGE_STRINGS.start) {
+            setShouldStartLoad(true);
+        }
+    }, [renewState]);
+
+    useEffect(() => {
+        let timeout: ReturnType<typeof setTimeout>;
+        if (isLoaded) {
+            timeout = setTimeout(() => setShouldHideRenewState(true), 3000);
+        }
+        return () => clearTimeout(timeout);
+    }, [isLoaded]);
 
     const feedsToDisplay =
         feedsFromServer != null && feedsFromServer.length > 0
@@ -152,10 +176,25 @@ export default memo(function MainView({
             >
                 <LoginInfoArea handleAuthenticationModal={handleClick} />
                 <div className="flex flex-col justify-center my-auto">
-                    <section className="flex-center w-full my-32 lg:w-[768px]">
+                    <section className="flex-center w-full mt-32 mb-28 lg:w-[768px]">
                         <Search />
                     </section>
                     <section className="flex flex-col items-center w-full h-max lg:w-[768px]">
+                        <div className="flex items-center justify-end gap-1.5 w-full min-h-[1rem] mb-2 text-right text-xs">
+                            {sourcesList.length === 0 ||
+                            shouldHideRenewState ? (
+                                <></>
+                            ) : (
+                                <>
+                                    {isLoaded || !shouldStartLoad ? (
+                                        <></>
+                                    ) : (
+                                        <SvgSpinners90RingWithBg className="fill-neutral-700 dark:fill-neutral-100" />
+                                    )}
+                                    <p>{renewState}</p>
+                                </>
+                            )}
+                        </div>
                         <PostHandleOptions
                             filterFavorites={filterFavorites}
                             handleClick={handleClick}
