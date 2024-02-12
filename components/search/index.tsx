@@ -3,7 +3,7 @@ import { ChangeEvent, FormEvent, memo, useEffect, useState } from "react";
 import { SEARCH_ADDRESS_BY_ENGINE } from "./utils/constants";
 
 import { extractFormValues, openSearchResult } from "./utils/helpers";
-import useHandleInputFill from './hooks/useHandleInputFill';
+import useHandleInputFill from "./hooks/useHandleInputFill";
 
 import SelectBox from "../common/SelectBox";
 
@@ -28,18 +28,18 @@ export default memo(function Search() {
 
     return (
         <form
-            className="relative flex-center w-full h-12 shadow-lg dark:shadow-zinc-600"
+            className="relative flex-center w-full h-12 rounded-md shadow-lg dark:shadow-zinc-600"
             onSubmit={handleSubmit}
         >
             <SelectBox
                 optionValues={searchEngines}
-                customStyles="rounded-l-md"
+                customStyles="w-24 rounded-l-md"
             />
             <input
                 name="searchInput"
                 type="text"
                 placeholder="검색어를 입력해주세요"
-                className="w-[calc(100%-12.125rem)] h-full p-4 text-neutral-700 dark:focus:outline-sky-600 dark:text-neutral-200"
+                className="w-[calc(100%-12rem)] h-full p-4 text-neutral-700 dark:focus:outline-sky-600 dark:text-neutral-200"
                 value={inputValue}
                 onChange={handleChange}
             />
@@ -60,4 +60,4 @@ export default memo(function Search() {
             />
         </form>
     );
-})
+});
