@@ -95,6 +95,7 @@ export async function GET(req: NextRequest) {
             );
         }
     } catch (error) {
+        console.error(error);
         return NextResponse.json(
             { error: "err_renew_req_failed", status: 400 },
             { status: 400 }
@@ -121,6 +122,7 @@ export async function POST(req: NextRequest) {
             );
         }
     } catch (error) {
+        console.error(error);
         return NextResponse.json(
             { error: "err_renew_req_failed", status: 400 },
             { status: 400 }

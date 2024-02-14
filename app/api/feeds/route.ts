@@ -109,7 +109,11 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json(JSON.stringify(responseBody));
     } catch (error) {
-        return NextResponse.error();
+        console.error(error);
+        return NextResponse.json(
+            { error: "err_feeds_req_failed", status: 400 },
+            { status: 400 }
+        );
     }
 }
 
