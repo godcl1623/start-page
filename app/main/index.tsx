@@ -47,12 +47,23 @@ interface FeedsCache {
     [key: number]: ParsedFeedsDataType[];
 }
 
-export const STATE_MESSAGE_STRINGS = {
+interface ErrorResponse {
+    error: string;
+    status: number;
+}
+
+export const STATE_MESSAGE_STRINGS: { [key: string]: string } = {
     start: "피드 갱신을 시작합니다.",
     proceed: "피드 갱신을 진행중입니다.",
     no_change: "새로운 피드가 없습니다.",
-    added: (count: number) => `${count}개의 새로운 피드가 추가되었습니다.`,
+    added: "개의 새로운 피드가 추가되었습니다.",
     end: "피드 갱신이 완료되었습니다.",
+} as const;
+
+export const ERROR_MESSAGE_STRINGS: { [key: string]: string } = {
+    err_no_source: "구독 중인 사이트가 존재하지 않습니다.",
+    err_renew_req_failed: "피드 갱신 요청이 실패했습니다.",
+    err_unexpected: "오류가 발생했습니다.",
 } as const;
 
 export default function MainPage({
@@ -88,7 +99,11 @@ export default function MainPage({
     } = useQuery({
         queryKey: [`/feeds/new?userId=${userId}`],
         queryFn: () =>
-            isLocal ? null : getDataFrom<string>(`/feeds/new?userId=${userId}`),
+            isLocal
+                ? null
+                : getDataFrom<PageParamData | ErrorResponse>(
+                      `/feeds/new?userId=${userId}`
+                  ),
     });
     const {
         data: storedFeed,
@@ -233,24 +248,31 @@ export default function MainPage({
     }, [storedFeed, isMobileLayout]);
 
     useEffect(() => {
-        if (
-            newFeedsRequestResult != null &&
-            typeof newFeedsRequestResult !== "string"
-        ) {
-            const { count, data } = newFeedsRequestResult;
-            if (count !== totalCount) {
-                setTotalCount(count);
+        if (newFeedsRequestResult != null) {
+            switch (true) {
+                case "data" in newFeedsRequestResult:
+                    const { data, count } = newFeedsRequestResult;
+                    if (count !== totalCount) {
+                        setTotalCount(count);
+                    }
+                    if (count !== 0) {
+                        setRenewState(count + STATE_MESSAGE_STRINGS.added);
+                    } else {
+                        setRenewState(STATE_MESSAGE_STRINGS.end);
+                    }
+                    updateFormerFeedsList(data);
+                    break;
+                case "error" in newFeedsRequestResult:
+                    setRenewState(
+                        STATE_MESSAGE_STRINGS[newFeedsRequestResult.error]
+                    );
+                    break;
+                default:
+                    setRenewState(STATE_MESSAGE_STRINGS.no_change);
+                    break;
             }
-            if (count !== 0) {
-                setRenewState(STATE_MESSAGE_STRINGS.added(count));
-            } else {
-                setRenewState(STATE_MESSAGE_STRINGS.end);
-            }
-            updateFormerFeedsList(data);
-        } else {
-            setRenewState(STATE_MESSAGE_STRINGS.no_change);
         }
-    }, [newFeedsRequestResult]);
+    }, [newFeedsRequestResult, totalCount]);
 
     useEffect(() => {
         if (!isMobileLayout) {
