@@ -71,22 +71,34 @@ export async function GET(req: NextRequest) {
             );
 
             if (storedFeeds.length === 0 || differentiateResult.length > 0) {
-                fetch(
-                    `${process.env.NEXT_PUBLIC_REQUEST_API}/feeds/new?userId=${rawId}`,
-                    {
-                        body: JSON.stringify(updatedFeedSets),
-                        method: "POST",
-                    }
-                );
-                return NextResponse.json(responseBody);
+                const postResult = await (
+                    await fetch(
+                        `${process.env.NEXT_PUBLIC_REQUEST_API}/feeds/new?userId=${rawId}`,
+                        {
+                            body: JSON.stringify(updatedFeedSets),
+                            method: "POST",
+                        }
+                    )
+                ).json();
+                if (postResult === "success") {
+                    return NextResponse.json(responseBody);
+                } else {
+                    return NextResponse.json(postResult);
+                }
             } else {
-                return NextResponse.json("no new feeds available");
+                return NextResponse.json({ result: "no new feeds available" });
             }
         } else {
-            return NextResponse.error();
+            return NextResponse.json(
+                { error: "err_no_source", status: 400 },
+                { status: 400 }
+            );
         }
     } catch (error) {
-        return NextResponse.error();
+        return NextResponse.json(
+            { error: "err_renew_req_failed", status: 400 },
+            { status: 400 }
+        );
     }
 }
 
@@ -103,10 +115,16 @@ export async function POST(req: NextRequest) {
         if (updateResult?.acknowledged) {
             return NextResponse.json("success");
         } else {
-            return NextResponse.error();
+            return NextResponse.json(
+                { error: "update failed", status: 400 },
+                { status: 400 }
+            );
         }
     } catch (error) {
-        return NextResponse.error();
+        return NextResponse.json(
+            { error: "err_renew_req_failed", status: 400 },
+            { status: 400 }
+        );
     }
 }
 
