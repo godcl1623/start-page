@@ -47,12 +47,31 @@ interface FeedsCache {
     [key: number]: ParsedFeedsDataType[];
 }
 
+interface ErrorResponse {
+    error: string;
+    status: number;
+}
+
+export const STATE_MESSAGE_STRINGS: { [key: string]: string } = {
+    start: "피드 갱신을 시작합니다.",
+    proceed: "피드 갱신을 진행중입니다.",
+    no_change: "새로운 피드가 없습니다.",
+    added: "개의 새로운 피드가 추가되었습니다.",
+    end: "피드 갱신이 완료되었습니다.",
+} as const;
+
+export const ERROR_MESSAGE_STRINGS: { [key: string]: string } = {
+    err_no_source: "구독 중인 사이트가 존재하지 않습니다.",
+    err_renew_req_failed: "피드 갱신 요청이 실패했습니다.",
+    err_unexpected: "오류가 발생했습니다.",
+} as const;
+
 export default function MainPage({
     feeds,
     sources,
     userId,
     isLocal,
-}: MainProps) {
+}: Readonly<MainProps>) {
     const { getDataFrom } = new RequestControllers();
     const [currentSort, setCurrentSort] = useState(0);
     const [isFilterFavorite, setIsFilterFavorite] = useState<boolean>(false);
@@ -62,6 +81,9 @@ export default function MainPage({
     const [isMobileLayout, setIsMobileLayout] = useState<boolean>(false);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [formerFeedsList, setFormerFeedsList] = useState<FeedsCache>({});
+    const [renewState, setRenewState] = useState<string>(
+        STATE_MESSAGE_STRINGS.start
+    );
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
@@ -70,11 +92,19 @@ export default function MainPage({
         JSON.stringify(Object.values(SEARCH_OPTIONS)),
         ""
     );
-    const newFeedsRequestResult = useQuery({
+    const {
+        data: newFeedsRequestResult,
+        isFetching: isNewFetching,
+        isFetched: isNewFetched,
+    } = useQuery({
         queryKey: [`/feeds/new?userId=${userId}`],
         queryFn: () =>
-            isLocal ? null : getDataFrom<string>(`/feeds/new?userId=${userId}`),
-    })?.data;
+            isLocal
+                ? null
+                : getDataFrom<PageParamData | ErrorResponse>(
+                      `/feeds/new?userId=${userId}`
+                  ),
+    });
     const {
         data: storedFeed,
         refetch: refetchStoredFeeds,
@@ -104,7 +134,7 @@ export default function MainPage({
                       })}`
                   ),
         getNextPageParam: (lastPage: string) => {
-            if (lastPage === '' || !JSON.parse(lastPage).data) return 1;
+            if (lastPage === "" || !JSON.parse(lastPage).data) return 1;
             const totalCount = JSON.parse(lastPage)?.count;
             if (currentPage >= Math.ceil(totalCount / 10)) return;
             return currentPage + 1;
@@ -218,15 +248,31 @@ export default function MainPage({
     }, [storedFeed, isMobileLayout]);
 
     useEffect(() => {
-        if (
-            newFeedsRequestResult != null &&
-            typeof newFeedsRequestResult !== "string"
-        ) {
-            const { count, data } = newFeedsRequestResult;
-            if (count !== totalCount) setTotalCount(count);
-            updateFormerFeedsList(data);
+        if (newFeedsRequestResult != null) {
+            switch (true) {
+                case "data" in newFeedsRequestResult:
+                    const { data, count } = newFeedsRequestResult;
+                    if (count !== totalCount) {
+                        setTotalCount(count);
+                    }
+                    if (count !== 0) {
+                        setRenewState(count + STATE_MESSAGE_STRINGS.added);
+                    } else {
+                        setRenewState(STATE_MESSAGE_STRINGS.end);
+                    }
+                    updateFormerFeedsList(data);
+                    break;
+                case "error" in newFeedsRequestResult:
+                    setRenewState(
+                        STATE_MESSAGE_STRINGS[newFeedsRequestResult.error]
+                    );
+                    break;
+                default:
+                    setRenewState(STATE_MESSAGE_STRINGS.no_change);
+                    break;
+            }
         }
-    }, [newFeedsRequestResult]);
+    }, [newFeedsRequestResult, totalCount]);
 
     useEffect(() => {
         if (!isMobileLayout) {
@@ -296,6 +342,12 @@ export default function MainPage({
         }
     }, [observerElement, hasNextPage]);
 
+    useEffect(() => {
+        if (isNewFetching) {
+            setRenewState(STATE_MESSAGE_STRINGS.proceed);
+        }
+    }, [isNewFetched, isNewFetching]);
+
     return (
         <MainView
             feedsFromServer={feedsFromServer}
@@ -312,6 +364,7 @@ export default function MainPage({
             refetchStoredFeeds={refetchStoredFeeds}
             setSearchTexts={setSearchTexts}
             filterFavorites={filterFavorites}
+            renewState={renewState}
         />
     );
 }
