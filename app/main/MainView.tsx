@@ -216,7 +216,11 @@ export default memo(function MainView({
                             setSearchTexts={setSearchTexts}
                             setSortState={setSortState}
                         />
-                        <ul className="w-full h-full">{feedsToDisplay}</ul>
+                        {sourcesList.length > 0 ? (
+                            <ul className="w-full h-full">{feedsToDisplay}</ul>
+                        ) : (
+                            <></>
+                        )}
                         {isMobileLayout ? (
                             <div
                                 ref={updateObserverElement}
