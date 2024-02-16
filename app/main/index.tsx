@@ -66,6 +66,17 @@ export const ERROR_MESSAGE_STRINGS: { [key: string]: string } = {
     err_unexpected: "오류가 발생했습니다.",
 } as const;
 
+export const DEFAULT_CARD_DATA: ParsedFeedsDataType = {
+    description: '',
+    id: '',
+    isFavorite: false,
+    isRead: false,
+    link: '',
+    origin: '',
+    pubDate: '1900-01-01',
+    title: '',
+};
+
 export default function MainPage({
     feeds,
     sources,
