@@ -8,7 +8,7 @@ import CardView from "./CardView";
 
 interface CardProps {
     cardData: ParsedFeedsDataType;
-    refetchFeeds: any;
+    refetchFeeds: () => void;
     userId: string;
 }
 
