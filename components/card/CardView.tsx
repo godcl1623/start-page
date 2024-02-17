@@ -66,6 +66,7 @@ export default memo(function CardView({
                     <div className="mr-4 py-1">
                         <Checkbox
                             targetState={favoriteState}
+                            feedId={cardData.id}
                             buttonIcon={FavoriteIcon}
                             handleCheckbox={handleFavorite(
                                 favoriteState,
@@ -84,6 +85,7 @@ export default memo(function CardView({
                             <h2 className="text-lg">{title}</h2>
                             <Checkbox
                                 targetState={readState}
+                                feedId={cardData.id}
                                 buttonIcon={CheckIcon}
                                 handleCheckbox={handleRead(
                                     readState,

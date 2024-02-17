@@ -14,24 +14,28 @@ export default function FilterBySource({
     closeModal,
     setDisplayFlag,
     refetchFeeds,
-}: Props) {
+}: Readonly<Props>) {
     if (displayState == null || Object.keys(displayState).length === 0) {
         return <></>;
     }
 
-    const changeDisplayFlag = (target: string, value: boolean) => () => {
+    const changeDisplayFlag = (target: string, value: boolean) => {
         setDisplayFlag(target, value);
     };
 
-    const enableDisplayFilter = () => {
-        closeModal();
+    const enableDisplayFilter = (callback?: () => void) => () => {
+        if (callback != null) {
+            callback();
+        }
         refetchFeeds();
+        closeModal();
     };
 
     const initiateDisplayFilter = () => {
         Object.keys(displayState).forEach((key: string) =>
             setDisplayFlag(key, true)
         );
+        closeModal();
     };
 
     return (

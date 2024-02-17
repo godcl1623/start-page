@@ -4,15 +4,17 @@ import { IconType } from "react-icons";
 
 interface CheckboxProps {
     targetState: boolean;
+    feedId: string;
     buttonIcon: IconType;
     handleCheckbox: (event: MouseEvent<HTMLLabelElement>) => void;
 }
 
 export default function Checkbox({
     targetState,
+    feedId,
     buttonIcon,
     handleCheckbox,
-}: CheckboxProps) {
+}: Readonly<CheckboxProps>) {
     const ButtonIcon = buttonIcon;
     const [checkedState, setCheckedState] = useState<boolean>(false);
 
@@ -21,9 +23,12 @@ export default function Checkbox({
     };
 
     return (
-        <label htmlFor="checkbox" onClick={handleCheckbox}>
+        <label
+            htmlFor={`checkbox_${buttonIcon.name}_${feedId}`}
+            onClick={handleCheckbox}
+        >
             <input
-                name="checkbox"
+                id={`checkbox_${buttonIcon.name}_${feedId}`}
                 type="checkbox"
                 className="hidden"
                 checked={checkedState}
