@@ -41,6 +41,7 @@ interface MainProps {
 interface PageParamData {
     data: ParsedFeedsDataType[];
     count: number;
+    updated: number;
 }
 
 interface FeedsCache {
@@ -265,12 +266,12 @@ export default function MainPage({
         if (newFeedsRequestResult != null) {
             switch (true) {
                 case "data" in newFeedsRequestResult:
-                    const { data, count } = newFeedsRequestResult;
+                    const { data, count, updated } = newFeedsRequestResult;
                     if (count !== totalCount) {
                         setTotalCount(count);
                     }
-                    if (count !== 0) {
-                        setRenewState(count + STATE_MESSAGE_STRINGS.added);
+                    if (updated !== 0) {
+                        setRenewState(updated + STATE_MESSAGE_STRINGS.added);
                     } else {
                         setRenewState(STATE_MESSAGE_STRINGS.end);
                     }
