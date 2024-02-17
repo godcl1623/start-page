@@ -11,8 +11,6 @@ interface Props {
     refetchFeeds: () => void;
 }
 
-const DEFAULT_FEEDS_LIST = Array.from({ length: 10 }, () => DEFAULT_CARD_DATA);
-
 export default function FeedsList({
     feedsFromServer,
     userId,
@@ -20,8 +18,12 @@ export default function FeedsList({
     isFilterFavorite,
     isFilterSources,
 }: Readonly<Props>) {
+    const defaultFeedsList = Array.from(
+        { length: 10 },
+        () => DEFAULT_CARD_DATA
+    );
     const [feedsToDisplay, setFeedsToDisplay] =
-        useState<ParsedFeedsDataType[]>(DEFAULT_FEEDS_LIST);
+        useState<ParsedFeedsDataType[]>(defaultFeedsList);
 
     const updateFeedsToDisplay = (dataList: ParsedFeedsDataType[]) => {
         setFeedsToDisplay((oldState) =>
@@ -33,7 +35,7 @@ export default function FeedsList({
         if (feedsFromServer != null && feedsFromServer.length > 0) {
             updateFeedsToDisplay(feedsFromServer);
         } else if (!isFilterFavorite && !isFilterSources) {
-            updateFeedsToDisplay(DEFAULT_FEEDS_LIST);
+            updateFeedsToDisplay(defaultFeedsList);
         } else {
             updateFeedsToDisplay([]);
         }
