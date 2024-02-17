@@ -95,12 +95,23 @@ export const differentiateArrays = (
     updatedList: ParseResultType[],
     originalList: ParseResultType[]
 ) =>
-    updatedList.filter(
-        (resultData: ParseResultType, index: number) =>
-            resultData.lastFeedsLength !==
-                originalList[index]?.lastFeedsLength ||
-            resultData.latestFeedTitle !== originalList[index]?.latestFeedTitle
-    );
+    updatedList
+        .filter(
+            (resultData: ParseResultType, index: number) =>
+                resultData.lastFeedsLength !==
+                    originalList[index]?.lastFeedsLength ||
+                resultData.latestFeedTitle !==
+                    originalList[index]?.latestFeedTitle
+        )
+        .reduce((totalUpdates: number, updatedFeedData: ParseResultType) => {
+            const correspondingFeedData = originalList.find(
+                (feedData) => feedData.originName === updatedFeedData.originName
+            );
+            const gap =
+                updatedFeedData.lastFeedsLength -
+                (correspondingFeedData?.lastFeedsLength ?? 0);
+            return (totalUpdates += gap);
+        }, 0);
 
 export const makeUpdatedFeedsLists = (updatedFeedSets: ParseResultType[]) =>
     updatedFeedSets
