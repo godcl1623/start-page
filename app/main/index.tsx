@@ -376,6 +376,7 @@ export default function MainPage({
             setSearchTexts={setSearchTexts}
             filterFavorites={filterFavorites}
             renewState={renewState}
+            isFilterFavorite={isFilterFavorite}
         />
     );
 }

@@ -2,18 +2,13 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 
-import {
-    DEFAULT_CARD_DATA,
-    ParsedFeedsDataType,
-    STATE_MESSAGE_STRINGS,
-} from ".";
+import { ParsedFeedsDataType, STATE_MESSAGE_STRINGS } from ".";
 import { FilterType } from "hooks/useFilters";
 import { SourceData } from "controllers/sources/helpers";
 
 import { calculateTotalPages, calculatePagesList } from "./utils";
 
 import Search from "components/search";
-import Card from "components/card";
 import Modal from "components/modal";
 import SubscriptionDialogBox from "components/feeds/SubscriptionDialogBox";
 import SubscribeNew from "components/feeds/SubscribeNew";
@@ -24,6 +19,7 @@ import PageButton from "./PageButton";
 import LoginInfoArea from "./LoginInfoArea";
 import Authentication from "components/authentication";
 import { SvgSpinners90RingWithBg } from "components/common/Spinner";
+import FeedsList from "components/feedsList";
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
@@ -41,6 +37,7 @@ interface Props {
     setSearchTexts: (target: string, value: string) => void;
     filterFavorites: () => void;
     renewState: string;
+    isFilterFavorite: boolean;
 }
 
 export type ModalKeys =
@@ -72,6 +69,7 @@ export default memo(function MainView({
     setSearchTexts,
     filterFavorites,
     renewState,
+    isFilterFavorite,
 }: Props) {
     const [modalState, setModalState] = useState<ModalStateType>({
         addSubscription: false,
@@ -84,6 +82,8 @@ export default memo(function MainView({
     const [shouldStartLoad, setShouldStartLoad] = useState(false);
     const startPageRef = useRef<HTMLElement | null>(null);
     const sourcesList = sources ? JSON.parse(sources) : [];
+    const isFilterSources =
+        Object.values(sourceDisplayState).filter((value) => !value).length > 0;
 
     const handleClick = (target: ModalKeys) => () => {
         document.documentElement.scrollTo({ top: 0 });
@@ -140,29 +140,6 @@ export default memo(function MainView({
         return () => clearTimeout(timeout);
     }, [isLoaded]);
 
-    const feedsToDisplay =
-        feedsFromServer != null && feedsFromServer.length > 0
-            ? feedsFromServer?.map((feed: ParsedFeedsDataType) => (
-                  <li key={`${feed?.id}_${Math.random()}`}>
-                      <Card
-                          cardData={feed}
-                          refetchFeeds={refetchStoredFeeds}
-                          userId={userId}
-                      />
-                  </li>
-              ))
-            : Array.from({ length: 10 }, () => DEFAULT_CARD_DATA).map(
-                  (defaultValue) => (
-                      <li key={`${Math.random()}`}>
-                          <Card
-                              cardData={defaultValue}
-                              refetchFeeds={() => null}
-                              userId={""}
-                          />
-                      </li>
-                  )
-              );
-
     const pageIndicator = calculatePagesList(
         currentPage,
         calculateTotalPages(totalCount)
@@ -217,7 +194,13 @@ export default memo(function MainView({
                             setSortState={setSortState}
                         />
                         {sourcesList.length > 0 ? (
-                            <ul className="w-full h-full">{feedsToDisplay}</ul>
+                            <FeedsList
+                                feedsFromServer={feedsFromServer}
+                                refetchFeeds={refetchStoredFeeds}
+                                userId={userId}
+                                isFilterFavorite={isFilterFavorite}
+                                isFilterSources={isFilterSources}
+                            />
                         ) : (
                             <></>
                         )}
