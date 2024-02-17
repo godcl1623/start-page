@@ -2,7 +2,11 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 
-import { ParsedFeedsDataType, STATE_MESSAGE_STRINGS } from ".";
+import {
+    DEFAULT_CARD_DATA,
+    ParsedFeedsDataType,
+    STATE_MESSAGE_STRINGS,
+} from ".";
 import { FilterType } from "hooks/useFilters";
 import { SourceData } from "controllers/sources/helpers";
 
@@ -139,14 +143,25 @@ export default memo(function MainView({
     const feedsToDisplay =
         feedsFromServer != null && feedsFromServer.length > 0
             ? feedsFromServer?.map((feed: ParsedFeedsDataType) => (
-                  <Card
-                      cardData={feed}
-                      key={`${feed?.id}_${Math.random()}`}
-                      refetchFeeds={refetchStoredFeeds}
-                      userId={userId}
-                  />
+                  <li key={`${feed?.id}_${Math.random()}`}>
+                      <Card
+                          cardData={feed}
+                          refetchFeeds={refetchStoredFeeds}
+                          userId={userId}
+                      />
+                  </li>
               ))
-            : [];
+            : Array.from({ length: 10 }, () => DEFAULT_CARD_DATA).map(
+                  (defaultValue) => (
+                      <li key={`${Math.random()}`}>
+                          <Card
+                              cardData={defaultValue}
+                              refetchFeeds={() => null}
+                              userId={""}
+                          />
+                      </li>
+                  )
+              );
 
     const pageIndicator = calculatePagesList(
         currentPage,
@@ -201,7 +216,11 @@ export default memo(function MainView({
                             setSearchTexts={setSearchTexts}
                             setSortState={setSortState}
                         />
-                        <section>{feedsToDisplay}</section>
+                        {sourcesList.length > 0 ? (
+                            <ul className="w-full h-full">{feedsToDisplay}</ul>
+                        ) : (
+                            <></>
+                        )}
                         {isMobileLayout ? (
                             <div
                                 ref={updateObserverElement}

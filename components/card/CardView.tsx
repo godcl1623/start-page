@@ -8,7 +8,8 @@ import {
 import useDerivedStateFromProps from "./hooks/useDerivedStateFromProps";
 import useClientSideDate from "./hooks/useClientSideDate";
 import useCheckIfDataIsNew from "./hooks/useCheckIfDataIsNew";
-import { ParsedFeedsDataType } from 'app/main';
+import { ParsedFeedsDataType } from "app/main";
+import { SvgSpinners90RingWithBg } from "components/common/Spinner";
 
 interface Props {
     cardData: ParsedFeedsDataType;
@@ -50,53 +51,61 @@ export default memo(function CardView({
     };
 
     return (
-        <section
-            className={`flex rounded-md shadow-lg mb-8 px-6 py-4 bg-neutral-100 text-neutral-700 cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${returnReadStyle(
+        <div
+            className={`flex min-w-full min-h-[7.75rem] rounded-md shadow-lg mb-8 px-6 py-4 bg-neutral-100 text-neutral-700 cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${returnReadStyle(
                 readState
             )}`}
             onClick={handleCard(favoriteState)}
         >
-            <div className="mr-4 py-1">
-                <Checkbox
-                    targetState={favoriteState}
-                    buttonIcon={FavoriteIcon}
-                    handleCheckbox={handleFavorite(
-                        favoriteState,
-                        readState,
-                        setFavoriteState
-                    )}
-                />
-                {isDataNew && (
-                    <span className="text-xs text-yellow-500 font-bold dark:text-yellow-300">
-                        New
-                    </span>
-                )}
-            </div>
-            <div className="w-full">
-                <div className="flex justify-between w-full">
-                    <h2 className="text-lg">{title}</h2>
-                    <Checkbox
-                        targetState={readState}
-                        buttonIcon={CheckIcon}
-                        handleCheckbox={handleRead(
-                            readState,
-                            favoriteState,
-                            setReadState
+            {cardData == null || cardData.id === "" ? (
+                <div className="flex justify-center items-center w-full">
+                    <SvgSpinners90RingWithBg className="w-6 h-6 fill-neutral-700 dark:fill-neutral-100" />
+                </div>
+            ) : (
+                <>
+                    <div className="mr-4 py-1">
+                        <Checkbox
+                            targetState={favoriteState}
+                            buttonIcon={FavoriteIcon}
+                            handleCheckbox={handleFavorite(
+                                favoriteState,
+                                readState,
+                                setFavoriteState
+                            )}
+                        />
+                        {isDataNew && (
+                            <span className="text-xs text-yellow-500 font-bold dark:text-yellow-300">
+                                New
+                            </span>
                         )}
-                    />
-                </div>
-                <p className="my-3">{description}</p>
-                <div className="flex justify-between w-full">
-                    <p>{clientSideDate}</p>
-                    <p>{origin}</p>
-                </div>
-            </div>
+                    </div>
+                    <div className="w-full">
+                        <div className="flex justify-between w-full">
+                            <h2 className="text-lg">{title}</h2>
+                            <Checkbox
+                                targetState={readState}
+                                buttonIcon={CheckIcon}
+                                handleCheckbox={handleRead(
+                                    readState,
+                                    favoriteState,
+                                    setReadState
+                                )}
+                            />
+                        </div>
+                        <p className="my-3">{description}</p>
+                        <div className="flex justify-between w-full">
+                            <p>{clientSideDate}</p>
+                            <p>{origin}</p>
+                        </div>
+                    </div>
+                </>
+            )}
             <style jsx>{`
                 p {
                     font-size: 0.875rem;
                     line-height: 1.25rem;
                 }
             `}</style>
-        </section>
+        </div>
     );
 });
