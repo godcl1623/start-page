@@ -57,20 +57,22 @@ export async function GET(req: NextRequest) {
             );
 
             const totalFeedsList = makeUpdatedFeedsLists(updatedFeedSets);
-            const responseBody = {
-                data: totalFeedsList.slice(
-                    paginationStartIndex,
-                    paginationEndIndex
-                ),
-                count: totalFeedsList.length,
-            };
 
             const differentiateResult = differentiateArrays(
                 updatedFeedSets,
                 storedFeeds
             );
 
-            if (storedFeeds.length === 0 || differentiateResult.length > 0) {
+            const responseBody = {
+                data: totalFeedsList.slice(
+                    paginationStartIndex,
+                    paginationEndIndex
+                ),
+                count: totalFeedsList.length,
+                updated: differentiateResult,
+            };
+
+            if (storedFeeds.length === 0 || differentiateResult > 0) {
                 const postResult = await (
                     await fetch(
                         `${process.env.NEXT_PUBLIC_REQUEST_API}/feeds/new?userId=${rawId}`,

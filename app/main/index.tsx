@@ -41,6 +41,7 @@ interface MainProps {
 interface PageParamData {
     data: ParsedFeedsDataType[];
     count: number;
+    updated: number;
 }
 
 interface FeedsCache {
@@ -67,14 +68,14 @@ export const ERROR_MESSAGE_STRINGS: { [key: string]: string } = {
 } as const;
 
 export const DEFAULT_CARD_DATA: ParsedFeedsDataType = {
-    description: '',
-    id: '',
+    description: "",
+    id: "",
     isFavorite: false,
     isRead: false,
-    link: '',
-    origin: '',
-    pubDate: '1900-01-01',
-    title: '',
+    link: "",
+    origin: "",
+    pubDate: "1900-01-01",
+    title: "",
 };
 
 export default function MainPage({
@@ -122,7 +123,10 @@ export default function MainPage({
         fetchNextPage,
         hasNextPage,
     } = useInfiniteQuery({
-        queryKey: [`/feeds?userId=${userId}`, { isMobileLayout, currentPage }],
+        queryKey: [
+            `/feeds?userId=${userId}`,
+            { isMobileLayout, currentPage, sourceDisplayState },
+        ],
         initialPageParam: currentPage,
         queryFn: ({ pageParam }) =>
             isLocal
@@ -262,12 +266,12 @@ export default function MainPage({
         if (newFeedsRequestResult != null) {
             switch (true) {
                 case "data" in newFeedsRequestResult:
-                    const { data, count } = newFeedsRequestResult;
+                    const { data, count, updated } = newFeedsRequestResult;
                     if (count !== totalCount) {
                         setTotalCount(count);
                     }
-                    if (count !== 0) {
-                        setRenewState(count + STATE_MESSAGE_STRINGS.added);
+                    if (updated !== 0) {
+                        setRenewState(updated + STATE_MESSAGE_STRINGS.added);
                     } else {
                         setRenewState(STATE_MESSAGE_STRINGS.end);
                     }
@@ -376,6 +380,7 @@ export default function MainPage({
             setSearchTexts={setSearchTexts}
             filterFavorites={filterFavorites}
             renewState={renewState}
+            isFilterFavorite={isFilterFavorite}
         />
     );
 }
