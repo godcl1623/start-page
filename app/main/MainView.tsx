@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 
-import { ParsedFeedsDataType, STATE_MESSAGE_STRINGS } from ".";
+import { ErrorResponse, ParsedFeedsDataType, STATE_MESSAGE_STRINGS } from ".";
 import { FilterType } from "hooks/useFilters";
 import { SourceData } from "controllers/sources/helpers";
 
@@ -21,6 +21,8 @@ import Authentication from "components/authentication";
 import { SvgSpinners90RingWithBg } from "components/common/Spinner";
 import FeedsList from "components/feedsList";
 import EditSearchEngines from "components/search/EditSearchEngines";
+import { SearchEnginesData } from "controllers/searchEngines";
+import { SEARCH_ADDRESS_BY_ENGINE } from "components/search/utils/constants";
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
@@ -39,6 +41,7 @@ interface Props {
     filterFavorites: () => void;
     renewState: string;
     isFilterFavorite: boolean;
+    searchEnginesList: SearchEnginesData[] | ErrorResponse | null | undefined;
 }
 
 export type ModalKeys =
@@ -72,6 +75,7 @@ export default memo(function MainView({
     filterFavorites,
     renewState,
     isFilterFavorite,
+    searchEnginesList,
 }: Props) {
     const [modalState, setModalState] = useState<ModalStateType>({
         addSubscription: false,
@@ -87,6 +91,12 @@ export default memo(function MainView({
     const sourcesList = sources ? JSON.parse(sources) : [];
     const isFilterSources =
         Object.values(sourceDisplayState).filter((value) => !value).length > 0;
+    const searchEngines =
+        searchEnginesList != null &&
+        Array.isArray(searchEnginesList) &&
+        searchEnginesList.length > 0
+            ? searchEnginesList
+            : SEARCH_ADDRESS_BY_ENGINE;
 
     const handleModal = (target: ModalKeys) => () => {
         document.documentElement.scrollTo({ top: 0 });
@@ -158,7 +168,7 @@ export default memo(function MainView({
             </PageButton>
         </li>
     ));
-
+    console.log(searchEngines);
     return (
         <article
             className="flex items-center space-between flex-col w-full h-max min-h-full p-8 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
@@ -172,7 +182,10 @@ export default memo(function MainView({
                 <LoginInfoArea handleAuthenticationModal={handleModal} />
                 <div className="flex flex-col justify-center my-auto">
                     <section className="flex-center w-full mt-32 mb-28 lg:w-[768px]">
-                        <Search handleModal={handleModal("editSearchEngine")} />
+                        <Search
+                            handleModal={handleModal("editSearchEngine")}
+                            searchEnginesList={searchEngines}
+                        />
                     </section>
                     <section className="flex flex-col items-center w-full h-max lg:w-[768px]">
                         <div className="flex items-center justify-end gap-1.5 w-full min-h-[1rem] mb-2 text-right text-xs">
@@ -286,6 +299,7 @@ export default memo(function MainView({
                     >
                         <EditSearchEngines
                             userId={userId}
+                            searchEnginsList={searchEngines}
                             closeModal={closeModal("editSearchEngine")}
                         />
                     </SubscriptionDialogBox>

@@ -21,10 +21,7 @@ export async function GET(req: NextRequest) {
             customProperty: "engines_list",
         });
 
-        // console.log('remote data: ', remoteData);
-        // console.log('schema: ', Schema);
-
-        return NextResponse.json('success');
+        return NextResponse.json(remoteData);
     } catch (error) {
         console.error(error);
         return NextResponse.json(

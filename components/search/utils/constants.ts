@@ -1,14 +1,19 @@
-type AddressKeys = "Google" | "Naver" | "Daum" | "MDN" | "CanIUse" | "GitHub";
+import { SearchEnginesData } from "controllers/searchEngines";
 
-type AddressValues = {
-    [key in AddressKeys]: string;
-};
-
-export const SEARCH_ADDRESS_BY_ENGINE: AddressValues = {
-    Google: "https://www.google.com/search?q=",
-    Naver: "https://search.naver.com/search.naver?query=",
-    Daum: "https://search.daum.net/search?q=",
-    MDN: "https://developer.mozilla.org/ko/search?q=",
-    CanIUse: "https://caniuse.com/?search=",
-    GitHub: "https://github.com/search?q=",
-};
+export const SEARCH_ADDRESS_BY_ENGINE: SearchEnginesData[] = [
+    {
+        id: 0,
+        name: "Google",
+        url: "https://www.google.com/search?q=",
+    },
+    {
+        id: 1,
+        name: "Naver",
+        url: "https://search.naver.com/search.naver?query=",
+    },
+    {
+        id: 2,
+        name: "Daum",
+        url: "https://search.daum.net/search?q=",
+    },
+];

@@ -1,25 +1,32 @@
-import { ChangeEvent, FormEvent, memo, useEffect, useState } from "react";
-
-import { SEARCH_ADDRESS_BY_ENGINE } from "./utils/constants";
+import { ChangeEvent, FormEvent, memo, useState } from "react";
 
 import { extractFormValues, openSearchResult } from "./utils/helpers";
 import useHandleInputFill from "./hooks/useHandleInputFill";
 
 import SelectDiv from "components/common/SelectDiv";
+import { SearchEnginesData } from "controllers/searchEngines";
 
 interface Props {
+    searchEnginesList: SearchEnginesData[];
     handleModal: () => void;
 }
 
-export default memo(function Search({ handleModal }: Props) {
+export default memo(function Search({ searchEnginesList, handleModal }: Props) {
     const [inputValue, setInputValue] = useState<string>("");
     const isInputFilled = useHandleInputFill(inputValue);
-    const searchEngines = Object.keys(SEARCH_ADDRESS_BY_ENGINE);
+    const namesList = searchEnginesList.map((engineData) => engineData.name);
+    const getCorrespondingUrl = (searchEngineName: string) => {
+        const correspondingData = searchEnginesList.find(
+            (engineData) => engineData.name === searchEngineName
+        );
+        return correspondingData != null ? correspondingData.url : null;
+    };
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const [selectedSearchEngine, inputValue] = extractFormValues(event);
-        openSearchResult(selectedSearchEngine, inputValue);
+        const correspondingUrl = getCorrespondingUrl(selectedSearchEngine);
+        openSearchResult(correspondingUrl, inputValue);
     };
 
     const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -36,11 +43,11 @@ export default memo(function Search({ handleModal }: Props) {
             onSubmit={handleSubmit}
         >
             <SelectDiv
-                optionValues={searchEngines}
+                optionValues={namesList}
                 customStyles="w-24 rounded-l-md bg-white"
                 options={{
                     enableEdit: true,
-                    editHandler: handleModal
+                    editHandler: handleModal,
                 }}
             />
             <input

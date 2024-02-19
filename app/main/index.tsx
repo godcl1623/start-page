@@ -9,6 +9,7 @@ import { SORT_STANDARD } from "common/constants";
 import { setCookie } from "cookies-next";
 import RequestControllers from "controllers/requestControllers";
 import { generateSearchParameters } from "controllers/utils";
+import { SearchEnginesData } from "controllers/searchEngines";
 
 export interface ParsedFeedsDataType {
     id: string;
@@ -48,7 +49,7 @@ interface FeedsCache {
     [key: number]: ParsedFeedsDataType[];
 }
 
-interface ErrorResponse {
+export interface ErrorResponse {
     error: string;
     status: number;
 }
@@ -104,6 +105,15 @@ export default function MainPage({
         JSON.stringify(Object.values(SEARCH_OPTIONS)),
         ""
     );
+    const { data: searchEnginesList } = useQuery({
+        queryKey: [`/search_engines?userId=${userId}`],
+        queryFn: () =>
+            isLocal
+                ? null
+                : getDataFrom<SearchEnginesData[] | ErrorResponse>(
+                      `/search_engines?userId=${userId}`
+                  ),
+    });
     const {
         data: newFeedsRequestResult,
         isFetching: isNewFetching,
@@ -381,6 +391,7 @@ export default function MainPage({
             filterFavorites={filterFavorites}
             renewState={renewState}
             isFilterFavorite={isFilterFavorite}
+            searchEnginesList={searchEnginesList}
         />
     );
 }
