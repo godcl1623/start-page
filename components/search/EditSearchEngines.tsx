@@ -1,17 +1,25 @@
 import Button from "components/common/Button";
-import { memo } from "react";
+import RequestControllers from 'controllers/requestControllers';
+import { memo, useEffect } from "react";
 
 interface Props {
+    userId: string;
     closeModal: () => void;
 }
 
-export default memo(function EditSearchEngines({ closeModal }: Props) {
+export default memo(function EditSearchEngines({ userId, closeModal }: Props) {
     const buttonStyle = "w-16 text-neutral-100";
     const tableRowStyle = "flex w-full border-b";
     const siteNameStyle = "w-[20%] border-r";
     const queryStyle = "w-[65%]";
     const queryManageStyle = "flex w-[15%]";
     const queryManageButtonStyle = "w-1/2";
+    const { getDataFrom } = new RequestControllers();
+
+    useEffect(() => {
+        getDataFrom(`/search_engines?userId=${userId}`).then((foo) => console.log(foo))
+    }, []);
+
     return (
         <section className="h-full w-full p-4">
             <table className="h-full w-full mb-8 border border-b-0">

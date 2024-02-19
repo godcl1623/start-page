@@ -285,6 +285,7 @@ export default memo(function MainView({
                         customStyle="w-screen lg:w-[768px]"
                     >
                         <EditSearchEngines
+                            userId={userId}
                             closeModal={closeModal("editSearchEngine")}
                         />
                     </SubscriptionDialogBox>
