@@ -7,7 +7,11 @@ import useHandleInputFill from "./hooks/useHandleInputFill";
 
 import SelectDiv from "components/common/SelectDiv";
 
-export default memo(function Search() {
+interface Props {
+    handleModal: () => void;
+}
+
+export default memo(function Search({ handleModal }: Props) {
     const [inputValue, setInputValue] = useState<string>("");
     const isInputFilled = useHandleInputFill(inputValue);
     const searchEngines = Object.keys(SEARCH_ADDRESS_BY_ENGINE);
@@ -34,6 +38,10 @@ export default memo(function Search() {
             <SelectDiv
                 optionValues={searchEngines}
                 customStyles="w-24 rounded-l-md bg-white"
+                options={{
+                    enableEdit: true,
+                    editHandler: handleModal
+                }}
             />
             <input
                 name="searchInput"

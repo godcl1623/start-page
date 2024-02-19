@@ -8,21 +8,22 @@ interface Props {
     optionValues: string[];
     customStyles?: string;
     setSortState?: (stateString: string) => void;
+    options?: {
+        enableEdit?: boolean;
+        editHandler?: () => void;
+    };
 }
 
 export default memo(function SelectDiv({
     optionValues,
     customStyles,
     setSortState,
+    options,
 }: Props) {
     const [selectedValue, setSelectedValue] = useState(optionValues[0]);
     const [shouldOpenList, setShouldOpenList] = useState(false);
     const uListRef = useRef<HTMLUListElement>(null);
     const toggleButtonRef = useRef<HTMLButtonElement>(null);
-
-    const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
-        if (setSortState) setSortState(event.currentTarget.value);
-    };
 
     const toggleList = () => {
         setShouldOpenList(!shouldOpenList);
@@ -32,6 +33,13 @@ export default memo(function SelectDiv({
         setSelectedValue(event.currentTarget.value);
         if (setSortState) {
             setSortState(event.currentTarget.value);
+        }
+        toggleList();
+    };
+
+    const handleEditButton = () => {
+        if (options != null && options.editHandler) {
+            options.editHandler();
         }
         toggleList();
     };
@@ -47,11 +55,7 @@ export default memo(function SelectDiv({
             <li
                 key={`${optionValue}_${nanoid()}`}
                 className={`${
-                    index === 0
-                        ? "rounded-t-md"
-                        : index === optionValues.length - 1
-                        ? "rounded-b-md"
-                        : ""
+                    index === 0 ? "rounded-t-md" : ""
                 } text-neutral-100 dark:text-gray-300 hover:bg-sky-400 hover:dark:bg-sky-800`}
             >
                 <button
@@ -93,6 +97,21 @@ export default memo(function SelectDiv({
                     className="absolute z-50 top-0 right-0 w-full min-w-[4rem] rounded-md shadow-md bg-neutral-100 text-center text-xs dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
                 >
                     {selectOptions}
+                    {options != null && options.enableEdit ? (
+                        <li
+                            className={`rounded-b-md text-neutral-100 dark:text-gray-300 hover:bg-sky-400 hover:dark:bg-sky-800`}
+                        >
+                            <button
+                                className="flex justify-center w-full p-2"
+                                type="button"
+                                onClick={handleEditButton}
+                            >
+                                편집
+                            </button>
+                        </li>
+                    ) : (
+                        <></>
+                    )}
                 </ul>
             ) : (
                 <></>
