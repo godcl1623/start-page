@@ -20,7 +20,7 @@ import LoginInfoArea from "./LoginInfoArea";
 import Authentication from "components/authentication";
 import { SvgSpinners90RingWithBg } from "components/common/Spinner";
 import FeedsList from "components/feedsList";
-import EditSearchEngines from "components/search/EditSearchEngines";
+import EditSearchEngines from "components/editSearchEngines";
 import { SearchEnginesData } from "controllers/searchEngines";
 import { SEARCH_ADDRESS_BY_ENGINE } from "components/search/utils/constants";
 

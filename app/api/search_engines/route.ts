@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
             customProperty: "engines_list",
         });
 
-        return NextResponse.json(remoteData);
+        return NextResponse.json(remoteData ?? []);
     } catch (error) {
         console.error(error);
         return NextResponse.json(

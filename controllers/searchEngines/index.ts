@@ -1,5 +1,5 @@
 export interface SearchEnginesData {
-    id: number;
+    id: string;
     name: string;
     url: string;
 }

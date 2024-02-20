@@ -71,7 +71,7 @@ class MongoConnect {
             _uuid: String,
             engines_list: [
                 {
-                    id: Number,
+                    id: String,
                     name: String,
                     url: String,
                 },

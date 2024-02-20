@@ -4,7 +4,9 @@ import RequestControllers from "controllers/requestControllers";
 import { SearchEnginesData } from "controllers/searchEngines";
 import { nanoid } from "nanoid";
 import { FormEvent, memo, useEffect, useRef, useState } from "react";
-import { extractFormValues } from "./utils/helpers";
+import { extractFormValues } from "../search/utils/helpers";
+import EngineDataEditor from "./EngineDataEditor";
+import TableRow from "./TableRow";
 
 interface Props {
     userId: string;
@@ -21,14 +23,9 @@ export default memo(function EditSearchEngines({
         SearchEnginesData[]
     >(serverSearchEnginesList);
     const [isAppendingNewData, setIsAppendingNewData] = useState(false);
+    const [isEditingData, setIsEditingData] = useState<number | false>(false);
     const tableRef = useRef<HTMLTableElement>(null);
     const { postDataTo } = new RequestControllers();
-    const buttonStyle = "w-16 text-neutral-100";
-    const tableRowStyle = "flex w-full border-b";
-    const siteNameStyle = "w-[20%] border-r";
-    const queryStyle = "w-[65%]";
-    const queryManageStyle = "flex w-[15%]";
-    const queryManageButtonStyle = "w-1/2";
 
     const mutationFn = (mutatedEnginesList: SearchEnginesData[]) =>
         postDataTo(`/search_engines?userId=${userId}`, mutatedEnginesList);
@@ -38,12 +35,40 @@ export default memo(function EditSearchEngines({
         event.preventDefault();
         const [name, url] = extractFormValues(event);
         const newData: SearchEnginesData = {
-            id: searchEnginesList.length,
+            id: `engine_data_${nanoid()}`,
             name,
             url,
         };
         setSearchEnginesList((oldList) => oldList.concat([newData]));
         setIsAppendingNewData(false);
+    };
+
+    const updateDataOfList =
+        (targetIndex: number) => (event: FormEvent<HTMLFormElement>) => {
+            event.preventDefault();
+            if (targetIndex > searchEnginesList.length) return;
+            const [name, url] = extractFormValues(event);
+            const newList = searchEnginesList.map((engineData, index) => {
+                if (targetIndex === index) {
+                    return {
+                        ...engineData,
+                        name,
+                        url,
+                    };
+                }
+                return engineData;
+            });
+            setSearchEnginesList((oldList) =>
+                oldList.slice(oldList.length).concat(newList)
+            );
+            setIsEditingData(false);
+        };
+
+    const deleteDataFromList = (targetIndex: number) => () => {
+        if (targetIndex > searchEnginesList.length || targetIndex < 0) return;
+        setSearchEnginesList((oldList) =>
+            oldList.filter((engineData, index) => index !== targetIndex)
+        );
     };
 
     const handleSave = async () => {
@@ -65,20 +90,25 @@ export default memo(function EditSearchEngines({
         }
     }, [serverSearchEnginesList]);
 
-    const searchEngines = searchEnginesList.map((engineData) => (
-        <tr
-            className={tableRowStyle}
-            key={`enginesList_${engineData.name}_${nanoid()}`}
-        >
-            <td className={siteNameStyle}>{engineData.name}</td>
-            <td className={queryStyle}>{engineData.url}</td>
-            {/* TODO: 편집, 삭제 버튼은 td 말고 url에 absolute 버튼으로 추가 */}
-            <td className={queryManageStyle}>
-                <div className={queryManageButtonStyle}>편집</div>
-                <div className={queryManageButtonStyle}>삭제</div>
-            </td>
-        </tr>
-    ));
+    const searchEngines = searchEnginesList.map((engineData, index) =>
+        typeof isEditingData !== "boolean" && isEditingData === index ? (
+            <EngineDataEditor
+                key={`enginesList_${engineData.name}_${nanoid()}`}
+                addNewDataToList={updateDataOfList(index)}
+                cancelAdd={() => setIsEditingData(false)}
+                defaultName={engineData.name}
+                defaultUrl={engineData.url}
+            />
+        ) : (
+            <TableRow
+                key={`enginesList_${engineData.name}_${nanoid()}`}
+                engineName={engineData.name}
+                engineUrl={engineData.url}
+                editEngineData={() => setIsEditingData(index)}
+                deleteEngineData={deleteDataFromList(index)}
+            />
+        )
+    );
     // TODO: 비로그인 상태에서 편집 버튼까지는 정상적으로 표시되고 리스트를 저장할 때 구독 추가처럼 DB에 기록되도록 기능 구현
 
     return (
@@ -88,47 +118,23 @@ export default memo(function EditSearchEngines({
                     ref={tableRef}
                     className="h-full w-full border border-b-0"
                 >
-                    <tr className={tableRowStyle}>
-                        <th className={siteNameStyle}>사이트명</th>
-                        <th className={`w-4/5`}>쿼리문 주소</th>
-                    </tr>
-                    {searchEngines}
-                    {isAppendingNewData ? (
-                        <tr className={tableRowStyle}>
-                            <td className="w-full">
-                                <form
-                                    className="flex w-full"
-                                    onSubmit={addNewDataToList}
-                                >
-                                    <input
-                                        className={`${siteNameStyle} px-2 text-center text-neutral-400`}
-                                    />
-                                    <input
-                                        className={`${queryStyle} px-2 text-center text-neutral-400`}
-                                    />
-                                    <div className="w-[15%]">
-                                        <button
-                                            type="submit"
-                                            className={queryManageButtonStyle}
-                                        >
-                                            저장
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className={queryManageButtonStyle}
-                                            onClick={() =>
-                                                setIsAppendingNewData(false)
-                                            }
-                                        >
-                                            취소
-                                        </button>
-                                    </div>
-                                </form>
-                            </td>
+                    <thead>
+                        <tr className="flex w-full border-b">
+                            <th className="w-1/5 border-r">사이트명</th>
+                            <th className="w-4/5">쿼리문 주소</th>
                         </tr>
-                    ) : (
-                        <></>
-                    )}
+                    </thead>
+                    <tbody>{searchEngines}</tbody>
+                    <tfoot>
+                        {isAppendingNewData ? (
+                            <EngineDataEditor
+                                addNewDataToList={addNewDataToList}
+                                cancelAdd={() => setIsAppendingNewData(false)}
+                            />
+                        ) : (
+                            <></>
+                        )}
+                    </tfoot>
                 </table>
                 <Button
                     type="button"
@@ -141,14 +147,14 @@ export default memo(function EditSearchEngines({
             <div className="flex justify-evenly w-full">
                 <Button
                     type="button"
-                    customStyle={`${buttonStyle} bg-red-400 dark:bg-red-700`}
+                    customStyle="w-16 text-neutral-100 bg-red-400 dark:bg-red-700"
                     clickHandler={closeModal}
                 >
                     취소
                 </Button>
                 <Button
                     type="button"
-                    customStyle={`${buttonStyle} bg-sky-500 dark:bg-sky-600`}
+                    customStyle="w-16 text-neutral-100 bg-sky-500 dark:bg-sky-600"
                     clickHandler={handleSave}
                 >
                     저장
