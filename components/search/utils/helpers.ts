@@ -7,7 +7,10 @@ export const extractFormValues = (event: FormEvent<HTMLFormElement>) => {
     const searchInput = event.currentTarget[1];
     let selectBoxValue = "";
     let inputValue = "";
-    if (selectBox instanceof HTMLButtonElement)
+    if (
+        selectBox instanceof HTMLButtonElement ||
+        selectBox instanceof HTMLInputElement
+    )
         selectBoxValue = selectBox.value;
     if (searchInput instanceof HTMLInputElement) inputValue = searchInput.value;
 
