@@ -7,6 +7,7 @@ import { FormEvent, memo, useEffect, useRef, useState } from "react";
 import { extractFormValues } from "../search/utils/helpers";
 import EngineDataEditor from "./EngineDataEditor";
 import TableRow from "./TableRow";
+import { setCookie } from "cookies-next";
 
 interface Props {
     userId: string;
@@ -25,11 +26,20 @@ export default memo(function EditSearchEngines({
     const [isAppendingNewData, setIsAppendingNewData] = useState(false);
     const [isEditingData, setIsEditingData] = useState<number | false>(false);
     const tableRef = useRef<HTMLTableElement>(null);
-    const { postDataTo } = new RequestControllers();
+    const { getDataFrom, postDataTo } = new RequestControllers();
 
-    const mutationFn = (mutatedEnginesList: SearchEnginesData[]) =>
-        postDataTo(`/search_engines?userId=${userId}`, mutatedEnginesList);
-    const { mutate } = useMutation({ mutationFn });
+    const mutationFn = ({
+        userId,
+        searchEnginesList,
+    }: {
+        userId: string;
+        searchEnginesList: SearchEnginesData[];
+    }) =>
+        postDataTo<string>(
+            `/search_engines?userId=${userId}`,
+            searchEnginesList
+        );
+    const { mutateAsync } = useMutation({ mutationFn });
 
     const addNewDataToList = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -73,7 +83,17 @@ export default memo(function EditSearchEngines({
 
     const handleSave = async () => {
         try {
-            mutate(searchEnginesList);
+            if (userId === "") {
+                userId = (
+                    await getDataFrom<{ userCookie: string }>("/register")
+                ).userCookie;
+                setCookie("mw", userId, { maxAge: 60 * 60 * 24 * 30 });
+            }
+
+            const mutateResult = JSON.parse(
+                await mutateAsync({ userId, searchEnginesList })
+            );
+            if ("error" in mutateResult) throw new Error();
             await alert("저장되었습니다.");
             location.reload();
         } catch (error) {
@@ -109,7 +129,6 @@ export default memo(function EditSearchEngines({
             />
         )
     );
-    // TODO: 비로그인 상태에서 편집 버튼까지는 정상적으로 표시되고 리스트를 저장할 때 구독 추가처럼 DB에 기록되도록 기능 구현
 
     return (
         <section className="h-full w-full p-4 pt-6">

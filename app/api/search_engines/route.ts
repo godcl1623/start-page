@@ -36,9 +36,16 @@ export async function POST(req: NextRequest) {
     try {
         const [userId] = newExtractUserIdFrom(req);
         if (userId == null) throw NextResponse.error();
-        const { Schema: SearchEngines } =
+        const { remoteData, Schema: SearchEngines } =
             await initializeMongoDBWith(userId, "searchEngines");
         const searchEnginesInput: SearchEnginesData[] = await req.json();
+
+        defendDataEmptyException({
+            condition: remoteData == null,
+            userId,
+            Schema: SearchEngines,
+            customProperty: "engines_list",
+        });
 
         if (
             searchEnginesInput == null ||
@@ -57,7 +64,9 @@ export async function POST(req: NextRequest) {
 
         const updateResult = await SearchEngines.updateOne(
             { _uuid: userId },
-            { $set: { engines_list: searchEnginesInput } }
+            remoteData == null
+                ? { $push: { engines_list: searchEnginesInput } }
+                : { $set: { engines_list: searchEnginesInput } }
         );
         if (updateResult.acknowledged) {
             return NextResponse.json(
