@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, forwardRef } from "react";
-import SelectBox from "components/common/SelectBox";
+import SelectDiv from 'components/common/SelectDiv';
 
 interface Props {
     searchOptions: string[];
@@ -25,9 +25,9 @@ const FilterByTextView = forwardRef<HTMLInputElement, Props>(
                 className="relative flex w-full my-2 h-full shadow-md text-xs dark:shadow-zinc-600 md:mx-2 md:my-0"
                 onSubmit={handleSubmit}
             >
-                <SelectBox
+                <SelectDiv
                     optionValues={searchOptions}
-                    customStyles="h-full rounded-l-md"
+                    customStyles="w-14 h-full rounded-l-md bg-white"
                 />
                 <input
                     ref={ref}
