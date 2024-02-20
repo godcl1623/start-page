@@ -168,16 +168,14 @@ export default memo(function MainView({
             </PageButton>
         </li>
     ));
-    console.log(searchEngines);
+
     return (
         <article
             className="flex items-center space-between flex-col w-full h-max min-h-full p-8 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
             ref={startPageRef}
         >
             <section
-                className={`flex flex-col items-center w-full h-max min-h-[calc(100vh_-_64px)] fhd:max-w-[1920px] ${
-                    feedsFromServer?.length === 0 ? "fhd:min-h-[1080px]" : ""
-                } fhd:my-auto`}
+                className={`flex flex-col items-center w-full h-max min-h-[calc(100vh_-_64px)] fhd:max-w-[1920px]`}
             >
                 <LoginInfoArea handleAuthenticationModal={handleModal} />
                 <div className="flex flex-col justify-center my-auto">
@@ -299,7 +297,7 @@ export default memo(function MainView({
                     >
                         <EditSearchEngines
                             userId={userId}
-                            searchEnginsList={searchEngines}
+                            serverSearchEnginesList={searchEngines}
                             closeModal={closeModal("editSearchEngine")}
                         />
                     </SubscriptionDialogBox>
