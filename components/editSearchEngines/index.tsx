@@ -135,11 +135,13 @@ export default memo(function EditSearchEngines({
             <article className="mb-8">
                 <table
                     ref={tableRef}
-                    className="h-full w-full border border-b-0"
+                    className="h-full w-full border border-b-0 border-neutral-500 dark:border-neutral-200"
                 >
                     <thead>
-                        <tr className="flex w-full border-b">
-                            <th className="w-1/5 border-r">사이트명</th>
+                        <tr className="flex w-full border-b border-neutral-500 dark:border-neutral-200">
+                            <th className="w-1/5 border-r border-neutral-500 dark:border-neutral-200">
+                                사이트명
+                            </th>
                             <th className="w-4/5">쿼리문 주소</th>
                         </tr>
                     </thead>
@@ -157,7 +159,7 @@ export default memo(function EditSearchEngines({
                 </table>
                 <Button
                     type="button"
-                    customStyle="w-full mt-[1px] bg-neutral-500 dark:bg-neutral-500 rounded-none"
+                    customStyle="w-full mt-[1px] bg-neutral-500 font-bold text-neutral-100 rounded-none dark:bg-neutral-500 dark:text-gray-300"
                     clickHandler={() => setIsAppendingNewData(true)}
                 >
                     추가
@@ -166,14 +168,14 @@ export default memo(function EditSearchEngines({
             <div className="flex justify-evenly w-full">
                 <Button
                     type="button"
-                    customStyle="w-16 text-neutral-100 bg-red-400 dark:bg-red-700"
+                    customStyle="w-16 bg-red-400 font-bold text-neutral-100 dark:bg-red-700 dark:text-gray-300"
                     clickHandler={closeModal}
                 >
                     취소
                 </Button>
                 <Button
                     type="button"
-                    customStyle="w-16 text-neutral-100 bg-sky-500 dark:bg-sky-600"
+                    customStyle="w-16 bg-sky-400 font-bold text-neutral-100 dark:bg-sky-600 dark:text-gray-300"
                     clickHandler={handleSave}
                 >
                     저장

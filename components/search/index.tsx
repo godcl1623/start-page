@@ -5,6 +5,7 @@ import useHandleInputFill from "./hooks/useHandleInputFill";
 
 import SelectDiv from "components/common/SelectDiv";
 import { SearchEnginesData } from "controllers/searchEngines";
+import Button from "components/common/Button";
 
 interface Props {
     searchEnginesList: SearchEnginesData[];
@@ -59,21 +60,20 @@ export default memo(function Search({ searchEnginesList, handleModal }: Props) {
                 onChange={handleChange}
             />
             {isInputFilled && (
-                <button
+                <Button
                     type="button"
-                    className="absolute right-24 w-10 h-full text-neutral-400"
-                    onClick={clearInput}
+                    customStyle="absolute right-24 w-10 h-full shadow-none bg-transparent text-neutral-400 dark:bg-transparent"
+                    clickHandler={clearInput}
                 >
                     ✕
-                </button>
+                </Button>
             )}
-            <button
-                name="submit"
+            <Button
                 type="submit"
-                className="w-24 h-full rounded-r-md bg-sky-400 text-neutral-100 dark:bg-sky-800 dark:text-gray-300 cursor-pointer"
+                customStyle="w-24 h-full rounded-r-md bg-sky-400 font-bold text-sm text-neutral-100 dark:bg-sky-600 dark:text-gray-300 cursor-pointer shadow-none rounded-l-none"
             >
                 검색
-            </button>
+            </Button>
         </form>
     );
 });

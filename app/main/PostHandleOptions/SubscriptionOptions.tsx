@@ -1,5 +1,5 @@
 import Button from "components/common/Button";
-import { ModalKeys } from '../MainView';
+import { ModalKeys } from "../MainView";
 
 interface Props {
     handleClick: (target: ModalKeys) => () => void;
@@ -23,6 +23,7 @@ export default function SubscriptionOptions({
                 <Button
                     key={`${buttonText}_${index}`}
                     type="button"
+                    customStyle="w-full bg-neutral-500 text-neutral-100 dark:bg-neutral-500 hover:bg-neutral-400"
                     clickHandler={clickHandler}
                 >
                     {buttonText}
@@ -32,7 +33,7 @@ export default function SubscriptionOptions({
     );
 
     return (
-        <section className="grid grid-cols-2 gap-2 w-full xs:flex xs:justify-between xs:gap-2">
+        <section className="grid grid-cols-2 gap-2 xs:flex xs:justify-between xs:gap-2">
             {optionButtonsList}
         </section>
     );

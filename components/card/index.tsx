@@ -28,6 +28,7 @@ export default memo(function Card({
     });
 
     const handleCard = (favoriteState: boolean) => (event: MouseEvent) => {
+        event.preventDefault();
         if (!(event.target instanceof SVGElement)) {
             const newData = {
                 ...cardData,
@@ -41,7 +42,8 @@ export default memo(function Card({
 
     const handleFavorite =
         (originalState: boolean, readState: boolean, callback: CallbackType) =>
-        () => {
+        (event: MouseEvent) => {
+            event.preventDefault();
             callback(!originalState);
             const newData = {
                 ...cardData,
@@ -57,7 +59,8 @@ export default memo(function Card({
             favoriteState: boolean,
             callback: CallbackType
         ) =>
-        () => {
+        (event: MouseEvent) => {
+            event.preventDefault();
             callback(!originalState);
             const newData = {
                 ...cardData,
