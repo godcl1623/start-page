@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 
-import { ParsedFeedsDataType, STATE_MESSAGE_STRINGS } from ".";
+import { ErrorResponse, ParsedFeedsDataType, STATE_MESSAGE_STRINGS } from ".";
 import { FilterType } from "hooks/useFilters";
 import { SourceData } from "controllers/sources/helpers";
 
@@ -20,6 +20,9 @@ import LoginInfoArea from "./LoginInfoArea";
 import Authentication from "components/authentication";
 import { SvgSpinners90RingWithBg } from "components/common/Spinner";
 import FeedsList from "components/feedsList";
+import EditSearchEngines from "components/editSearchEngines";
+import { SearchEnginesData } from "controllers/searchEngines";
+import { SEARCH_ADDRESS_BY_ENGINE } from "components/search/utils/constants";
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
@@ -38,13 +41,15 @@ interface Props {
     filterFavorites: () => void;
     renewState: string;
     isFilterFavorite: boolean;
+    searchEnginesList: SearchEnginesData[] | ErrorResponse | null | undefined;
 }
 
 export type ModalKeys =
     | "addSubscription"
     | "cancelSubscription"
     | "filterBySource"
-    | "handleAuthentication";
+    | "handleAuthentication"
+    | "editSearchEngine";
 
 type ModalStateType = {
     [key in ModalKeys]: boolean;
@@ -70,12 +75,14 @@ export default memo(function MainView({
     filterFavorites,
     renewState,
     isFilterFavorite,
+    searchEnginesList,
 }: Props) {
     const [modalState, setModalState] = useState<ModalStateType>({
         addSubscription: false,
         cancelSubscription: false,
         filterBySource: false,
         handleAuthentication: false,
+        editSearchEngine: false,
     });
     const [shouldHideRenewState, setShouldHideRenewState] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -84,8 +91,14 @@ export default memo(function MainView({
     const sourcesList = sources ? JSON.parse(sources) : [];
     const isFilterSources =
         Object.values(sourceDisplayState).filter((value) => !value).length > 0;
+    const searchEngines =
+        searchEnginesList != null &&
+        Array.isArray(searchEnginesList) &&
+        searchEnginesList.length > 0
+            ? searchEnginesList
+            : SEARCH_ADDRESS_BY_ENGINE;
 
-    const handleClick = (target: ModalKeys) => () => {
+    const handleModal = (target: ModalKeys) => () => {
         document.documentElement.scrollTo({ top: 0 });
         closeModal(target, !modalState[target])();
     };
@@ -162,14 +175,15 @@ export default memo(function MainView({
             ref={startPageRef}
         >
             <section
-                className={`flex flex-col items-center w-full h-max min-h-[calc(100vh_-_64px)] fhd:max-w-[1920px] ${
-                    feedsFromServer?.length === 0 ? "fhd:min-h-[1080px]" : ""
-                } fhd:my-auto`}
+                className={`flex flex-col items-center w-full h-max min-h-[calc(100vh_-_64px)] fhd:max-w-[1920px]`}
             >
-                <LoginInfoArea handleAuthenticationModal={handleClick} />
+                <LoginInfoArea handleAuthenticationModal={handleModal} />
                 <div className="flex flex-col justify-center my-auto">
                     <section className="flex-center w-full mt-32 mb-28 lg:w-[768px]">
-                        <Search />
+                        <Search
+                            handleModal={handleModal("editSearchEngine")}
+                            searchEnginesList={searchEngines}
+                        />
                     </section>
                     <section className="flex flex-col items-center w-full h-max lg:w-[768px]">
                         <div className="flex items-center justify-end gap-1.5 w-full min-h-[1rem] mb-2 text-right text-xs">
@@ -189,7 +203,7 @@ export default memo(function MainView({
                         </div>
                         <PostHandleOptions
                             filterFavorites={filterFavorites}
-                            handleClick={handleClick}
+                            handleClick={handleModal}
                             setSearchTexts={setSearchTexts}
                             setSortState={setSortState}
                         />
@@ -273,6 +287,20 @@ export default memo(function MainView({
                     <Authentication
                         closeModal={closeModal("handleAuthentication")}
                     />
+                </Modal>
+            )}
+            {modalState.editSearchEngine && (
+                <Modal closeModal={closeModal("editSearchEngine")}>
+                    <SubscriptionDialogBox
+                        closeModal={closeModal("editSearchEngine")}
+                        customStyle="w-screen lg:w-[768px]"
+                    >
+                        <EditSearchEngines
+                            userId={userId}
+                            serverSearchEnginesList={searchEngines}
+                            closeModal={closeModal("editSearchEngine")}
+                        />
+                    </SubscriptionDialogBox>
                 </Modal>
             )}
         </article>

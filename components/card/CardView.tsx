@@ -18,12 +18,12 @@ interface Props {
         originalState: boolean,
         readState: boolean,
         callback: CallbackType
-    ) => () => void;
+    ) => (event: MouseEvent) => void;
     handleRead: (
         originalState: boolean,
         readState: boolean,
         callback: CallbackType
-    ) => () => void;
+    ) => (event: MouseEvent) => void;
 }
 
 export default memo(function CardView({

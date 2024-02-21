@@ -31,7 +31,7 @@ export default function LoginInfoArea({ handleAuthenticationModal }: Props) {
                             callbackUrl: process.env.NEXTAUTH_URL,
                         })
                     }
-                    customStyle="w-32 bg-red-500 text-base text-neutral-100  dark:bg-red-700 dark:text-gray-300"
+                    customStyle="w-32 bg-red-400 font-bold text-base text-neutral-100  dark:bg-red-700 dark:text-gray-300"
                 >
                     Logout
                 </Button>
