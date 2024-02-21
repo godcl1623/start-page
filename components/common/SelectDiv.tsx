@@ -56,7 +56,7 @@ export default memo(function SelectDiv({
                 key={`${optionValue}_${nanoid()}`}
                 className={`${
                     index === 0 ? "rounded-t-md" : ""
-                } text-neutral-100 dark:text-gray-300 hover:bg-sky-400 hover:dark:bg-sky-800`}
+                } text-neutral-700 dark:text-gray-300 hover:bg-sky-400 hover:text-neutral-100 hover:dark:bg-sky-800`}
             >
                 <button
                     className="flex justify-center w-full p-2"
@@ -79,12 +79,12 @@ export default memo(function SelectDiv({
 
     return (
         <div
-            className={`relative flex-col justify-center items-center h-full px-3 text-gray-400 dark:focus:outline-sky-600 ${customStyles}`}
+            className={`relative flex-col justify-center items-center h-full px-2.5 text-gray-400 dark:focus:outline-sky-600 ${customStyles}`}
         >
             <button
                 type="button"
                 ref={toggleButtonRef}
-                className="flex items-center w-full h-full"
+                className="relative flex items-center w-full h-full"
                 onClick={toggleList}
                 value={selectedValue}
             >
@@ -94,12 +94,12 @@ export default memo(function SelectDiv({
             {shouldOpenList ? (
                 <ul
                     ref={uListRef}
-                    className="absolute z-50 top-0 right-0 w-full min-w-[4rem] rounded-md shadow-md bg-neutral-100 text-center text-xs dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
+                    className="absolute z-50 top-0 right-0 w-full min-w-[4rem] rounded-md shadow-lg bg-neutral-100 text-center text-xs dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
                 >
                     {selectOptions}
                     {options != null && options.enableEdit ? (
                         <li
-                            className={`rounded-b-md text-neutral-100 dark:text-gray-300 hover:bg-sky-400 hover:dark:bg-sky-800`}
+                            className={`rounded-b-md text-neutral-700 dark:text-gray-300 hover:bg-sky-400 hover:text-neutral-100 hover:dark:bg-sky-800`}
                         >
                             <button
                                 className="flex justify-center w-full p-2"
