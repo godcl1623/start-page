@@ -4,14 +4,17 @@ import LoginHandleButton from "./LoginHandleButton";
 import { ModalKeys } from "../MainView";
 import Button from "components/common/Button";
 import { useRef, useState } from "react";
-import RequestControllers from 'controllers/requestControllers';
+import RequestControllers from "controllers/requestControllers";
 
 interface Props {
     handleAuthenticationModal: (target: ModalKeys) => () => void;
     userId: string;
 }
 
-export default function LoginInfoArea({ handleAuthenticationModal, userId }: Props) {
+export default function LoginInfoArea({
+    handleAuthenticationModal,
+    userId,
+}: Props) {
     const [modalState, setModalState] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null);
     // FIXME: 타입 오류 수정 필요
@@ -20,11 +23,18 @@ export default function LoginInfoArea({ handleAuthenticationModal, userId }: Pro
 
     const getTotalData = async () => {
         try {
-            const totalFeedsFromServer = await getDataFrom<string>(`/feeds?userId=${userId}`);
-            const totalSourcesFromServer = await getDataFrom<string>(`/sources?userId=${userId}`);
-            const totalFeeds = JSON.parse(totalFeedsFromServer);
-            const totalSources = JSON.parse(totalSourcesFromServer);
-            console.log(totalFeeds, totalSources);
+            const exportedData = await getDataFrom<{
+                sources: unknown[];
+                feeds: unknown[];
+                searchEngines: unknown[];
+            }>(`/data/export?userId=${userId}`);
+            const dataToJSON = new Blob([JSON.stringify(exportedData)], {
+                type: "application/json",
+            });
+            const tempLink = document.createElement("a");
+            tempLink.href = URL.createObjectURL(dataToJSON);
+            tempLink.download = "export.json";
+            tempLink.click();
         } catch (error) {
             console.error(error);
         }
