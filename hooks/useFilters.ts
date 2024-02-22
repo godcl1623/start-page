@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { SourceData } from "controllers/sources";
+import { SourceData } from "controllers/sources/helpers";
 
 export type FilterType<T> = {
     [key in string]: T;
@@ -17,7 +17,7 @@ const useFilters = <T>(sourceString: string, defaultValue: T) => {
     };
 
     useEffect(() => {
-        if (sourceString != null) {
+        if (sourceString != null && sourceString !== "") {
             try {
                 const parseResult = JSON.parse(sourceString);
                 if (
@@ -40,7 +40,7 @@ const useFilters = <T>(sourceString: string, defaultValue: T) => {
                 return;
             }
         }
-    }, [sourceString]);
+    }, [sourceString, defaultValue]);
 
     return [innerState, updateInnerState] as const;
 };

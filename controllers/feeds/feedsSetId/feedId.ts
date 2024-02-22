@@ -1,4 +1,4 @@
-import { ParseResultType, ParsedFeedsDataType } from "pages";
+import { ParseResultType, ParsedFeedsDataType } from "app/main";
 
 export const findRequestedFeedSetIndex = (
     storedFeeds: ParseResultType[],

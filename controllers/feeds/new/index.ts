@@ -1,16 +1,15 @@
-import { AxiosResponse } from "axios";
 import { areEqual } from "common/capsuledConditions";
-import { FileContentsInterface, SourceData } from "controllers/sources";
-import { ParseResultType, ParsedFeedsDataType } from "pages";
+import { FileContentsInterface, SourceData } from "controllers/sources/helpers";
+import { ParseResultType, ParsedFeedsDataType } from "app/main";
 import { sortFeedSets } from "..";
 import { getRssResponses, makeFeedDataArray, parseXml } from "./utils";
 
 export const extractFeedsFromSources = (
-    rawArray: PromiseSettledResult<AxiosResponse>[]
-): string[] =>
-    rawArray.map((resultData: PromiseSettledResult<AxiosResponse>) => {
+    rawArray: PromiseSettledResult<string>[]
+): (string | undefined)[] =>
+    rawArray.map((resultData: PromiseSettledResult<string>) => {
         if (resultData.status === "fulfilled") {
-            return resultData.value.data;
+            return resultData.value;
         }
     });
 
@@ -19,7 +18,7 @@ export const extractStoredFeedsFromRemote = (
 ): ParseResultType[] => (remoteData != null && remoteData[0] ? remoteData : []);
 
 interface ParseFeedsFromSourcesParameters {
-    totalFeedsFromSources: string[];
+    totalFeedsFromSources: (string | undefined)[];
     storedFeeds: ParseResultType[];
     sources: SourceData[];
     originId: number;
@@ -31,12 +30,13 @@ export const parseFeedsFromSources = ({
     sources,
     originId,
 }: ParseFeedsFromSourcesParameters) =>
-    totalFeedsFromSources.map((rawRss: string, index: number) => {
+    totalFeedsFromSources.map((rawRss: string | undefined, index: number) => {
         const indexedFeed =
             storedFeeds[index] != null ? storedFeeds[index].feeds : [];
         const id = indexedFeed != null ? indexedFeed.length : 0;
-        const { feedOriginName, feedOriginParsedLink, rssFeeds } =
-            parseXml(rawRss);
+        const { feedOriginName, feedOriginParsedLink, rssFeeds } = parseXml(
+            rawRss ?? ""
+        );
         const parsedFeedsArray = makeFeedDataArray(
             rssFeeds,
             feedOriginName,
@@ -95,12 +95,23 @@ export const differentiateArrays = (
     updatedList: ParseResultType[],
     originalList: ParseResultType[]
 ) =>
-    updatedList.filter(
-        (resultData: ParseResultType, index: number) =>
-            resultData.lastFeedsLength !==
-                originalList[index]?.lastFeedsLength ||
-            resultData.latestFeedTitle !== originalList[index]?.latestFeedTitle
-    );
+    updatedList
+        .filter(
+            (resultData: ParseResultType, index: number) =>
+                resultData.lastFeedsLength !==
+                    originalList[index]?.lastFeedsLength ||
+                resultData.latestFeedTitle !==
+                    originalList[index]?.latestFeedTitle
+        )
+        .reduce((totalUpdates: number, updatedFeedData: ParseResultType) => {
+            const correspondingFeedData = originalList.find(
+                (feedData) => feedData.originName === updatedFeedData.originName
+            );
+            const gap =
+                updatedFeedData.lastFeedsLength -
+                (correspondingFeedData?.lastFeedsLength ?? 0);
+            return (totalUpdates += gap);
+        }, 0);
 
 export const makeUpdatedFeedsLists = (updatedFeedSets: ParseResultType[]) =>
     updatedFeedSets

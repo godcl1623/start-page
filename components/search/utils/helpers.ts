@@ -7,7 +7,10 @@ export const extractFormValues = (event: FormEvent<HTMLFormElement>) => {
     const searchInput = event.currentTarget[1];
     let selectBoxValue = "";
     let inputValue = "";
-    if (selectBox instanceof HTMLSelectElement)
+    if (
+        selectBox instanceof HTMLButtonElement ||
+        selectBox instanceof HTMLInputElement
+    )
         selectBoxValue = selectBox.value;
     if (searchInput instanceof HTMLInputElement) inputValue = searchInput.value;
 
@@ -15,17 +18,11 @@ export const extractFormValues = (event: FormEvent<HTMLFormElement>) => {
 };
 
 export const openSearchResult = (
-    selectedSearchEngine: string,
+    selectedSearchEngineUrl: string | null,
     inputValue: string
 ) => {
-    const searchEngineIndex = Object.keys(SEARCH_ADDRESS_BY_ENGINE).indexOf(
-        selectedSearchEngine
-    );
-    const searchAddress = Object.values(SEARCH_ADDRESS_BY_ENGINE)[
-        searchEngineIndex
-    ];
-    if (searchAddress) {
-        window.location.assign(`${searchAddress}${inputValue}`);
+    if (selectedSearchEngineUrl != null) {
+        window.location.assign(`${selectedSearchEngineUrl}${inputValue}`);
     } else {
         throw new Error("Search address is not available");
     }

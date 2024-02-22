@@ -14,16 +14,20 @@ export default function Modal({ children, closeModal }: ModalProps) {
         closeModal(false);
     };
 
-    return createPortal(
-        <div className="absolute top-0 w-full h-full">
-            <div
-                className="w-full h-full bg-neutral-900 opacity-50"
-                onClick={handleModal}
-            />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                {children}
-            </div>
-        </div>,
-        modalRoot
+    return (
+        <>
+            {createPortal(
+                <div className="absolute top-0 w-full h-full">
+                    <div
+                        className="w-full h-full bg-neutral-900 opacity-50"
+                        onClick={handleModal}
+                    />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                        {children}
+                    </div>
+                </div>,
+                modalRoot
+            )}
+        </>
     );
 }

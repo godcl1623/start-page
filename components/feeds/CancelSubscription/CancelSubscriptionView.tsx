@@ -1,4 +1,4 @@
-import { SourceData } from "controllers/sources";
+import { SourceData } from "controllers/sources/helpers";
 import Button from "../../common/Button";
 import ListItemBox from "../common/ListItemBox";
 import ModalTemplate from "../common/ModalTemplate";
@@ -29,7 +29,7 @@ export default function CancelSubscriptionView({
                         <div>{name || `blog_${index}`}</div>
                         <Button
                             type="button"
-                            customStyle="w-16 bg-red-600 text-neutral-100 dark:bg-red-700"
+                            customStyle="w-16 bg-red-400 font-bold text-neutral-100 dark:bg-red-700 dark:text-gray-300"
                             clickHandler={handleClick(id)}
                         >
                             삭제

@@ -1,35 +1,90 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
+import { convertToString } from "./utils";
 
 export default class RequestControllers {
-    private instance: AxiosInstance;
+    private url: string;
 
-    constructor(baseURL = process.env.NEXT_PUBLIC_REQUEST_URL) {
-        this.instance = axios.create({
-            baseURL,
-        });
+    constructor(url = process.env.NEXT_PUBLIC_REQUEST_API) {
+        this.url = url ?? "/";
     }
 
-    getDataFrom = (endpoint: string, option?: AxiosRequestConfig) =>
-        this.instance.get(endpoint, option);
+    getDataFrom = async <T = unknown>(
+        endPoint: string,
+        option?: RequestInit
+    ): Promise<T> => {
+        const requestUrl = this.processEndPoint(endPoint);
+        const fetchResponse = await fetch(requestUrl, {
+            ...option,
+            method: "GET",
+        });
+        return this.processFetchResponse(fetchResponse);
+    };
 
-    postDataTo = (
-        endpoint: string,
-        data: unknown,
-        option?: AxiosRequestConfig
-    ) => this.instance.post(endpoint, data, option);
+    postDataTo = async <T = unknown>(
+        endPoint: string,
+        data?: unknown,
+        option?: RequestInit
+    ): Promise<T> => {
+        const requestUrl = this.processEndPoint(endPoint);
+        const fetchResponse = await fetch(requestUrl, {
+            ...option,
+            body: convertToString(data),
+            method: "POST",
+        });
+        return this.processFetchResponse(fetchResponse);
+    };
 
-    putDataTo = (
-        endpoint: string,
-        data: unknown,
-        option?: AxiosRequestConfig
-    ) => this.instance.put(endpoint, data, option);
+    putDataTo = async <T = unknown>(
+        endPoint: string,
+        data?: unknown,
+        option?: RequestInit
+    ): Promise<T> => {
+        const requestUrl = this.processEndPoint(endPoint);
+        const fetchResponse = await fetch(requestUrl, {
+            ...option,
+            body: convertToString(data),
+            method: "PUT",
+        });
+        return this.processFetchResponse(fetchResponse);
+    };
 
-    patchDataTo = (
-        endpoint: string,
-        data: unknown,
-        option?: AxiosRequestConfig
-    ) => this.instance.patch(endpoint, data, option);
+    patchDataTo = async <T = unknown>(
+        endPoint: string,
+        data?: unknown,
+        option?: RequestInit
+    ): Promise<T> => {
+        const requestUrl = this.processEndPoint(endPoint);
+        const fetchResponse = await fetch(requestUrl, {
+            ...option,
+            body: convertToString(data),
+            method: "PATCH",
+        });
+        return this.processFetchResponse(fetchResponse);
+    };
 
-    deleteDataOf = (endpoint: string, option?: AxiosRequestConfig) =>
-        this.instance.delete(endpoint, option);
+    deleteDataOf = async <T = unknown>(
+        endPoint: string,
+        option?: RequestInit
+    ): Promise<T> => {
+        const requestUrl = this.processEndPoint(endPoint);
+        const fetchResponse = await fetch(requestUrl, {
+            ...option,
+            method: "DELETE",
+        });
+        return this.processFetchResponse(fetchResponse);
+    };
+
+    private processEndPoint = (endPoint: string) => {
+        let requestUrl = this.url;
+        if (endPoint.startsWith("http")) return endPoint;
+        else if (endPoint.startsWith("/")) requestUrl += endPoint;
+        else requestUrl += `/${endPoint}`;
+        return requestUrl;
+    };
+
+    private processFetchResponse = (response: Response) => {
+        if (response.headers.get("content-type") === "application/json") {
+            return response.json();
+        }
+        return response.text();
+    };
 }

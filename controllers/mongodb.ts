@@ -3,6 +3,7 @@ import mongoose, { Schema } from "mongoose";
 class MongoConnect {
     feedsSchema: Schema;
     sourcesSchema: Schema;
+    searchEnginesSchema: Schema;
 
     constructor() {
         mongoose.connect(
@@ -65,6 +66,17 @@ class MongoConnect {
                 },
             ],
         });
+
+        this.searchEnginesSchema = new Schema({
+            _uuid: String,
+            engines_list: [
+                {
+                    id: String,
+                    name: String,
+                    url: String,
+                },
+            ],
+        });
     }
 
     getFeedsModel = () =>
@@ -73,6 +85,10 @@ class MongoConnect {
     getSourcesModel = () =>
         mongoose.models.Sources ||
         mongoose.model("Sources", this.sourcesSchema);
+
+    getSearchEnginesModel = () =>
+        mongoose.models.SearchEngines ||
+        mongoose.model("SearchEngines", this.searchEnginesSchema);
 }
 
 export default new MongoConnect();

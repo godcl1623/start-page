@@ -1,0 +1,75 @@
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
+      OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
+      OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
+      OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+      OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
+      OCIR_REPOSITORY: ${{ secrets.OCIR_REPOSITORY }}
+      OCIR_ENDPOINT: ${{ secrets.OCIR_ENDPOINT }}
+      OCIR_USERNAME: ${{ secrets.OCIR_USERNAME }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Enable ARM64 Architecture
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: 'arm64,arm'
+
+      - name: Login to Oracle Cloud Infrastructure Registry (OCIR)
+        id: login-oci
+        uses: oracle-actions/login-ocir@v1.2.1
+        with:
+          auth_token: ${{ secrets.OCI_AUTH_TOKEN }}
+
+      - name: Create env file
+        run: |
+          touch .env
+          echo NEXT_PUBLIC_REQUEST_API=${{ secrets.NEXT_PUBLIC_REQUEST_API }} >> .env
+          echo NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }} >> .env
+          echo REGISTER_ORIGIN=${{ secrets.REGISTER_ORIGIN }} >> .env
+          echo MONGO_DB_USER=${{ secrets.MONGO_DB_USER }} >> .env
+          echo MONGO_DB_KEY=${{ secrets.MONGO_DB_KEY }} >> .env
+          echo MONGO_DB_URI=${{ secrets.MONGO_DB_URI }} >> .env
+          echo MAGIC_WORD=${{ secrets.MAGIC_WORD }} >> .env
+          echo NEXT_PUBLIC_MAGIC_WORD=${{ secrets.NEXT_PUBLIC_MAGIC_WORD }} >> .env
+          echo GOOGLE_OAUTH_CLIENTID=${{ secrets.GOOGLE_OAUTH_CLIENTID }} >> .env
+          echo GOOGLE_OAUTH_CLIENT_SECRET=${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }} >> .env
+          echo NAVER_OAUTH_CLIENTID=${{ secrets.NAVER_OAUTH_CLIENTID }} >> .env
+          echo NAVER_OAUTH_CLIENT_SECRET=${{ secrets.NAVER_OAUTH_CLIENT_SECRET }} >> .env
+          echo KAKAO_OAUTH_CLIENTID=${{ secrets.KAKAO_OAUTH_CLIENTID }} >> .env
+          echo KAKAO_OAUTH_CLIENT_SECRET=${{ secrets.KAKAO_OAUTH_CLIENT_SECRET }} >> .env
+          echo NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }} >> .env
+          cat .env
+
+      - name: Build, Tag, Push the Docker Image
+        id: build-image
+        run: |
+          docker build --platform arm64 -t $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest -f Dockerfile.production .
+          docker push $OCIR_ENDPOINT/$OCIR_USERNAME/$OCIR_REPOSITORY:latest
+
+      - name: Deploy to OCI Compute Instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_SSH_HOST }}
+          username: ${{ secrets.REMOTE_SSH_USERNAME }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}
+          port: ${{ secrets.REMOTE_SSH_PORT }}
+          script: |
+            cd ${{ secrets.OCI_COMPOSE_DIRECTORY }}
+            docker pull ${{ secrets.OCIR_ENDPOINT }}/${{ secrets.OCIR_USERNAME }}/${{ secrets.OCIR_REPOSITORY }}:latest
+            sh deploy-prod.sh

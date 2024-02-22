@@ -1,4 +1,4 @@
-import { ParsedFeedsDataType } from "pages";
+import { ParsedFeedsDataType } from 'app/main'; 
 
 import {
     areEqual,
@@ -59,10 +59,7 @@ export const checkIfTodayLessThan = (
     if (dateString == null) return;
     const dateToCheck = new Date(Date.parse(dateString));
     dateToCheck.setHours(0);
-    const dateToCheckWithExtraDay = returnDaysAddedDate(
-        dateString,
-        extraDay
-    );
+    const dateToCheckWithExtraDay = returnDaysAddedDate(dateString, extraDay);
     dateToCheckWithExtraDay.setHours(0);
     const now = new Date();
     const isTodayMoreThanDateToCheck = dateToCheck <= now;
