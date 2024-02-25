@@ -1,5 +1,8 @@
-import { initializeMongoDBWith, newExtractUserIdFrom } from 'controllers/common';
-import { NextRequest, NextResponse } from 'next/server';
+import {
+    initializeMongoDBWith,
+    newExtractUserIdFrom,
+} from "controllers/common";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
     try {
@@ -7,13 +10,19 @@ export async function GET(req: NextRequest) {
         if (userId == null) throw NextResponse.error();
         const { remoteData: sources, Schema: Sources } =
             await initializeMongoDBWith(userId, "sources");
-        const { remoteData: feeds, Schema: Feeds } = await initializeMongoDBWith(userId, 'feeds');
-        const { remoteData: searchEngines, Schema: SearchEngines } = await initializeMongoDBWith(userId, 'searchEngines');
+        const { remoteData: feeds, Schema: Feeds } =
+            await initializeMongoDBWith(userId, "feeds");
+        const { remoteData: searchEngines, Schema: SearchEngines } =
+            await initializeMongoDBWith(userId, "searchEngines");
 
-        const result = { sources, feeds, searchEngines };
+        const result = {
+            sources: sources ?? [],
+            feeds: feeds ?? [],
+            searchEngines: searchEngines ?? [],
+        };
 
         return NextResponse.json(result);
-    } catch(error) {
+    } catch (error) {
         return NextResponse.json(
             JSON.stringify({
                 message: "download failed",

@@ -5,6 +5,7 @@ import { ModalKeys } from "../MainView";
 import Button from "components/common/Button";
 import { useRef, useState } from "react";
 import RequestControllers from "controllers/requestControllers";
+import useOutsideClickClose from "hooks/useOutsideClickClose";
 
 interface Props {
     handleAuthenticationModal: (target: ModalKeys) => () => void;
@@ -17,8 +18,14 @@ export default function LoginInfoArea({
 }: Props) {
     const [modalState, setModalState] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null);
+    const userMenuRef = useRef<HTMLDivElement>(null);
     // FIXME: 타입 오류 수정 필요
     const { data: session } = useSession();
+    useOutsideClickClose({
+        target: userMenuRef.current,
+        toggleButton: buttonRef.current,
+        closeFunction: () => setModalState(false),
+    });
     const { getDataFrom } = new RequestControllers();
 
     const getTotalData = async () => {
@@ -80,7 +87,10 @@ export default function LoginInfoArea({
                     }] z-10 md:top-28`}
                 >
                     <div className="hidden absolute -top-[40px] left-1/2 -translate-x-[10px] border-l-[20px] border-r-[20px] border-b-[40px] border-l-transparent border-r-transparent border-b-neutral-100 dark:border-b-neutral-700 md:block" />
-                    <div className="flex flex-col gap-4 justify-center items-center w-64 h-36 rounded-md shadow-lg bg-neutral-100 dark:bg-neutral-700 dark:shadow-zinc-600 md:gap-8 md:w-80 md:h-56">
+                    <div
+                        ref={userMenuRef}
+                        className="flex flex-col gap-4 justify-center items-center w-64 h-36 rounded-md shadow-lg bg-neutral-100 dark:bg-neutral-700 dark:shadow-zinc-600 md:gap-8 md:w-80 md:h-56"
+                    >
                         <button
                             type="button"
                             className="w-44 px-4 py-2 rounded-md bg-zinc-600 text-base text-neutral-100 dark:text-gray-300"
