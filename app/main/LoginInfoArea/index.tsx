@@ -176,20 +176,41 @@ export default function LoginInfoArea({
             )}
             {modalState && (
                 <div
-                    className={`absolute top-32 left-[${
-                        buttonRef.current
-                            ? `${buttonRef.current.offsetLeft}px`
-                            : 0
-                    }] z-10 md:top-28`}
+                    className={`absolute top-0 z-10 w-full md:top-20 md:w-max`}
+                    style={{
+                        left: buttonRef.current
+                            ? document.documentElement.offsetWidth > 768
+                                ? buttonRef.current.offsetLeft -
+                                  buttonRef.current.offsetWidth / 2
+                                : 0
+                            : 0,
+                    }}
                 >
-                    {/* <div className="hidden absolute -top-[40px] left-1/2 -translate-x-[10px] border-l-[20px] border-r-[20px] border-b-[40px] border-l-transparent border-r-transparent border-b-neutral-100 dark:border-b-neutral-700 md:block" /> */}
                     <div
                         ref={userMenuRef}
-                        className="flex flex-col gap-4 justify-center items-center w-64 h-36 rounded-md shadow-lg bg-neutral-100 dark:bg-neutral-700 dark:shadow-zinc-600 md:gap-8 md:w-80 md:h-56"
+                        className="flex flex-col gap-4 justify-center items-center w-full h-56 rounded-md shadow-lg bg-neutral-100 dark:bg-neutral-700 dark:shadow-zinc-600 md:gap-6 md:w-80 md:h-56"
                     >
+                        {document.documentElement.offsetWidth < 768 ? (
+                            <button
+                                type="button"
+                                className="absolute top-4 right-4 flex justify-center items-center w-4 h-4"
+                                onClick={() => setModalState(false)}
+                            >
+                                ✕
+                            </button>
+                        ) : (
+                            <></>
+                        )}
+                        <button
+                            type="button"
+                            className="w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300"
+                            onClick={getTotalData}
+                        >
+                            피드 / 출처 내보내기
+                        </button>
                         <label
                             ref={labelRef}
-                            className="w-44 px-4 py-2 rounded-md bg-zinc-600 text-base text-neutral-100 cursor-pointer dark:text-gray-300"
+                            className="w-44 px-4 py-2 rounded-md bg-neutral-500 text-center text-sm text-neutral-100 cursor-pointer dark:text-gray-300"
                         >
                             피드 / 출처 불러오기
                             <input
@@ -201,14 +222,7 @@ export default function LoginInfoArea({
                         </label>
                         <button
                             type="button"
-                            className="w-44 px-4 py-2 rounded-md bg-zinc-600 text-base text-neutral-100 dark:text-gray-300"
-                            onClick={getTotalData}
-                        >
-                            피드 / 출처 내보내기
-                        </button>
-                        <button
-                            type="button"
-                            className="w-44 px-4 py-2 rounded-md bg-zinc-600 text-base text-neutral-100 dark:text-gray-300"
+                            className="w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300"
                             onClick={handleUserData}
                         >
                             데이터 이전
