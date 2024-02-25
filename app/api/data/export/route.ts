@@ -7,13 +7,24 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
     try {
         const [userId] = newExtractUserIdFrom(req);
-        if (userId == null) throw NextResponse.error();
-        const { remoteData: sources, Schema: Sources } =
-            await initializeMongoDBWith(userId, "sources");
-        const { remoteData: feeds, Schema: Feeds } =
-            await initializeMongoDBWith(userId, "feeds");
-        const { remoteData: searchEngines, Schema: SearchEngines } =
-            await initializeMongoDBWith(userId, "searchEngines");
+        if (userId == null) {
+            return NextResponse.json(
+                { error: "사용자 정보를 찾을 수 없습니다." },
+                { status: 404 }
+            );
+        }
+        const { remoteData: sources } = await initializeMongoDBWith(
+            userId,
+            "sources"
+        );
+        const { remoteData: feeds } = await initializeMongoDBWith(
+            userId,
+            "feeds"
+        );
+        const { remoteData: searchEngines } = await initializeMongoDBWith(
+            userId,
+            "searchEngines"
+        );
 
         const result = {
             sources: sources ?? [],
@@ -24,12 +35,10 @@ export async function GET(req: NextRequest) {
         return NextResponse.json(result);
     } catch (error) {
         return NextResponse.json(
-            JSON.stringify({
-                message: "download failed",
-                status: 400,
-            }),
             {
-                statusText: "download failed",
+                error: "파일 내보내기에 실패했습니다.",
+            },
+            {
                 status: 400,
             }
         );
