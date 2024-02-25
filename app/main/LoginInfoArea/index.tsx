@@ -8,7 +8,7 @@ import RequestControllers from "controllers/requestControllers";
 import useOutsideClickClose from "hooks/useOutsideClickClose";
 import { useMutation } from "@tanstack/react-query";
 import { UploadFileType } from "app/api/data/import/route";
-import { setCookie } from "cookies-next";
+import { getCookie, setCookie } from "cookies-next";
 
 interface Props {
     handleAuthenticationModal: (target: ModalKeys) => () => void;
@@ -73,7 +73,7 @@ export default function LoginInfoArea({
         try {
             if (
                 confirm(
-                    "이 동작은 기존 데이터를 덮어쓰게 됩니다.\n계속하시겠습니까?"
+                    "이 동작은 업로드하는 파일로 기존 데이터를 덮어쓰게 됩니다.\n계속하시겠습니까?"
                 )
             ) {
                 if (userId === "") {
@@ -90,6 +90,48 @@ export default function LoginInfoArea({
                 if ("error" in uploadResult) {
                     throw new Error(uploadResult.error);
                 }
+                await alert(uploadResult.result);
+                location.reload();
+            }
+        } catch (error) {
+            console.error(error);
+            if (error instanceof Error) {
+                alert(error.message);
+            }
+        }
+    };
+
+    const handleUserData = async () => {
+        try {
+            if (session == null) {
+                throw new Error("이메일 로그인 후 이용 가능합니다.");
+            }
+
+            if (
+                confirm(
+                    "이 동작은 브라우저에 저장된 데이터로 기존 데이터를 덮어쓰게 됩니다.\n계속하시겠습니까?"
+                )
+            ) {
+                const localUserUUID = getCookie("mw");
+                if (localUserUUID == null) {
+                    throw new Error("브라우저에 저장된 데이터가 없습니다.");
+                }
+
+                const localUserData = await getDataFrom<
+                    ErrorOptions | UploadFileType
+                >(`/data/export?userId=${localUserUUID}`);
+                if ("error" in localUserData) {
+                    throw new Error(localUserData.error as string);
+                }
+
+                const uploadResult = await mutateAsync({
+                    userId,
+                    dataToUpload: (localUserData as UploadFileType) ?? "",
+                });
+                if ("error" in uploadResult) {
+                    throw new Error(uploadResult.error);
+                }
+
                 await alert(uploadResult.result);
                 location.reload();
             }
@@ -163,6 +205,13 @@ export default function LoginInfoArea({
                             onClick={getTotalData}
                         >
                             피드 / 출처 내보내기
+                        </button>
+                        <button
+                            type="button"
+                            className="w-44 px-4 py-2 rounded-md bg-zinc-600 text-base text-neutral-100 dark:text-gray-300"
+                            onClick={handleUserData}
+                        >
+                            데이터 이전
                         </button>
                     </div>
                 </div>
