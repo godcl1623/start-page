@@ -20,16 +20,15 @@ export default function LoginInfoArea({
     userId,
 }: Props) {
     const [modalState, setModalState] = useState(false);
+    const [userMenu, setUserMenu] = useState<HTMLDivElement | null>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
-    const userMenuRef = useRef<HTMLDivElement>(null);
     const labelRef = useRef<HTMLLabelElement>(null);
-    // FIXME: 타입 오류 수정 필요
     const { data: session } = useSession();
-    // useOutsideClickClose({
-    //     target: userMenuRef.current,
-    //     toggleButton: buttonRef.current,
-    //     closeFunction: () => setModalState(false),
-    // });
+    useOutsideClickClose({
+        target: userMenu,
+        toggleButton: buttonRef.current,
+        closeFunction: () => setModalState(false),
+    });
     const { getDataFrom, putDataTo } = new RequestControllers();
     const mutationFn = ({
         userId,
@@ -176,20 +175,17 @@ export default function LoginInfoArea({
             )}
             {modalState && (
                 <div
+                    ref={setUserMenu}
                     className={`absolute top-0 z-10 w-full md:top-20 md:w-max`}
                     style={{
-                        left: buttonRef.current
+                        right: buttonRef.current
                             ? document.documentElement.offsetWidth > 768
-                                ? buttonRef.current.offsetLeft -
-                                  buttonRef.current.offsetWidth / 2
+                                ? buttonRef.current.offsetWidth
                                 : 0
                             : 0,
                     }}
                 >
-                    <div
-                        ref={userMenuRef}
-                        className="flex flex-col gap-4 justify-center items-center w-full h-56 rounded-md shadow-lg bg-neutral-100 dark:bg-neutral-700 dark:shadow-zinc-600 md:gap-6 md:w-80 md:h-56"
-                    >
+                    <div className="flex flex-col gap-4 justify-center items-center w-full h-56 rounded-md shadow-lg bg-neutral-100 dark:bg-neutral-700 dark:shadow-zinc-600 md:gap-6 md:w-80 md:h-56">
                         {document.documentElement.offsetWidth < 768 ? (
                             <button
                                 type="button"
