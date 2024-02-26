@@ -3,12 +3,14 @@ import UserInfo from "./UserInfo";
 import LoginHandleButton from "./LoginHandleButton";
 import { ModalKeys } from "../MainView";
 import Button from "components/common/Button";
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useContext, useEffect, useRef, useState } from "react";
 import RequestControllers from "controllers/requestControllers";
 import useOutsideClickClose from "hooks/useOutsideClickClose";
 import { useMutation } from "@tanstack/react-query";
 import { UploadFileType } from "app/api/data/import/route";
 import { getCookie, setCookie } from "cookies-next";
+import { MdLightMode, MdDarkMode } from "react-icons/md";
+import { ThemeContext } from "app/root/ThemeContextProvider";
 
 interface Props {
     handleAuthenticationModal: (target: ModalKeys) => () => void;
@@ -19,6 +21,7 @@ export default function LoginInfoArea({
     handleAuthenticationModal,
     userId,
 }: Props) {
+    const [isDark, setIsDark] = useState(false);
     const [modalState, setModalState] = useState(false);
     const [userMenu, setUserMenu] = useState<HTMLDivElement | null>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -142,6 +145,27 @@ export default function LoginInfoArea({
         }
     };
 
+    const handleTheme = () => {
+        const root = document.documentElement;
+        if (root.classList.contains("dark")) {
+            setIsDark(false);
+            root.classList.remove('dark');
+            setCookie('theme', 'light');
+        } else {
+            setIsDark(true);
+            root.classList.add('dark');
+            setCookie('theme', 'dark');
+        }
+    };
+
+    useEffect(() => {
+        if (document.documentElement.classList.contains('dark')) {
+            setIsDark(true);
+        } else {
+            setIsDark(false);
+        }
+    }, [isDark]);
+
     return (
         <section className="flex flex-col items-end gap-4 w-full md:flex-row md:gap-8 md:items-center md:justify-end">
             <UserInfo
@@ -185,7 +209,7 @@ export default function LoginInfoArea({
                             : 0,
                     }}
                 >
-                    <div className="flex flex-col gap-4 justify-center items-center w-full h-56 rounded-md shadow-lg bg-neutral-100 dark:bg-neutral-700 dark:shadow-zinc-600 md:gap-6 md:w-80 md:h-56">
+                    <div className="flex flex-col gap-4 justify-center items-center w-full p-4 rounded-md shadow-lg bg-neutral-100 dark:bg-neutral-700 dark:shadow-zinc-600 md:gap-6 md:w-80">
                         {document.documentElement.offsetWidth < 768 ? (
                             <button
                                 type="button"
@@ -223,6 +247,11 @@ export default function LoginInfoArea({
                         >
                             데이터 이전
                         </Button>
+                        <div className="flex justify-evenly w-44 px-4 py-2">
+                            <MdLightMode className="w-6 h-6 fill-yellow-400" />
+                            <button onClick={handleTheme}>test</button>
+                            <MdDarkMode className="w-6 h-6 fill-blue-400" />
+                        </div>
                     </div>
                 </div>
             )}
