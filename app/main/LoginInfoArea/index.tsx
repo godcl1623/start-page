@@ -3,7 +3,14 @@ import UserInfo from "./UserInfo";
 import LoginHandleButton from "./LoginHandleButton";
 import { ModalKeys } from "../MainView";
 import Button from "components/common/Button";
-import { ChangeEvent, useContext, useEffect, useRef, useState } from "react";
+import {
+    ChangeEvent,
+    useContext,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from "react";
 import RequestControllers from "controllers/requestControllers";
 import useOutsideClickClose from "hooks/useOutsideClickClose";
 import { useMutation } from "@tanstack/react-query";
@@ -149,17 +156,17 @@ export default function LoginInfoArea({
         const root = document.documentElement;
         if (root.classList.contains("dark")) {
             setIsDark(false);
-            root.classList.remove('dark');
-            setCookie('theme', 'light');
+            root.classList.remove("dark");
+            setCookie("theme", "light");
         } else {
             setIsDark(true);
-            root.classList.add('dark');
-            setCookie('theme', 'dark');
+            root.classList.add("dark");
+            setCookie("theme", "dark");
         }
     };
 
-    useEffect(() => {
-        if (document.documentElement.classList.contains('dark')) {
+    useLayoutEffect(() => {
+        if (document.documentElement.classList.contains("dark")) {
             setIsDark(true);
         } else {
             setIsDark(false);
@@ -248,9 +255,21 @@ export default function LoginInfoArea({
                             데이터 이전
                         </Button>
                         <div className="flex justify-evenly w-44 px-4 py-2">
-                            <MdLightMode className="w-6 h-6 fill-yellow-400" />
-                            <button onClick={handleTheme}>test</button>
-                            <MdDarkMode className="w-6 h-6 fill-blue-400" />
+                            <MdLightMode className="w-8 h-8 fill-yellow-400" />
+                            <label className="relative w-16 h-8 mx-2 border border-transparent shadow-lg rounded-full bg-neutral-100 transition-all duration-300 cursor-pointer dark:bg-neutral-500 dark:shadow-md dark:shadow-zinc-500">
+                                <span
+                                    className={`absolute top-[3px] left-7 ${
+                                        isDark
+                                            ? "translate-x-1.5"
+                                            : "-translate-x-full"
+                                    } w-6 h-6 rounded-full shadow-md bg-gray-300 transition-all duration-300 dark:bg-neutral-700`}
+                                />
+                                <button
+                                    onClick={handleTheme}
+                                    className="hidden"
+                                ></button>
+                            </label>
+                            <MdDarkMode className="w-8 h-8 fill-blue-400" />
                         </div>
                     </div>
                 </div>
