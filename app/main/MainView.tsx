@@ -177,7 +177,7 @@ export default memo(function MainView({
             <section
                 className={`flex flex-col items-center w-full h-max min-h-[calc(100vh_-_64px)] fhd:max-w-[1920px]`}
             >
-                <LoginInfoArea handleAuthenticationModal={handleModal} />
+                <LoginInfoArea handleAuthenticationModal={handleModal} userId={userId} />
                 <div className="flex flex-col justify-center my-auto">
                     <section className="flex-center w-full mt-32 mb-28 lg:w-[768px]">
                         <Search
