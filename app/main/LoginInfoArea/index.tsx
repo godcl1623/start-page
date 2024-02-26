@@ -163,7 +163,7 @@ export default function LoginInfoArea({
                             callbackUrl: process.env.NEXTAUTH_URL,
                         })
                     }
-                    customStyle="w-32 bg-red-400 font-bold text-base text-neutral-100  dark:bg-red-700 dark:text-gray-300"
+                    customStyle="w-32 bg-red-400 font-bold text-sm text-neutral-100  dark:bg-red-700 dark:text-gray-300"
                 >
                     Logout
                 </Button>
@@ -197,13 +197,13 @@ export default function LoginInfoArea({
                         ) : (
                             <></>
                         )}
-                        <button
+                        <Button
                             type="button"
-                            className="w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300"
-                            onClick={getTotalData}
+                            customStyle="w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300"
+                            clickHandler={getTotalData}
                         >
                             피드 / 출처 내보내기
-                        </button>
+                        </Button>
                         <label
                             ref={labelRef}
                             className="w-44 px-4 py-2 rounded-md bg-neutral-500 text-center text-sm text-neutral-100 cursor-pointer dark:text-gray-300"
@@ -216,13 +216,13 @@ export default function LoginInfoArea({
                                 onChange={uploadUserData}
                             />
                         </label>
-                        <button
+                        <Button
                             type="button"
-                            className="w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300"
-                            onClick={handleUserData}
+                            customStyle="w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300"
+                            clickHandler={handleUserData}
                         >
                             데이터 이전
-                        </button>
+                        </Button>
                     </div>
                 </div>
             )}
