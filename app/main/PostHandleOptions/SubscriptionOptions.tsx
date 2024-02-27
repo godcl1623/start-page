@@ -23,7 +23,7 @@ export default function SubscriptionOptions({
                 <Button
                     key={`${buttonText}_${index}`}
                     type="button"
-                    customStyle="w-full bg-neutral-500 text-neutral-100 dark:bg-neutral-500 hover:bg-neutral-400"
+                    customStyle="w-full bg-neutral-500 text-xs text-neutral-100 dark:bg-neutral-500 hover:bg-neutral-400"
                     clickHandler={clickHandler}
                 >
                     {buttonText}

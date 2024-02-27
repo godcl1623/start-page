@@ -46,7 +46,7 @@ const FilterByTextView = forwardRef<HTMLInputElement, Props>(
                 )}
                 <Button
                     type="submit"
-                    customStyle="w-12 rounded-r-md bg-sky-400 font-bold text-neutral-100 dark:bg-sky-600 dark:text-gray-300 shadow-none rounded-l-none"
+                    customStyle="w-12 rounded-r-md bg-sky-400 font-bold text-xs text-neutral-100 dark:bg-sky-600 dark:text-gray-300 shadow-none rounded-l-none"
                 >
                     검색
                 </Button>

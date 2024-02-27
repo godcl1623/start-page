@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 
 interface Props {
-    userEmail: string | undefined;
+    userEmail: string | null | undefined;
     handleDataHandler?: () => void;
 }
 
@@ -17,7 +17,7 @@ export default forwardRef<HTMLButtonElement, Props>(function UserInfo(
                 if (handleDataHandler != null) handleDataHandler();
             }}
         >
-            {userEmail != null ? userEmail : "Guest"}
+            {userEmail ?? "Guest"}
         </button>
     );
 });
