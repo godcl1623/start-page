@@ -33,7 +33,6 @@ const RAW_RUNTIME_STATE =
           ["@types/node", "npm:20.10.4"],\
           ["@types/react", "npm:18.2.45"],\
           ["@types/react-dom", "npm:18.2.17"],\
-          ["@types/suncalc", "npm:1.9.2"],\
           ["@yarnpkg/sdks", "npm:3.1.0"],\
           ["autoprefixer", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:10.4.16"],\
           ["cookies-next", "npm:4.1.0"],\
@@ -50,7 +49,6 @@ const RAW_RUNTIME_STATE =
           ["react-dom", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:18.2.0"],\
           ["react-icons", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:4.12.0"],\
           ["sharp", "npm:0.33.2"],\
-          ["suncalc", "npm:1.9.0"],\
           ["tailwindcss", "npm:3.4.1"],\
           ["typescript", "patch:typescript@npm%3A5.3.3#optional!builtin<compat/typescript>::version=5.3.3&hash=e012d7"]\
         ],\
@@ -1815,15 +1813,6 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "./.yarn/cache/@types-semver-npm-7.3.13-56212b60da-0064efd7a0.zip/node_modules/@types/semver/",\
         "packageDependencies": [\
           ["@types/semver", "npm:7.3.13"]\
-        ],\
-        "linkType": "HARD"\
-      }]\
-    ]],\
-    ["@types/suncalc", [\
-      ["npm:1.9.2", {\
-        "packageLocation": "./.yarn/cache/@types-suncalc-npm-1.9.2-1650f3998d-3a2d3b48b5.zip/node_modules/@types/suncalc/",\
-        "packageDependencies": [\
-          ["@types/suncalc", "npm:1.9.2"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -7111,7 +7100,6 @@ const RAW_RUNTIME_STATE =
           ["@types/node", "npm:20.10.4"],\
           ["@types/react", "npm:18.2.45"],\
           ["@types/react-dom", "npm:18.2.17"],\
-          ["@types/suncalc", "npm:1.9.2"],\
           ["@yarnpkg/sdks", "npm:3.1.0"],\
           ["autoprefixer", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:10.4.16"],\
           ["cookies-next", "npm:4.1.0"],\
@@ -7128,7 +7116,6 @@ const RAW_RUNTIME_STATE =
           ["react-dom", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:18.2.0"],\
           ["react-icons", "virtual:ac7396aa9aa040d60303fe434d9232d7824b72cb0ee6f6df5fde945520e7a0762a5b96b4b5dd5c702112ab1f874a05844d926af559aa9745e664298f70823d4f#npm:4.12.0"],\
           ["sharp", "npm:0.33.2"],\
-          ["suncalc", "npm:1.9.0"],\
           ["tailwindcss", "npm:3.4.1"],\
           ["typescript", "patch:typescript@npm%3A5.3.3#optional!builtin<compat/typescript>::version=5.3.3&hash=e012d7"]\
         ],\
@@ -7320,15 +7307,6 @@ const RAW_RUNTIME_STATE =
           ["mz", "npm:2.7.0"],\
           ["pirates", "npm:4.0.6"],\
           ["ts-interface-checker", "npm:0.1.13"]\
-        ],\
-        "linkType": "HARD"\
-      }]\
-    ]],\
-    ["suncalc", [\
-      ["npm:1.9.0", {\
-        "packageLocation": "./.yarn/cache/suncalc-npm-1.9.0-48613f417e-ba24acf67a.zip/node_modules/suncalc/",\
-        "packageDependencies": [\
-          ["suncalc", "npm:1.9.0"]\
         ],\
         "linkType": "HARD"\
       }]\
