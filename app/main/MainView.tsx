@@ -148,8 +148,12 @@ export default memo(function MainView({
             renewState !== STATE_MESSAGE_STRINGS.proceed
         ) {
             setIsLoaded(true);
-        } else if (renewState === STATE_MESSAGE_STRINGS.start) {
+        } else if (
+            renewState === STATE_MESSAGE_STRINGS.start ||
+            renewState === STATE_MESSAGE_STRINGS.proceed
+        ) {
             setShouldStartLoad(true);
+            setIsLoaded(false);
         }
     }, [renewState]);
 
