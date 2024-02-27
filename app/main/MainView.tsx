@@ -23,6 +23,7 @@ import FeedsList from "components/feedsList";
 import EditSearchEngines from "components/editSearchEngines";
 import { SearchEnginesData } from "controllers/searchEngines";
 import { SEARCH_ADDRESS_BY_ENGINE } from "components/search/utils/constants";
+import Button from "components/common/Button";
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
@@ -42,6 +43,7 @@ interface Props {
     renewState: string;
     isFilterFavorite: boolean;
     searchEnginesList: SearchEnginesData[] | ErrorResponse | null | undefined;
+    checkAndUpdateNewFeeds: () => void;
 }
 
 export type ModalKeys =
@@ -76,6 +78,7 @@ export default memo(function MainView({
     renewState,
     isFilterFavorite,
     searchEnginesList,
+    checkAndUpdateNewFeeds,
 }: Props) {
     const [modalState, setModalState] = useState<ModalStateType>({
         addSubscription: false,
@@ -84,7 +87,7 @@ export default memo(function MainView({
         handleAuthentication: false,
         editSearchEngine: false,
     });
-    const [shouldHideRenewState, setShouldHideRenewState] = useState(false);
+    const [shouldHideRenewState, setShouldHideRenewState] = useState(true);
     const [isLoaded, setIsLoaded] = useState(false);
     const [shouldStartLoad, setShouldStartLoad] = useState(false);
     const startPageRef = useRef<HTMLElement | null>(null);
@@ -124,6 +127,11 @@ export default memo(function MainView({
         if (Math.ceil(totalCount / 10) !== currentPage) {
             setCurrentPage((previousValue) => previousValue + 1);
         }
+    };
+
+    const handleFeedUpdate = () => {
+        setShouldHideRenewState(false);
+        checkAndUpdateNewFeeds();
     };
 
     useEffect(() => {
@@ -177,7 +185,10 @@ export default memo(function MainView({
             <section
                 className={`flex flex-col items-center w-full h-max min-h-[calc(100vh_-_64px)] fhd:max-w-[1920px]`}
             >
-                <LoginInfoArea handleAuthenticationModal={handleModal} userId={userId} />
+                <LoginInfoArea
+                    handleAuthenticationModal={handleModal}
+                    userId={userId}
+                />
                 <div className="flex flex-col justify-center my-auto">
                     <section className="flex-center w-full mt-32 mb-28 lg:w-[768px]">
                         <Search
@@ -200,6 +211,13 @@ export default memo(function MainView({
                                     <p>{renewState}</p>
                                 </>
                             )}
+                            <Button
+                                type="button"
+                                clickHandler={handleFeedUpdate}
+                                customStyle="bg-neutral-500"
+                            >
+                                피드 갱신
+                            </Button>
                         </div>
                         <PostHandleOptions
                             filterFavorites={filterFavorites}
