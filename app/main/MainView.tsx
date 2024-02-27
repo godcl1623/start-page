@@ -215,13 +215,17 @@ export default memo(function MainView({
                                     <p>{renewState}</p>
                                 </>
                             )}
-                            <Button
-                                type="button"
-                                clickHandler={handleFeedUpdate}
-                                customStyle="bg-neutral-500"
-                            >
-                                피드 갱신
-                            </Button>
+                            {sourcesList.length === 0 ? (
+                                <></>
+                            ) : (
+                                <Button
+                                    type="button"
+                                    clickHandler={handleFeedUpdate}
+                                    customStyle="bg-neutral-500"
+                                >
+                                    피드 갱신
+                                </Button>
+                            )}
                         </div>
                         <PostHandleOptions
                             filterFavorites={filterFavorites}
