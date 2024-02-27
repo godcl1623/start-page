@@ -3,21 +3,13 @@ import UserInfo from "./UserInfo";
 import LoginHandleButton from "./LoginHandleButton";
 import { ModalKeys } from "../MainView";
 import Button from "components/common/Button";
-import {
-    ChangeEvent,
-    useContext,
-    useEffect,
-    useLayoutEffect,
-    useRef,
-    useState,
-} from "react";
+import { ChangeEvent, useLayoutEffect, useRef, useState } from "react";
 import RequestControllers from "controllers/requestControllers";
 import useOutsideClickClose from "hooks/useOutsideClickClose";
 import { useMutation } from "@tanstack/react-query";
 import { UploadFileType } from "app/api/data/import/route";
 import { getCookie, setCookie } from "cookies-next";
 import { MdLightMode, MdDarkMode } from "react-icons/md";
-import { ThemeContext } from "app/root/ThemeContextProvider";
 
 interface Props {
     handleAuthenticationModal: (target: ModalKeys) => () => void;
@@ -27,7 +19,7 @@ interface Props {
 export default function LoginInfoArea({
     handleAuthenticationModal,
     userId,
-}: Props) {
+}: Readonly<Props>) {
     const [isDark, setIsDark] = useState(false);
     const [modalState, setModalState] = useState(false);
     const [userMenu, setUserMenu] = useState<HTMLDivElement | null>(null);
@@ -177,13 +169,7 @@ export default function LoginInfoArea({
         <section className="flex flex-col items-end gap-4 w-full md:flex-row md:gap-8 md:items-center md:justify-end">
             <UserInfo
                 ref={buttonRef}
-                userEmail={
-                    session != null &&
-                    session.user != null &&
-                    session.user.email != null
-                        ? session.user.email
-                        : undefined
-                }
+                userEmail={session?.user?.email}
                 handleDataHandler={() => setModalState(!modalState)}
             />
             {session != null ? (
@@ -209,11 +195,11 @@ export default function LoginInfoArea({
                     ref={setUserMenu}
                     className={`absolute top-0 z-10 w-full md:top-20 md:w-max`}
                     style={{
-                        right: buttonRef.current
-                            ? document.documentElement.offsetWidth > 768
+                        right:
+                            buttonRef.current &&
+                            document.documentElement.offsetWidth > 768
                                 ? buttonRef.current.offsetWidth
-                                : 0
-                            : 0,
+                                : 0,
                     }}
                 >
                     <div className="flex flex-col gap-4 justify-center items-center w-full p-4 rounded-md shadow-lg bg-neutral-100 dark:bg-neutral-700 dark:shadow-zinc-600 md:gap-6 md:w-80">
