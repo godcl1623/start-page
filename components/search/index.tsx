@@ -70,7 +70,7 @@ export default memo(function Search({ searchEnginesList, handleModal }: Props) {
             )}
             <Button
                 type="submit"
-                customStyle="w-24 h-full rounded-r-md bg-sky-400 font-bold text-sm text-neutral-100 dark:bg-sky-600 dark:text-gray-300 cursor-pointer shadow-none rounded-l-none"
+                customStyle="w-24 h-full rounded-r-md bg-sky-400 font-bold text-base text-neutral-100 dark:bg-sky-600 dark:text-gray-300 cursor-pointer shadow-none rounded-l-none"
             >
                 검색
             </Button>

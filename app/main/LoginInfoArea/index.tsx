@@ -3,12 +3,13 @@ import UserInfo from "./UserInfo";
 import LoginHandleButton from "./LoginHandleButton";
 import { ModalKeys } from "../MainView";
 import Button from "components/common/Button";
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useLayoutEffect, useRef, useState } from "react";
 import RequestControllers from "controllers/requestControllers";
 import useOutsideClickClose from "hooks/useOutsideClickClose";
 import { useMutation } from "@tanstack/react-query";
 import { UploadFileType } from "app/api/data/import/route";
 import { getCookie, setCookie } from "cookies-next";
+import { MdLightMode, MdDarkMode } from "react-icons/md";
 
 interface Props {
     handleAuthenticationModal: (target: ModalKeys) => () => void;
@@ -18,7 +19,8 @@ interface Props {
 export default function LoginInfoArea({
     handleAuthenticationModal,
     userId,
-}: Props) {
+}: Readonly<Props>) {
+    const [isDark, setIsDark] = useState(false);
     const [modalState, setModalState] = useState(false);
     const [userMenu, setUserMenu] = useState<HTMLDivElement | null>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -142,17 +144,32 @@ export default function LoginInfoArea({
         }
     };
 
+    const handleTheme = () => {
+        const root = document.documentElement;
+        if (root.classList.contains("dark")) {
+            setIsDark(false);
+            root.classList.remove("dark");
+            setCookie("theme", "light");
+        } else {
+            setIsDark(true);
+            root.classList.add("dark");
+            setCookie("theme", "dark");
+        }
+    };
+
+    useLayoutEffect(() => {
+        if (document.documentElement.classList.contains("dark")) {
+            setIsDark(true);
+        } else {
+            setIsDark(false);
+        }
+    }, [isDark]);
+
     return (
         <section className="flex flex-col items-end gap-4 w-full md:flex-row md:gap-8 md:items-center md:justify-end">
             <UserInfo
                 ref={buttonRef}
-                userEmail={
-                    session != null &&
-                    session.user != null &&
-                    session.user.email != null
-                        ? session.user.email
-                        : undefined
-                }
+                userEmail={session?.user?.email}
                 handleDataHandler={() => setModalState(!modalState)}
             />
             {session != null ? (
@@ -163,7 +180,7 @@ export default function LoginInfoArea({
                             callbackUrl: process.env.NEXTAUTH_URL,
                         })
                     }
-                    customStyle="w-32 bg-red-400 font-bold text-base text-neutral-100  dark:bg-red-700 dark:text-gray-300"
+                    customStyle="w-32 bg-red-400 font-bold text-sm text-neutral-100  dark:bg-red-700 dark:text-gray-300"
                 >
                     Logout
                 </Button>
@@ -178,14 +195,14 @@ export default function LoginInfoArea({
                     ref={setUserMenu}
                     className={`absolute top-0 z-10 w-full md:top-20 md:w-max`}
                     style={{
-                        right: buttonRef.current
-                            ? document.documentElement.offsetWidth > 768
+                        right:
+                            buttonRef.current &&
+                            document.documentElement.offsetWidth > 768
                                 ? buttonRef.current.offsetWidth
-                                : 0
-                            : 0,
+                                : 0,
                     }}
                 >
-                    <div className="flex flex-col gap-4 justify-center items-center w-full h-56 rounded-md shadow-lg bg-neutral-100 dark:bg-neutral-700 dark:shadow-zinc-600 md:gap-6 md:w-80 md:h-56">
+                    <div className="flex flex-col gap-4 justify-center items-center w-full p-4 rounded-md shadow-lg bg-neutral-100 dark:bg-neutral-700 dark:shadow-zinc-600 md:gap-6 md:w-80">
                         {document.documentElement.offsetWidth < 768 ? (
                             <button
                                 type="button"
@@ -197,13 +214,13 @@ export default function LoginInfoArea({
                         ) : (
                             <></>
                         )}
-                        <button
+                        <Button
                             type="button"
-                            className="w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300"
-                            onClick={getTotalData}
+                            customStyle="w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300"
+                            clickHandler={getTotalData}
                         >
                             피드 / 출처 내보내기
-                        </button>
+                        </Button>
                         <label
                             ref={labelRef}
                             className="w-44 px-4 py-2 rounded-md bg-neutral-500 text-center text-sm text-neutral-100 cursor-pointer dark:text-gray-300"
@@ -216,13 +233,34 @@ export default function LoginInfoArea({
                                 onChange={uploadUserData}
                             />
                         </label>
-                        <button
+                        <Button
                             type="button"
-                            className="w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300"
-                            onClick={handleUserData}
+                            customStyle="w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300"
+                            clickHandler={handleUserData}
                         >
                             데이터 이전
-                        </button>
+                        </Button>
+                        <div className="flex justify-evenly w-44 py-2">
+                            <MdLightMode className="w-8 h-8 fill-yellow-400" />
+                            <label
+                                htmlFor="handleTheme"
+                                className="relative w-16 h-8 mx-2 border border-transparent shadow-lg rounded-full bg-neutral-100 transition-all duration-300 cursor-pointer dark:bg-neutral-500 dark:shadow-md dark:shadow-zinc-500"
+                            >
+                                <div
+                                    className={`absolute top-[3px] left-1 ${
+                                        isDark
+                                            ? "translate-x-[calc(100%+0.4rem)]"
+                                            : "translate-x-0"
+                                    } w-6 h-6 rounded-full shadow-md bg-gray-300 transition-all duration-300 dark:bg-neutral-700`}
+                                />
+                                <button
+                                    id="handleTheme"
+                                    onClick={handleTheme}
+                                    className="hidden"
+                                />
+                            </label>
+                            <MdDarkMode className="w-8 h-8 fill-blue-400" />
+                        </div>
                     </div>
                 </div>
             )}

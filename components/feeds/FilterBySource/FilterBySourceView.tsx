@@ -73,17 +73,17 @@ export default function FilterBySourceView({
     const buttonsData: ButtonsData = {
         취소: {
             customStyle:
-                "w-16 bg-red-400 font-bold text-neutral-100 dark:bg-red-700 dark:text-gray-300",
+                "w-16 bg-red-400 font-bold text-xs text-neutral-100 dark:bg-red-700 dark:text-gray-300",
             clickHandler: closeModal,
         },
         초기화: {
             customStyle:
-                "w-16 bg-neutral-500 font-bold text-neutral-100 dark:bg-neutral-500 dark:text-gray-300",
+                "w-16 bg-neutral-500 font-bold text-xs text-neutral-100 dark:bg-neutral-500 dark:text-gray-300",
             clickHandler: initiateDisplayFilter,
         },
         저장: {
             customStyle:
-                "w-16 bg-sky-400 font-bold text-neutral-100 dark:bg-sky-600 dark:text-gray-300",
+                "w-16 bg-sky-400 font-bold text-xs text-neutral-100 dark:bg-sky-600 dark:text-gray-300",
             clickHandler: enableDisplayFilter(saveDisplayState),
         },
     };
