@@ -254,20 +254,24 @@ export default function LoginInfoArea({
                         >
                             데이터 이전
                         </Button>
-                        <div className="flex justify-evenly w-44 px-4 py-2">
+                        <div className="flex justify-evenly w-44 py-2">
                             <MdLightMode className="w-8 h-8 fill-yellow-400" />
-                            <label className="relative w-16 h-8 mx-2 border border-transparent shadow-lg rounded-full bg-neutral-100 transition-all duration-300 cursor-pointer dark:bg-neutral-500 dark:shadow-md dark:shadow-zinc-500">
-                                <span
-                                    className={`absolute top-[3px] left-7 ${
+                            <label
+                                htmlFor="handleTheme"
+                                className="relative w-16 h-8 mx-2 border border-transparent shadow-lg rounded-full bg-neutral-100 transition-all duration-300 cursor-pointer dark:bg-neutral-500 dark:shadow-md dark:shadow-zinc-500"
+                            >
+                                <div
+                                    className={`absolute top-[3px] left-1 ${
                                         isDark
-                                            ? "translate-x-1.5"
-                                            : "-translate-x-full"
+                                            ? "translate-x-[calc(100%+0.4rem)]"
+                                            : "translate-x-0"
                                     } w-6 h-6 rounded-full shadow-md bg-gray-300 transition-all duration-300 dark:bg-neutral-700`}
                                 />
                                 <button
+                                    id="handleTheme"
                                     onClick={handleTheme}
                                     className="hidden"
-                                ></button>
+                                />
                             </label>
                             <MdDarkMode className="w-8 h-8 fill-blue-400" />
                         </div>
