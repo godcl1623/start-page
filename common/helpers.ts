@@ -1,4 +1,6 @@
-import { ParsedFeedsDataType } from 'app/main'; 
+import { getTimes } from 'suncalc';
+
+import { ParsedFeedsDataType } from "app/main";
 
 import {
     areEqual,
@@ -65,4 +67,27 @@ export const checkIfTodayLessThan = (
     const isTodayMoreThanDateToCheck = dateToCheck <= now;
     const isTodayLessThanExtraDay = now <= dateToCheckWithExtraDay;
     return isTodayLessThanExtraDay && isTodayMoreThanDateToCheck;
+};
+
+export const calculateSunsetSunrise = async () => {
+    try {
+        const { latitude, longitude } = (await (
+            await fetch("https://geolocation-db.com/json")
+        ).json()) ?? { latitude: 37.6564, longitude: 126.835 };
+        const current = new Date();
+        const { sunrise, sunset } = getTimes(current, latitude, longitude);
+        const currentTime = current.getTime();
+        const sunriseTime = sunrise.getTime();
+        const sunsetTime = sunset.getTime();
+        return {
+            isSunset: (currentTime - sunsetTime) >= 0,
+            isSunrise: (currentTime - sunsetTime) < 0 && (currentTime - sunriseTime) >= 0
+        };
+    } catch (error) {
+        console.error(error);
+        return {
+            isSunset: undefined,
+            isSunrise: undefined
+        }
+    }
 };

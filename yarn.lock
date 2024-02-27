@@ -1575,6 +1575,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/suncalc@npm:^1":
+  version: 1.9.2
+  resolution: "@types/suncalc@npm:1.9.2"
+  checksum: 3a2d3b48b5097b7dadc8f0782e5a47805fdf64b0d93d00dc51feb5a61117306dc78fd99f424afee9c9b263a0c38fe66644e50a823febbf6db578e61dcd41ccac
+  languageName: node
+  linkType: hard
+
 "@types/tough-cookie@npm:*":
   version: 4.0.2
   resolution: "@types/tough-cookie@npm:4.0.2"
@@ -6129,6 +6136,7 @@ __metadata:
     "@types/node": "npm:20.10.4"
     "@types/react": "npm:18.2.45"
     "@types/react-dom": "npm:18.2.17"
+    "@types/suncalc": "npm:^1"
     "@yarnpkg/sdks": "npm:^3.1.0"
     autoprefixer: "npm:^10.4.16"
     cookies-next: "npm:^4.1.0"
@@ -6145,6 +6153,7 @@ __metadata:
     react-dom: "npm:18.2.0"
     react-icons: "npm:^4.12.0"
     sharp: "npm:^0.33.2"
+    suncalc: "npm:^1.9.0"
     tailwindcss: "npm:^3.4.1"
     typescript: "npm:^5.3.3"
   languageName: unknown
@@ -6310,6 +6319,13 @@ __metadata:
     sucrase: bin/sucrase
     sucrase-node: bin/sucrase-node
   checksum: b64d154a7a7eaa4b39668c3124bd08cd505f683d36ac4fb94def6491fb3af155b24b6e41b55011e38582e7d59c440af79ffba8709f3da78aeedf2f07b6d51d84
+  languageName: node
+  linkType: hard
+
+"suncalc@npm:^1.9.0":
+  version: 1.9.0
+  resolution: "suncalc@npm:1.9.0"
+  checksum: ba24acf67a421fd96f1137d905540ec445834e8965573888c9fd4d7b94d6825051c8a6fcb11c9a4f1fb64042d3ddd51cdc992f0b7a5436714dd5faab18715d92
   languageName: node
   linkType: hard
 
