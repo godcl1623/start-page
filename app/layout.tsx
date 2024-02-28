@@ -14,14 +14,25 @@ export default async function RootLayout({
 }) {
     const session = await getServerSession(authOptions);
     const theme = cookies().get("theme");
+    const setInitialTheme = `(function () {
+        const theme = document.cookie.split('; ').find((cookie) => cookie.includes('theme'));
+        if (theme == null) {
+            if (matchMedia("(prefers-color-scheme: dark)").matches) {
+                document.documentElement.classList.add("dark");
+            } else {
+                document.documentElement.classList.remove("dark");
+            }
+        }
+    })()`;
 
     return (
-        <html lang="ko" className={theme?.value === 'dark' ? 'dark' : ''}>
+        <html lang="ko" className={theme?.value === "dark" ? "dark" : ""}>
             <body>
                 <main>
                     <Providers session={session}>{children}</Providers>
                 </main>
                 <div id="modal_root" />
+                <script dangerouslySetInnerHTML={{ __html: setInitialTheme }} />
             </body>
         </html>
     );

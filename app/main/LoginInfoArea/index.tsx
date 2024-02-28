@@ -3,13 +3,14 @@ import UserInfo from "./UserInfo";
 import LoginHandleButton from "./LoginHandleButton";
 import { ModalKeys } from "../MainView";
 import Button from "components/common/Button";
-import { ChangeEvent, useLayoutEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import RequestControllers from "controllers/requestControllers";
 import useOutsideClickClose from "hooks/useOutsideClickClose";
 import { useMutation } from "@tanstack/react-query";
 import { UploadFileType } from "app/api/data/import/route";
-import { getCookie, setCookie } from "cookies-next";
-import { MdLightMode, MdDarkMode } from "react-icons/md";
+import { getCookie, setCookie, deleteCookie, hasCookie } from "cookies-next";
+import { MdLightMode, MdDarkMode, MdFormatColorReset } from "react-icons/md";
+import useDetectSystemTheme from "hooks/useDetectSystemTheme";
 
 interface Props {
     handleAuthenticationModal: (target: ModalKeys) => () => void;
@@ -20,11 +21,12 @@ export default function LoginInfoArea({
     handleAuthenticationModal,
     userId,
 }: Readonly<Props>) {
-    const [isDark, setIsDark] = useState(false);
     const [modalState, setModalState] = useState(false);
     const [userMenu, setUserMenu] = useState<HTMLDivElement | null>(null);
+    const [isSystemTheme, setIsSystemTheme] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null);
     const labelRef = useRef<HTMLLabelElement>(null);
+    const [isDark, setIsDark] = useDetectSystemTheme();
     const { data: session } = useSession();
     useOutsideClickClose({
         target: userMenu,
@@ -144,26 +146,42 @@ export default function LoginInfoArea({
         }
     };
 
-    const handleTheme = () => {
+    const handleTheme = (value: "light" | "dark" | "system") => () => {
         const root = document.documentElement;
-        if (root.classList.contains("dark")) {
-            setIsDark(false);
-            root.classList.remove("dark");
-            setCookie("theme", "light");
-        } else {
-            setIsDark(true);
-            root.classList.add("dark");
-            setCookie("theme", "dark");
+        switch (value) {
+            case "light":
+                setIsDark(false);
+                setIsSystemTheme(false);
+                root.classList.remove("dark");
+                setCookie("theme", "light");
+                return;
+            case "dark":
+                setIsDark(true);
+                setIsSystemTheme(false);
+                root.classList.add("dark");
+                setCookie("theme", "dark");
+                return;
+            default:
+                deleteCookie("theme");
+                setIsSystemTheme(true);
+                if (matchMedia("(prefers-color-scheme: dark)").matches) {
+                    setIsDark(true);
+                    root.classList.add("dark");
+                } else {
+                    setIsDark(false);
+                    root.classList.remove("dark");
+                }
+                return;
         }
     };
 
-    useLayoutEffect(() => {
-        if (document.documentElement.classList.contains("dark")) {
-            setIsDark(true);
+    useEffect(() => {
+        if (hasCookie("theme")) {
+            setIsSystemTheme(false);
         } else {
-            setIsDark(false);
+            setIsSystemTheme(true);
         }
-    }, [isDark]);
+    }, []);
 
     return (
         <section className="flex flex-col items-end gap-4 w-full md:flex-row md:gap-8 md:items-center md:justify-end">
@@ -241,25 +259,41 @@ export default function LoginInfoArea({
                             데이터 이전
                         </Button>
                         <div className="flex justify-evenly w-44 py-2">
-                            <MdLightMode className="w-8 h-8 fill-yellow-400" />
-                            <label
-                                htmlFor="handleTheme"
-                                className="relative w-16 h-8 mx-2 border border-transparent shadow-lg rounded-full bg-neutral-100 transition-all duration-300 cursor-pointer dark:bg-neutral-500 dark:shadow-md dark:shadow-zinc-500"
+                            <button
+                                type="button"
+                                onClick={handleTheme("light")}
                             >
-                                <div
-                                    className={`absolute top-[3px] left-1 ${
-                                        isDark
-                                            ? "translate-x-[calc(100%+0.4rem)]"
-                                            : "translate-x-0"
-                                    } w-6 h-6 rounded-full shadow-md bg-gray-300 transition-all duration-300 dark:bg-neutral-700`}
+                                <MdLightMode
+                                    className={`w-8 h-8 ${
+                                        !isDark && !isSystemTheme
+                                            ? "fill-yellow-400"
+                                            : "fill-neutral-500"
+                                    }`}
                                 />
-                                <button
-                                    id="handleTheme"
-                                    onClick={handleTheme}
-                                    className="hidden"
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleTheme("system")}
+                            >
+                                <MdFormatColorReset
+                                    className={`w-8 h-8 ${
+                                        isSystemTheme
+                                            ? !isDark
+                                                ? "fill-yellow-400"
+                                                : "fill-blue-400"
+                                            : "fill-neutral-500"
+                                    }`}
                                 />
-                            </label>
-                            <MdDarkMode className="w-8 h-8 fill-blue-400" />
+                            </button>
+                            <button type="button" onClick={handleTheme("dark")}>
+                                <MdDarkMode
+                                    className={`w-8 h-8 ${
+                                        isDark && !isSystemTheme
+                                            ? "fill-blue-400"
+                                            : "fill-neutral-500"
+                                    }`}
+                                />
+                            </button>
                         </div>
                     </div>
                 </div>
