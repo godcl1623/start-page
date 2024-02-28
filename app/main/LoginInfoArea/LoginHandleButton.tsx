@@ -10,7 +10,7 @@ export default function LoginHandleButton({
     isUserSignedIn,
     handleAuthenticationModal,
 }: Props) {
-    const commonStyle = "w-24 font-bold";
+    const commonStyle = "w-24 font-bold text-sm";
     const loginStyle =
         "bg-sky-400 text-neutral-100 dark:bg-sky-600 dark:text-gray-300";
     const logoutStyle = "bg-red-400 text-neutral-100 dark:bg-red-700";

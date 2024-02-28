@@ -1,7 +1,7 @@
 "use client";
 
 import MainView from "./MainView";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import useFilters from "hooks/useFilters";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
@@ -97,6 +97,7 @@ export default function MainPage({
     const [renewState, setRenewState] = useState<string>(
         STATE_MESSAGE_STRINGS.start
     );
+    const abortControllerRef = useRef<AbortController | null>(null);
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
@@ -112,19 +113,6 @@ export default function MainPage({
                 ? null
                 : getDataFrom<SearchEnginesData[] | ErrorResponse>(
                       `/search_engines?userId=${userId}`
-                  ),
-    });
-    const {
-        data: newFeedsRequestResult,
-        isFetching: isNewFetching,
-        isFetched: isNewFetched,
-    } = useQuery({
-        queryKey: [`/feeds/new?userId=${userId}`],
-        queryFn: () =>
-            isLocal
-                ? null
-                : getDataFrom<PageParamData | ErrorResponse>(
-                      `/feeds/new?userId=${userId}`
                   ),
     });
     const {
@@ -174,6 +162,47 @@ export default function MainPage({
               .filter((feedListPerPage: any[]) => feedListPerPage?.length > 0)
               .reduce((acc, x) => acc?.concat(x), [])
         : formerFeedsList[currentPage];
+
+    const checkAndUpdateNewFeeds = async () => {
+        try {
+            setRenewState(STATE_MESSAGE_STRINGS.proceed);
+            abortControllerRef.current = new AbortController();
+            const signal = abortControllerRef.current.signal;
+            const newFeedsRequestResult = await getDataFrom<
+                PageParamData | ErrorResponse
+            >(`/feeds/new?userId=${userId}`, { signal });
+            if (newFeedsRequestResult != null) {
+                switch (true) {
+                    case "data" in newFeedsRequestResult:
+                        const { data, count, updated } = newFeedsRequestResult;
+                        if (count !== totalCount) {
+                            setTotalCount(count);
+                        }
+                        if (updated !== 0) {
+                            setRenewState(
+                                updated + STATE_MESSAGE_STRINGS.added
+                            );
+                        } else {
+                            setRenewState(STATE_MESSAGE_STRINGS.end);
+                        }
+                        updateFormerFeedsList(data);
+                        break;
+                    case "error" in newFeedsRequestResult:
+                        setRenewState(
+                            STATE_MESSAGE_STRINGS[newFeedsRequestResult.error]
+                        );
+                        break;
+                    default:
+                        setRenewState(STATE_MESSAGE_STRINGS.no_change);
+                        break;
+                }
+            } else {
+                throw new Error("피드 갱신에 실패했습니다.");
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     const updateFormerFeedsList = (feedsList: ParsedFeedsDataType[]) => {
         setFormerFeedsList(
@@ -263,7 +292,7 @@ export default function MainPage({
     }, [feeds]);
 
     useEffect(() => {
-        if (storedFeed && storedFeed.pages) {
+        if (storedFeed?.pages) {
             const { data, count } = JSON.parse(
                 storedFeed.pages[storedFeed.pages.length - 1]
             );
@@ -271,33 +300,6 @@ export default function MainPage({
             if (data != null) updateFormerFeedsList(data);
         }
     }, [storedFeed, isMobileLayout]);
-
-    useEffect(() => {
-        if (newFeedsRequestResult != null) {
-            switch (true) {
-                case "data" in newFeedsRequestResult:
-                    const { data, count, updated } = newFeedsRequestResult;
-                    if (count !== totalCount) {
-                        setTotalCount(count);
-                    }
-                    if (updated !== 0) {
-                        setRenewState(updated + STATE_MESSAGE_STRINGS.added);
-                    } else {
-                        setRenewState(STATE_MESSAGE_STRINGS.end);
-                    }
-                    updateFormerFeedsList(data);
-                    break;
-                case "error" in newFeedsRequestResult:
-                    setRenewState(
-                        STATE_MESSAGE_STRINGS[newFeedsRequestResult.error]
-                    );
-                    break;
-                default:
-                    setRenewState(STATE_MESSAGE_STRINGS.no_change);
-                    break;
-            }
-        }
-    }, [newFeedsRequestResult, totalCount]);
 
     useEffect(() => {
         if (!isMobileLayout) {
@@ -368,10 +370,13 @@ export default function MainPage({
     }, [observerElement, hasNextPage]);
 
     useEffect(() => {
-        if (isNewFetching) {
-            setRenewState(STATE_MESSAGE_STRINGS.proceed);
+        if (abortControllerRef.current) {
+            const controller = abortControllerRef.current;
+            return () => {
+                controller.abort();
+            };
         }
-    }, [isNewFetched, isNewFetching]);
+    }, [renewState]);
 
     return (
         <MainView
@@ -392,6 +397,7 @@ export default function MainPage({
             renewState={renewState}
             isFilterFavorite={isFilterFavorite}
             searchEnginesList={searchEnginesList}
+            checkAndUpdateNewFeeds={checkAndUpdateNewFeeds}
         />
     );
 }

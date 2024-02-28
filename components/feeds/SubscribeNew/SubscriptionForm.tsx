@@ -19,7 +19,7 @@ export default function SubscriptionForm({ handleSubmit }: Props) {
                 />
                 <Button
                     type="submit"
-                    customStyle="w-20 p-1 bg-sky-400 font-bold text-neutral-100 dark:bg-sky-600 dark:text-gray-300"
+                    customStyle="w-20 p-1 bg-sky-400 font-bold text-xs text-neutral-100 dark:bg-sky-600 dark:text-gray-300"
                 >
                     추가
                 </Button>

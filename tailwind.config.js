@@ -14,5 +14,6 @@ module.exports = {
             ...defaultTheme.screens,
         },
     },
+    darkMode: 'selector',
     plugins: [],
 };
