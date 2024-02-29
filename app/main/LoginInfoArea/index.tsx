@@ -1,17 +1,11 @@
-import { useSession, signOut } from "next-auth/react";
-import UserInfo from "./UserInfo";
-import LoginHandleButton from "./LoginHandleButton";
+import { useSession } from "next-auth/react";
 import { ModalKeys } from "../MainView";
-import Button from "components/common/Button";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent } from "react";
 import RequestControllers from "controllers/requestControllers";
-import useOutsideClickClose from "hooks/useOutsideClickClose";
 import { useMutation } from "@tanstack/react-query";
 import { UploadFileType } from "app/api/data/import/route";
-import { getCookie, setCookie, deleteCookie, hasCookie } from "cookies-next";
-import { MdLightMode, MdDarkMode, MdFormatColorReset } from "react-icons/md";
-import useDetectSystemTheme from "hooks/useDetectSystemTheme";
-import UserSettingMenu from "./UserSettingMenu";
+import { getCookie, setCookie } from "cookies-next";
+import LoginInfoAreaView from "./LoginInfoAreaView";
 
 interface Props {
     handleAuthenticationModal: (target: ModalKeys) => () => void;
@@ -24,17 +18,7 @@ export default function LoginInfoArea({
     handleAuthenticationModal,
     userId,
 }: Readonly<Props>) {
-    const [modalState, setModalState] = useState(false);
-    const [userMenu, setUserMenu] = useState<HTMLDivElement | null>(null);
-    const [isSystemTheme, setIsSystemTheme] = useState(false);
-    const buttonRef = useRef<HTMLButtonElement>(null);
-    const [isDark, setIsDark] = useDetectSystemTheme();
     const { data: session } = useSession();
-    useOutsideClickClose({
-        target: userMenu,
-        toggleButton: buttonRef.current,
-        closeFunction: () => setModalState(false),
-    });
     const { getDataFrom, putDataTo } = new RequestControllers();
     const mutationFn = ({
         userId,
@@ -50,14 +34,6 @@ export default function LoginInfoArea({
     const { mutateAsync } = useMutation({
         mutationFn,
     });
-
-    const updateUserMenu = (value: HTMLDivElement | null) => {
-        setUserMenu(value);
-    };
-
-    const updateModalState = (value: boolean) => () => {
-        setModalState(value);
-    };
 
     const getTotalData = async () => {
         try {
@@ -156,83 +132,12 @@ export default function LoginInfoArea({
         }
     };
 
-    const handleTheme = (value: Theme) => () => {
-        const root = document.documentElement;
-        switch (value) {
-            case "light":
-                setIsDark(false);
-                setIsSystemTheme(false);
-                root.classList.remove("dark");
-                setCookie("theme", "light");
-                return;
-            case "dark":
-                setIsDark(true);
-                setIsSystemTheme(false);
-                root.classList.add("dark");
-                setCookie("theme", "dark");
-                return;
-            default:
-                deleteCookie("theme");
-                setIsSystemTheme(true);
-                if (matchMedia("(prefers-color-scheme: dark)").matches) {
-                    setIsDark(true);
-                    root.classList.add("dark");
-                } else {
-                    setIsDark(false);
-                    root.classList.remove("dark");
-                }
-                return;
-        }
-    };
-
-    useEffect(() => {
-        if (hasCookie("theme")) {
-            setIsSystemTheme(false);
-        } else {
-            setIsSystemTheme(true);
-        }
-    }, []);
-
     return (
-        <section className="flex flex-col items-end gap-4 w-full md:flex-row md:gap-8 md:items-center md:justify-end">
-            <UserInfo
-                ref={buttonRef}
-                userEmail={session?.user?.email}
-                handleDataHandler={() => setModalState(!modalState)}
-            />
-            {session != null ? (
-                <Button
-                    type="button"
-                    clickHandler={() =>
-                        signOut({
-                            callbackUrl: process.env.NEXTAUTH_URL,
-                        })
-                    }
-                    customStyle="w-32 bg-red-400 font-bold text-sm text-neutral-100  dark:bg-red-700 dark:text-gray-300"
-                >
-                    Logout
-                </Button>
-            ) : (
-                <LoginHandleButton
-                    isUserSignedIn={false}
-                    handleAuthenticationModal={handleAuthenticationModal}
-                />
-            )}
-            {modalState ? (
-                <UserSettingMenu
-                    toggleButtonRef={buttonRef.current}
-                    isDark={isDark}
-                    isSystemTheme={isSystemTheme}
-                    updateUserMenu={updateUserMenu}
-                    updateModalState={updateModalState}
-                    getTotalData={getTotalData}
-                    uploadUserData={uploadUserData}
-                    handleUserData={handleUserData}
-                    handleTheme={handleTheme}
-                />
-            ) : (
-                <></>
-            )}
-        </section>
+        <LoginInfoAreaView
+            handleAuthenticationModal={handleAuthenticationModal}
+            getTotalData={getTotalData}
+            uploadUserData={uploadUserData}
+            handleUserData={handleUserData}
+        />
     );
 }
