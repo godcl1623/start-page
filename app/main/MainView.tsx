@@ -221,7 +221,7 @@ export default memo(function MainView({
                                 <Button
                                     type="button"
                                     clickHandler={handleFeedUpdate}
-                                    customStyle="bg-neutral-500"
+                                    customStyle="bg-neutral-500 text-neutral-100"
                                 >
                                     피드 갱신
                                 </Button>
