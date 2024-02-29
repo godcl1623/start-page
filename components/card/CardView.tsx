@@ -1,4 +1,4 @@
-import { memo, MouseEvent } from "react";
+import { memo, MouseEvent, useCallback, useEffect, useState } from "react";
 import { CallbackType } from ".";
 import Checkbox from "./Checkbox";
 import {
@@ -10,6 +10,7 @@ import useClientSideDate from "./hooks/useClientSideDate";
 import useCheckIfDataIsNew from "./hooks/useCheckIfDataIsNew";
 import { ParsedFeedsDataType } from "app/main";
 import { SvgSpinners90RingWithBg } from "components/common/Spinner";
+import useResizeEvent from 'hooks/useResizeEvent';
 
 interface Props {
     cardData: ParsedFeedsDataType;
@@ -35,6 +36,7 @@ export default memo(function CardView({
     const { title, description, pubDate, isRead, isFavorite, origin } =
         cardData ?? {};
 
+    const [feedDescription, setFeedDescription] = useState(description);
     const [readState, setReadState] = useDerivedStateFromProps<boolean>(
         isRead ?? false
     );
@@ -50,15 +52,32 @@ export default memo(function CardView({
         return "brightness-100 dark:opacity-100";
     };
 
+    const adjustFeedLengthOnResize = useCallback(() => {
+        if (description != null) {
+            if (document.documentElement.offsetWidth < 360) {
+                setFeedDescription(description.slice(0, 48) + "...");
+            } else if (
+                document.documentElement.offsetWidth >= 360 &&
+                document.documentElement.offsetWidth < 768
+            ) {
+                setFeedDescription(description.slice(0, 98) + "...");
+            } else {
+                setFeedDescription(description);
+            }
+        }
+    }, [description]);
+
+    useResizeEvent(adjustFeedLengthOnResize, true, [adjustFeedLengthOnResize]);
+
     return (
-        <div
-            className={`flex min-w-full min-h-[7.75rem] rounded-md shadow-lg mb-8 px-6 py-4 bg-neutral-100 text-neutral-700 cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${returnReadStyle(
+        <button
+            className={`flex min-w-full min-h-[7.75rem] rounded-md shadow-lg mb-8 px-6 py-4 bg-neutral-100 text-justify text-neutral-700 cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${returnReadStyle(
                 readState
             )}`}
             onClick={handleCard(favoriteState)}
         >
             {cardData == null || cardData.id === "" ? (
-                <div className="flex justify-center items-center w-full">
+                <div className="flex justify-center items-center w-full h-[5.75rem]">
                     <SvgSpinners90RingWithBg className="w-6 h-6 fill-neutral-700 dark:fill-neutral-100" />
                 </div>
             ) : (
@@ -82,7 +101,9 @@ export default memo(function CardView({
                     </div>
                     <div className="w-full">
                         <div className="flex justify-between w-full">
-                            <h2 className="text-lg">{title}</h2>
+                            <h2 className="mr-4 text-sm whitespace-pre-normal xs:text-base sm:text-lg">
+                                <b>{title}</b>
+                            </h2>
                             <Checkbox
                                 targetState={readState}
                                 feedId={cardData.id}
@@ -94,20 +115,18 @@ export default memo(function CardView({
                                 )}
                             />
                         </div>
-                        <p className="my-3">{description}</p>
-                        <div className="flex justify-between w-full">
+                        <p className="my-3 text-xs xs:text-sm">
+                            {feedDescription}
+                        </p>
+                        <div className="flex flex-col justify-between w-full text-xs xs:text-sm sm:flex-row">
                             <p>{clientSideDate}</p>
-                            <p>{origin}</p>
+                            <p className="whitespace-pre-wrap break-keep">
+                                {origin}
+                            </p>
                         </div>
                     </div>
                 </>
             )}
-            <style jsx>{`
-                p {
-                    font-size: 0.875rem;
-                    line-height: 1.25rem;
-                }
-            `}</style>
-        </div>
+        </button>
     );
 });

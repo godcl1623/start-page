@@ -182,153 +182,159 @@ export default memo(function MainView({
     ));
 
     return (
-        <article
-            className="flex items-center space-between flex-col w-full h-max min-h-full p-8 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
-            ref={startPageRef}
-        >
-            <section
-                className={`flex flex-col items-center w-full h-max min-h-[calc(100vh_-_64px)] fhd:max-w-[1920px]`}
-            >
+        <>
+            <header className="p-8 pb-0 fhd:max-w-[1920px]">
                 <LoginInfoArea
                     handleAuthenticationModal={handleModal}
                     userId={userId}
                 />
-                <div className="flex flex-col justify-center my-auto">
-                    <section className="flex-center w-full mt-32 mb-28 lg:w-[768px]">
-                        <Search
-                            handleModal={handleModal("editSearchEngine")}
-                            searchEnginesList={searchEngines}
-                        />
-                    </section>
-                    <section className="flex flex-col items-center w-full h-max lg:w-[768px]">
-                        <div className="flex items-center justify-end gap-1.5 w-full min-h-[1rem] mb-2 text-right text-xs">
-                            {sourcesList.length === 0 ||
-                            shouldHideRenewState ? (
-                                <></>
+            </header>
+            <main
+                className="flex items-center space-between flex-col w-full h-max min-h-full p-8 pt-0 dark:text-neutral-200"
+                ref={startPageRef}
+            >
+                <section
+                    className={`flex flex-col items-center w-full h-full min-h-[calc(100vh-140px)] xs:min-h-[calc(100vh-100px)] fhd:max-w-[1920px]`}
+                >
+                    <div className="flex flex-col justify-center my-auto">
+                        <article className="flex-center w-full mt-24 mb-20 sm:mt-32 sm:mb-28 lg:w-[768px]">
+                            <Search
+                                handleModal={handleModal("editSearchEngine")}
+                                searchEnginesList={searchEngines}
+                            />
+                        </article>
+                        <article className="flex flex-col items-center w-full h-max lg:w-[768px]">
+                            <div className="flex items-center justify-end gap-1.5 w-full min-h-[1rem] mb-2 text-right text-xs">
+                                {sourcesList.length === 0 ||
+                                shouldHideRenewState ? (
+                                    <></>
+                                ) : (
+                                    <>
+                                        {isLoaded || !shouldStartLoad ? (
+                                            <></>
+                                        ) : (
+                                            <SvgSpinners90RingWithBg className="fill-neutral-700 dark:fill-neutral-100" />
+                                        )}
+                                        <p>{renewState}</p>
+                                    </>
+                                )}
+                                {sourcesList.length === 0 ? (
+                                    <></>
+                                ) : (
+                                    <Button
+                                        type="button"
+                                        clickHandler={handleFeedUpdate}
+                                        customStyle="bg-neutral-500 text-neutral-100 hover:bg-neutral-400"
+                                    >
+                                        피드 갱신
+                                    </Button>
+                                )}
+                            </div>
+                            <PostHandleOptions
+                                filterFavorites={filterFavorites}
+                                handleClick={handleModal}
+                                setSearchTexts={setSearchTexts}
+                                setSortState={setSortState}
+                            />
+                            {sourcesList.length > 0 ? (
+                                <FeedsList
+                                    feedsFromServer={feedsFromServer}
+                                    refetchFeeds={refetchStoredFeeds}
+                                    userId={userId}
+                                    isFilterFavorite={isFilterFavorite}
+                                    isFilterSources={isFilterSources}
+                                />
                             ) : (
-                                <>
-                                    {isLoaded || !shouldStartLoad ? (
-                                        <></>
-                                    ) : (
-                                        <SvgSpinners90RingWithBg className="fill-neutral-700 dark:fill-neutral-100" />
-                                    )}
-                                    <p>{renewState}</p>
-                                </>
-                            )}
-                            {sourcesList.length === 0 ? (
                                 <></>
-                            ) : (
-                                <Button
-                                    type="button"
-                                    clickHandler={handleFeedUpdate}
-                                    customStyle="bg-neutral-500"
-                                >
-                                    피드 갱신
-                                </Button>
                             )}
-                        </div>
-                        <PostHandleOptions
-                            filterFavorites={filterFavorites}
-                            handleClick={handleModal}
-                            setSearchTexts={setSearchTexts}
-                            setSortState={setSortState}
-                        />
-                        {sourcesList.length > 0 ? (
-                            <FeedsList
-                                feedsFromServer={feedsFromServer}
-                                refetchFeeds={refetchStoredFeeds}
+                            {isMobileLayout ? (
+                                <div
+                                    ref={updateObserverElement}
+                                    className="w-full h-[150px]"
+                                />
+                            ) : (
+                                <menu className="flex justify-center items-center gap-2 w-full mt-10 mb-20">
+                                    <PageButton clickHandler={moveToPage(1)}>
+                                        &lt;&lt;
+                                    </PageButton>
+                                    <PageButton
+                                        clickHandler={moveToPreviousPage}
+                                    >
+                                        &lt;
+                                    </PageButton>
+                                    {pageIndicator}
+                                    <PageButton clickHandler={moveToNextPage}>
+                                        &gt;
+                                    </PageButton>
+                                    <PageButton
+                                        clickHandler={moveToPage(
+                                            calculateTotalPages(totalCount)
+                                        )}
+                                    >
+                                        &gt;&gt;
+                                    </PageButton>
+                                </menu>
+                            )}
+                        </article>
+                    </div>
+                </section>
+                {modalState.addSubscription && (
+                    <Modal closeModal={closeModal("addSubscription")}>
+                        <SubscriptionDialogBox
+                            closeModal={closeModal("addSubscription")}
+                        >
+                            <SubscribeNew userId={userId} />
+                        </SubscriptionDialogBox>
+                    </Modal>
+                )}
+                {modalState.cancelSubscription && (
+                    <Modal closeModal={closeModal("cancelSubscription")}>
+                        <SubscriptionDialogBox
+                            closeModal={closeModal("cancelSubscription")}
+                        >
+                            <CancelSubscription
+                                sources={sourcesList}
                                 userId={userId}
-                                isFilterFavorite={isFilterFavorite}
-                                isFilterSources={isFilterSources}
                             />
-                        ) : (
-                            <></>
-                        )}
-                        {isMobileLayout ? (
-                            <div
-                                ref={updateObserverElement}
-                                className="w-full h-[150px]"
-                            />
-                        ) : (
-                            <ul className="flex justify-center items-center gap-2 w-full mt-10 mb-20">
-                                <PageButton clickHandler={moveToPage(1)}>
-                                    &lt;&lt;
-                                </PageButton>
-                                <PageButton clickHandler={moveToPreviousPage}>
-                                    &lt;
-                                </PageButton>
-                                {pageIndicator}
-                                <PageButton clickHandler={moveToNextPage}>
-                                    &gt;
-                                </PageButton>
-                                <PageButton
-                                    clickHandler={moveToPage(
-                                        calculateTotalPages(totalCount)
-                                    )}
-                                >
-                                    &gt;&gt;
-                                </PageButton>
-                            </ul>
-                        )}
-                    </section>
-                </div>
-            </section>
-            {modalState.addSubscription && (
-                <Modal closeModal={closeModal("addSubscription")}>
-                    <SubscriptionDialogBox
-                        closeModal={closeModal("addSubscription")}
-                    >
-                        <SubscribeNew userId={userId} />
-                    </SubscriptionDialogBox>
-                </Modal>
-            )}
-            {modalState.cancelSubscription && (
-                <Modal closeModal={closeModal("cancelSubscription")}>
-                    <SubscriptionDialogBox
-                        closeModal={closeModal("cancelSubscription")}
-                    >
-                        <CancelSubscription
-                            sources={sourcesList}
-                            userId={userId}
-                        />
-                    </SubscriptionDialogBox>
-                </Modal>
-            )}
-            {modalState.filterBySource && (
-                <Modal closeModal={closeModal("filterBySource")}>
-                    <SubscriptionDialogBox
-                        closeModal={closeModal("filterBySource")}
-                    >
-                        <FilterBySource
-                            displayState={sourceDisplayState}
-                            setDisplayFlag={setSourceDisplayState}
+                        </SubscriptionDialogBox>
+                    </Modal>
+                )}
+                {modalState.filterBySource && (
+                    <Modal closeModal={closeModal("filterBySource")}>
+                        <SubscriptionDialogBox
                             closeModal={closeModal("filterBySource")}
-                            refetchFeeds={refetchStoredFeeds}
+                        >
+                            <FilterBySource
+                                displayState={sourceDisplayState}
+                                setDisplayFlag={setSourceDisplayState}
+                                closeModal={closeModal("filterBySource")}
+                                refetchFeeds={refetchStoredFeeds}
+                            />
+                        </SubscriptionDialogBox>
+                    </Modal>
+                )}
+                {modalState.handleAuthentication && (
+                    <Modal closeModal={closeModal("handleAuthentication")}>
+                        <Authentication
+                            closeModal={closeModal("handleAuthentication")}
                         />
-                    </SubscriptionDialogBox>
-                </Modal>
-            )}
-            {modalState.handleAuthentication && (
-                <Modal closeModal={closeModal("handleAuthentication")}>
-                    <Authentication
-                        closeModal={closeModal("handleAuthentication")}
-                    />
-                </Modal>
-            )}
-            {modalState.editSearchEngine && (
-                <Modal closeModal={closeModal("editSearchEngine")}>
-                    <SubscriptionDialogBox
-                        closeModal={closeModal("editSearchEngine")}
-                        customStyle="w-screen lg:w-[768px]"
-                    >
-                        <EditSearchEngines
-                            userId={userId}
-                            serverSearchEnginesList={searchEngines}
+                    </Modal>
+                )}
+                {modalState.editSearchEngine && (
+                    <Modal closeModal={closeModal("editSearchEngine")}>
+                        <SubscriptionDialogBox
                             closeModal={closeModal("editSearchEngine")}
-                        />
-                    </SubscriptionDialogBox>
-                </Modal>
-            )}
-        </article>
+                            customStyle="w-screen lg:w-[768px]"
+                        >
+                            <EditSearchEngines
+                                userId={userId}
+                                serverSearchEnginesList={searchEngines}
+                                closeModal={closeModal("editSearchEngine")}
+                            />
+                        </SubscriptionDialogBox>
+                    </Modal>
+                )}
+            </main>
+        </>
     );
 });

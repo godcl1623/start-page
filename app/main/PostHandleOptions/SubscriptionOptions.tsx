@@ -1,5 +1,6 @@
 import Button from "components/common/Button";
 import { ModalKeys } from "../MainView";
+import { nanoid } from "nanoid";
 
 interface Props {
     handleClick: (target: ModalKeys) => () => void;
@@ -17,24 +18,25 @@ export default function SubscriptionOptions({
         "출처별 필터": handleClick("filterBySource"),
     };
     const optionButtonsList = Object.entries(buttonData).map(
-        (buttonData: [string, () => void], index: number) => {
+        (buttonData: [string, () => void]) => {
             const [buttonText, clickHandler] = buttonData;
             return (
-                <Button
-                    key={`${buttonText}_${index}`}
-                    type="button"
-                    customStyle="w-full bg-neutral-500 text-xs text-neutral-100 dark:bg-neutral-500 hover:bg-neutral-400"
-                    clickHandler={clickHandler}
-                >
-                    {buttonText}
-                </Button>
+                <li key={`${buttonText}_${nanoid()}`} className="w-full">
+                    <Button
+                        type="button"
+                        customStyle="w-full bg-neutral-500 text-xs text-neutral-100 dark:bg-neutral-500 hover:bg-neutral-400"
+                        clickHandler={clickHandler}
+                    >
+                        {buttonText}
+                    </Button>
+                </li>
             );
         }
     );
 
     return (
-        <section className="grid grid-cols-2 gap-2 xs:flex xs:justify-between xs:gap-2">
+        <menu className="grid grid-cols-2 gap-2 xs:flex xs:justify-between xs:gap-2">
             {optionButtonsList}
-        </section>
+        </menu>
     );
 }
