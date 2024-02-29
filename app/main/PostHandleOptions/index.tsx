@@ -1,9 +1,9 @@
 import { SORT_STANDARD } from "common/constants";
 import FilterByText from "components/feeds/FilterByText";
 import { memo, useMemo } from "react";
-import { ModalKeys } from '../MainView';
+import { ModalKeys } from "../MainView";
 import SubscriptionOptions from "./SubscriptionOptions";
-import SelectDiv from 'components/common/SelectDiv';
+import SelectDiv from "components/common/SelectDiv";
 
 interface Props {
     handleClick: (target: ModalKeys) => () => void;
@@ -35,7 +35,7 @@ export default memo(function PostHandleOptions({
         () => (
             <SelectDiv
                 optionValues={SORT_STANDARD}
-                customStyles="rounded-md shadow-md bg-white text-xs dark:shadow-zinc-600 md:w-[20%]"
+                customStyles="rounded-md shadow-md bg-neutral-50 text-xs dark:shadow-zinc-600 md:w-[20%]"
                 setSortState={setSortState}
             />
         ),

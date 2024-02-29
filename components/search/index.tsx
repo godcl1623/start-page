@@ -45,7 +45,7 @@ export default memo(function Search({ searchEnginesList, handleModal }: Props) {
         >
             <SelectDiv
                 optionValues={namesList}
-                customStyles="w-24 rounded-l-md bg-white"
+                customStyles="w-24 rounded-l-md bg-neutral-50"
                 options={{
                     enableEdit: true,
                     editHandler: handleModal,
@@ -55,7 +55,7 @@ export default memo(function Search({ searchEnginesList, handleModal }: Props) {
                 name="searchInput"
                 type="text"
                 placeholder="검색어를 입력해주세요"
-                className="w-[calc(100%-12rem)] h-full p-4 text-neutral-400 dark:focus:outline-sky-600"
+                className="w-[calc(100%-12rem)] h-full p-4 bg-neutral-50 text-neutral-400 dark:focus:outline-sky-600"
                 value={inputValue}
                 onChange={handleChange}
             />

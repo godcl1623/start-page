@@ -183,7 +183,7 @@ export default memo(function MainView({
 
     return (
         <article
-            className="flex items-center space-between flex-col w-full h-max min-h-full p-8 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-200"
+            className="flex items-center space-between flex-col w-full h-max min-h-full p-8 bg-stone-200 dark:bg-neutral-800 dark:text-neutral-200"
             ref={startPageRef}
         >
             <section

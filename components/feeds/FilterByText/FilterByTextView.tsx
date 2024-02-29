@@ -28,11 +28,11 @@ const FilterByTextView = forwardRef<HTMLInputElement, Props>(
             >
                 <SelectDiv
                     optionValues={searchOptions}
-                    customStyles="w-20 h-full rounded-l-md bg-white"
+                    customStyles="w-20 h-full rounded-l-md bg-neutral-50"
                 />
                 <input
                     ref={ref}
-                    className="w-full h-full px-3 text-neutral-400"
+                    className="w-full h-full px-3 bg-neutral-50 text-neutral-400"
                     onChange={checkIfInputFilled}
                 />
                 {isInputFilled && (
