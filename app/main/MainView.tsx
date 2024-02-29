@@ -194,10 +194,10 @@ export default memo(function MainView({
                 ref={startPageRef}
             >
                 <section
-                    className={`flex flex-col items-center w-full h-max min-h-[calc(100vh_-_100px)] fhd:max-w-[1920px]`}
+                    className={`flex flex-col items-center w-full h-full min-h-[calc(100vh-140px)] md:min-h-[calc(100vh-100px)] fhd:max-w-[1920px]`}
                 >
                     <div className="flex flex-col justify-center my-auto">
-                        <article className="flex-center w-full mt-32 mb-28 lg:w-[768px]">
+                        <article className="flex-center w-full mt-24 mb-20 sm:mt-32 mb-28 lg:w-[768px]">
                             <Search
                                 handleModal={handleModal("editSearchEngine")}
                                 searchEnginesList={searchEngines}

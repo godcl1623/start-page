@@ -261,7 +261,7 @@ export default function MainPage({
     useEffect(() => {
         if (typeof window !== "undefined") {
             const callback = () => {
-                if (window.innerWidth > 768) {
+                if (document.documentElement.offsetWidth >= 768) {
                     setIsMobileLayout(false);
                 } else {
                     setIsMobileLayout(true);

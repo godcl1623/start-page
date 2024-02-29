@@ -88,7 +88,7 @@ export default memo(function SelectDiv({
             <button
                 type="button"
                 ref={toggleButtonRef}
-                className="relative flex items-center w-full h-full"
+                className="relative flex items-center w-full h-full min-h-8"
                 onClick={toggleList}
                 value={selectedValue}
             >
@@ -98,7 +98,7 @@ export default memo(function SelectDiv({
             {shouldOpenList ? (
                 <ul
                     ref={uListRef}
-                    className="absolute z-50 top-0 right-2.5 w-full min-w-[4rem] rounded-md shadow-lg bg-neutral-100 text-center text-xs dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
+                    className="absolute z-50 top-0 right-0 w-full min-w-[4rem] rounded-md shadow-lg bg-neutral-100 text-center text-xs dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200"
                 >
                     {selectOptions}
                     {options != null && options.enableEdit ? (

@@ -32,7 +32,7 @@ const FilterByTextView = forwardRef<HTMLInputElement, Props>(
                 />
                 <input
                     ref={ref}
-                    className="w-full h-full px-3 bg-neutral-50 text-neutral-400"
+                    className="w-full h-full px-3 rounded-none bg-neutral-50 text-neutral-400"
                     onChange={checkIfInputFilled}
                 />
                 {isInputFilled && (
