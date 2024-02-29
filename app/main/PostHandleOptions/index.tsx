@@ -42,12 +42,10 @@ export default memo(function PostHandleOptions({
         []
     );
     return (
-        <section className="w-full">
-            <section className="flex flex-col justify-between gap-1 w-full h-36 mb-4 md:flex-row md:gap-0 xs:h-28 md:h-8">
-                {subscriptionOptions}
-                {filterByText}
-                {selectBox}
-            </section>
-        </section>
+        <div className="flex flex-col justify-between gap-1 w-full h-36 mb-4 md:flex-row md:gap-0 xs:h-28 md:h-8">
+            {subscriptionOptions}
+            {filterByText}
+            {selectBox}
+        </div>
     );
 });

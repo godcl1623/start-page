@@ -27,10 +27,8 @@ export default async function RootLayout({
 
     return (
         <html lang="ko" className={theme?.value === "dark" ? "dark" : ""}>
-            <body>
-                <main>
-                    <Providers session={session}>{children}</Providers>
-                </main>
+            <body className="bg-stone-200 dark:bg-neutral-800">
+                <Providers session={session}>{children}</Providers>
                 <div id="modal_root" />
                 <script dangerouslySetInnerHTML={{ __html: setInitialTheme }} />
             </body>
