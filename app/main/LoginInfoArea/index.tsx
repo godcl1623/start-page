@@ -11,11 +11,14 @@ import { UploadFileType } from "app/api/data/import/route";
 import { getCookie, setCookie, deleteCookie, hasCookie } from "cookies-next";
 import { MdLightMode, MdDarkMode, MdFormatColorReset } from "react-icons/md";
 import useDetectSystemTheme from "hooks/useDetectSystemTheme";
+import UserSettingMenu from "./UserSettingMenu";
 
 interface Props {
     handleAuthenticationModal: (target: ModalKeys) => () => void;
     userId: string;
 }
+
+export type Theme = "light" | "dark" | "system";
 
 export default function LoginInfoArea({
     handleAuthenticationModal,
@@ -25,7 +28,6 @@ export default function LoginInfoArea({
     const [userMenu, setUserMenu] = useState<HTMLDivElement | null>(null);
     const [isSystemTheme, setIsSystemTheme] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null);
-    const labelRef = useRef<HTMLLabelElement>(null);
     const [isDark, setIsDark] = useDetectSystemTheme();
     const { data: session } = useSession();
     useOutsideClickClose({
@@ -48,6 +50,14 @@ export default function LoginInfoArea({
     const { mutateAsync } = useMutation({
         mutationFn,
     });
+
+    const updateUserMenu = (value: HTMLDivElement | null) => {
+        setUserMenu(value);
+    };
+
+    const updateModalState = (value: boolean) => () => {
+        setModalState(value);
+    };
 
     const getTotalData = async () => {
         try {
@@ -146,7 +156,7 @@ export default function LoginInfoArea({
         }
     };
 
-    const handleTheme = (value: "light" | "dark" | "system") => () => {
+    const handleTheme = (value: Theme) => () => {
         const root = document.documentElement;
         switch (value) {
             case "light":
@@ -208,95 +218,20 @@ export default function LoginInfoArea({
                     handleAuthenticationModal={handleAuthenticationModal}
                 />
             )}
-            {modalState && (
-                <div
-                    ref={setUserMenu}
-                    className={`absolute top-0 z-10 w-full md:top-20 md:w-max`}
-                    style={{
-                        right:
-                            buttonRef.current &&
-                            document.documentElement.offsetWidth > 768
-                                ? buttonRef.current.offsetWidth
-                                : 0,
-                    }}
-                >
-                    <div className="flex flex-col gap-4 justify-center items-center w-full p-4 rounded-md shadow-lg bg-neutral-100 dark:bg-neutral-700 dark:shadow-zinc-600 md:gap-6 md:w-80">
-                        {document.documentElement.offsetWidth < 768 ? (
-                            <button
-                                type="button"
-                                className="absolute top-4 right-4 flex justify-center items-center w-4 h-4"
-                                onClick={() => setModalState(false)}
-                            >
-                                ✕
-                            </button>
-                        ) : (
-                            <></>
-                        )}
-                        <Button
-                            type="button"
-                            customStyle="w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300"
-                            clickHandler={getTotalData}
-                        >
-                            피드 / 출처 내보내기
-                        </Button>
-                        <label
-                            ref={labelRef}
-                            className="w-44 px-4 py-2 rounded-md bg-neutral-500 text-center text-sm text-neutral-100 cursor-pointer dark:text-gray-300"
-                        >
-                            피드 / 출처 불러오기
-                            <input
-                                type="file"
-                                accept="application/json"
-                                className="hidden"
-                                onChange={uploadUserData}
-                            />
-                        </label>
-                        <Button
-                            type="button"
-                            customStyle="w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300"
-                            clickHandler={handleUserData}
-                        >
-                            데이터 이전
-                        </Button>
-                        <div className="flex justify-evenly w-44 py-2">
-                            <button
-                                type="button"
-                                onClick={handleTheme("light")}
-                            >
-                                <MdLightMode
-                                    className={`w-8 h-8 ${
-                                        !isDark && !isSystemTheme
-                                            ? "fill-yellow-400"
-                                            : "fill-neutral-500"
-                                    }`}
-                                />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleTheme("system")}
-                            >
-                                <MdFormatColorReset
-                                    className={`w-8 h-8 ${
-                                        isSystemTheme
-                                            ? !isDark
-                                                ? "fill-yellow-400"
-                                                : "fill-blue-400"
-                                            : "fill-neutral-500"
-                                    }`}
-                                />
-                            </button>
-                            <button type="button" onClick={handleTheme("dark")}>
-                                <MdDarkMode
-                                    className={`w-8 h-8 ${
-                                        isDark && !isSystemTheme
-                                            ? "fill-blue-400"
-                                            : "fill-neutral-500"
-                                    }`}
-                                />
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            {modalState ? (
+                <UserSettingMenu
+                    toggleButtonRef={buttonRef.current}
+                    isDark={isDark}
+                    isSystemTheme={isSystemTheme}
+                    updateUserMenu={updateUserMenu}
+                    updateModalState={updateModalState}
+                    getTotalData={getTotalData}
+                    uploadUserData={uploadUserData}
+                    handleUserData={handleUserData}
+                    handleTheme={handleTheme}
+                />
+            ) : (
+                <></>
             )}
         </section>
     );
