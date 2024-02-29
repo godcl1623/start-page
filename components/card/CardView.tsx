@@ -10,6 +10,7 @@ import useClientSideDate from "./hooks/useClientSideDate";
 import useCheckIfDataIsNew from "./hooks/useCheckIfDataIsNew";
 import { ParsedFeedsDataType } from "app/main";
 import { SvgSpinners90RingWithBg } from "components/common/Spinner";
+import useResizeEvent from 'hooks/useResizeEvent';
 
 interface Props {
     cardData: ParsedFeedsDataType;
@@ -66,12 +67,7 @@ export default memo(function CardView({
         }
     }, [description]);
 
-    useEffect(() => {
-        window.addEventListener("resize", adjustFeedLengthOnResize);
-        adjustFeedLengthOnResize();
-        return () =>
-            window.removeEventListener("resize", adjustFeedLengthOnResize);
-    }, [adjustFeedLengthOnResize]);
+    useResizeEvent(adjustFeedLengthOnResize, true, [adjustFeedLengthOnResize]);
 
     return (
         <button

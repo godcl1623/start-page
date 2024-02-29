@@ -81,30 +81,32 @@ export default function LoginInfoAreaView({
     }, []);
 
     return (
-        <section className="flex flex-col items-end gap-4 w-full md:flex-row md:gap-8 md:items-center md:justify-end">
-            <UserInfo
-                ref={buttonRef}
-                userEmail={session?.user?.email}
-                handleDataHandler={() => setModalState(!modalState)}
-            />
-            {session != null ? (
-                <Button
-                    type="button"
-                    clickHandler={() =>
-                        signOut({
-                            callbackUrl: process.env.NEXTAUTH_URL,
-                        })
-                    }
-                    customStyle="w-32 bg-red-400 font-bold text-sm text-neutral-100  dark:bg-red-700 dark:text-gray-300"
-                >
-                    Logout
-                </Button>
-            ) : (
-                <LoginHandleButton
-                    isUserSignedIn={false}
-                    handleAuthenticationModal={handleAuthenticationModal}
+        <section className="w-full">
+            <div className="flex justify-center md:items-center xs:justify-end">
+                <UserInfo
+                    ref={buttonRef}
+                    userEmail={session?.user?.email}
+                    handleDataHandler={() => setModalState(!modalState)}
                 />
-            )}
+                {session != null ? (
+                    <Button
+                        type="button"
+                        clickHandler={() =>
+                            signOut({
+                                callbackUrl: process.env.NEXTAUTH_URL,
+                            })
+                        }
+                        customStyle="w-32 rounded-l-none bg-red-400 font-bold text-sm text-neutral-100  dark:bg-red-700 dark:text-gray-300"
+                    >
+                        Logout
+                    </Button>
+                ) : (
+                    <LoginHandleButton
+                        isUserSignedIn={false}
+                        handleAuthenticationModal={handleAuthenticationModal}
+                    />
+                )}
+            </div>
             {modalState ? (
                 <UserSettingMenu
                     toggleButtonRef={buttonRef.current}
