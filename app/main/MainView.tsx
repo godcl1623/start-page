@@ -51,7 +51,8 @@ export type ModalKeys =
     | "cancelSubscription"
     | "filterBySource"
     | "handleAuthentication"
-    | "editSearchEngine";
+    | "editSearchEngine"
+    | "handleInquiry";
 
 type ModalStateType = {
     [key in ModalKeys]: boolean;
@@ -86,6 +87,7 @@ export default memo(function MainView({
         filterBySource: false,
         handleAuthentication: false,
         editSearchEngine: false,
+        handleInquiry: false,
     });
     const [shouldHideRenewState, setShouldHideRenewState] = useState(true);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -185,7 +187,7 @@ export default memo(function MainView({
         <>
             <header className="p-8 pb-0 fhd:max-w-[1920px]">
                 <LoginInfoArea
-                    handleAuthenticationModal={handleModal}
+                    handleModal={handleModal}
                     userId={userId}
                 />
             </header>
@@ -337,6 +339,18 @@ export default memo(function MainView({
                         </SubscriptionDialogBox>
                     </Modal>
                 )}
+                {
+                    modalState.handleInquiry && (
+                        <Modal closeModal={closeModal('handleInquiry')}>
+                            <SubscriptionDialogBox
+                                closeModal={closeModal('handleInquiry')}
+                                customStyle="w-screen lg:w-[768px]"
+                            >
+                                <h1>foo</h1>
+                            </SubscriptionDialogBox>
+                        </Modal>
+                    )
+                }
             </main>
         </>
     );

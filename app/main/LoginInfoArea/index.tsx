@@ -8,14 +8,14 @@ import { getCookie, setCookie } from "cookies-next";
 import LoginInfoAreaView from "./LoginInfoAreaView";
 
 interface Props {
-    handleAuthenticationModal: (target: ModalKeys) => () => void;
+    handleModal: (target: ModalKeys) => () => void;
     userId: string;
 }
 
 export type Theme = "light" | "dark" | "system";
 
 export default function LoginInfoArea({
-    handleAuthenticationModal,
+    handleModal,
     userId,
 }: Readonly<Props>) {
     const { data: session } = useSession();
@@ -134,7 +134,7 @@ export default function LoginInfoArea({
 
     return (
         <LoginInfoAreaView
-            handleAuthenticationModal={handleAuthenticationModal}
+            handleModal={handleModal}
             getTotalData={getTotalData}
             uploadUserData={uploadUserData}
             handleUserData={handleUserData}

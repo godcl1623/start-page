@@ -1,7 +1,9 @@
 import Button from "components/common/Button";
-import { ChangeEvent } from 'react';
+import { ChangeEvent } from "react";
 import { MdDarkMode, MdFormatColorReset, MdLightMode } from "react-icons/md";
-import { Theme } from '.';
+import { Theme } from ".";
+import { ModalKeys } from "../MainView";
+import { nanoid } from "nanoid";
 
 interface Props {
     toggleButtonRef: HTMLButtonElement | null;
@@ -13,6 +15,7 @@ interface Props {
     uploadUserData: (event: ChangeEvent<HTMLInputElement>) => void;
     handleUserData: () => void;
     handleTheme: (value: Theme) => () => void;
+    handleModal: () => void;
 }
 
 export default function UserSettingMenu({
@@ -24,8 +27,64 @@ export default function UserSettingMenu({
     getTotalData,
     uploadUserData,
     handleUserData,
-    handleTheme
+    handleTheme,
+    handleModal,
 }: Readonly<Props>) {
+    const buttonsData = [
+        {
+            text: "사용자 데이터 내보내기",
+            style: "w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300",
+            clickHandler: getTotalData,
+        },
+        {
+            text: "사용자 데이터 불러오기",
+            style: "w-44 px-4 py-2 rounded-md bg-neutral-500 text-center text-sm text-neutral-100 cursor-pointer dark:text-gray-300",
+            clickHandler: uploadUserData,
+        },
+        {
+            text: "데이터 이전",
+            style: "w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300",
+            clickHandler: handleUserData,
+        },
+        {
+            text: "문의하기",
+            style: "w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300",
+            clickHandler: handleModal,
+        },
+    ];
+    const buttonsList = buttonsData.map((buttonData, index, arraySelf) => {
+        if (index === 1) {
+            return (
+                <label
+                    className={buttonData.style}
+                    key={`${buttonData.text}_${nanoid()}`}
+                >
+                    {buttonData.text}
+                    <input
+                        type="file"
+                        accept="application/json"
+                        className="hidden"
+                        onChange={
+                            buttonData.clickHandler as (
+                                event: ChangeEvent<HTMLInputElement>
+                            ) => void
+                        }
+                    />
+                </label>
+            );
+        } else {
+            return (
+                <Button
+                    type="button"
+                    customStyle={buttonData.style}
+                    clickHandler={buttonData.clickHandler as () => void}
+                    key={`${buttonData.text}_${nanoid()}`}
+                >
+                    {buttonData.text}
+                </Button>
+            );
+        }
+    });
     return (
         <div
             ref={updateUserMenu}
@@ -50,29 +109,7 @@ export default function UserSettingMenu({
                 ) : (
                     <></>
                 )}
-                <Button
-                    type="button"
-                    customStyle="w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300"
-                    clickHandler={getTotalData}
-                >
-                    사용자 데이터 내보내기
-                </Button>
-                <label className="w-44 px-4 py-2 rounded-md bg-neutral-500 text-center text-sm text-neutral-100 cursor-pointer dark:text-gray-300">
-                    사용자 데이터 불러오기
-                    <input
-                        type="file"
-                        accept="application/json"
-                        className="hidden"
-                        onChange={uploadUserData}
-                    />
-                </label>
-                <Button
-                    type="button"
-                    customStyle="w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300"
-                    clickHandler={handleUserData}
-                >
-                    데이터 이전
-                </Button>
+                {buttonsList}
                 <div className="flex justify-evenly w-44 py-2">
                     <button type="button" onClick={handleTheme("light")}>
                         <MdLightMode

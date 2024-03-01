@@ -11,14 +11,14 @@ import { signOut, useSession } from "next-auth/react";
 import { ModalKeys } from "../MainView";
 
 interface Props {
-    handleAuthenticationModal: (target: ModalKeys) => () => void;
+    handleModal: (target: ModalKeys) => () => void;
     getTotalData: () => void;
     uploadUserData: (event: ChangeEvent<HTMLInputElement>) => void;
     handleUserData: () => void;
 }
 
 export default function LoginInfoAreaView({
-    handleAuthenticationModal,
+    handleModal,
     getTotalData,
     uploadUserData,
     handleUserData,
@@ -72,6 +72,11 @@ export default function LoginInfoAreaView({
         }
     };
 
+    const openInquiryModal = () => {
+        handleModal('handleInquiry')();
+        setModalState(false);
+    };
+
     useEffect(() => {
         if (hasCookie("theme")) {
             setIsSystemTheme(false);
@@ -103,7 +108,7 @@ export default function LoginInfoAreaView({
                 ) : (
                     <LoginHandleButton
                         isUserSignedIn={false}
-                        handleAuthenticationModal={handleAuthenticationModal}
+                        handleModal={handleModal}
                     />
                 )}
             </div>
@@ -118,6 +123,7 @@ export default function LoginInfoAreaView({
                     uploadUserData={uploadUserData}
                     handleUserData={handleUserData}
                     handleTheme={handleTheme}
+                    handleModal={openInquiryModal}
                 />
             ) : (
                 <></>
