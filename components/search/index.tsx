@@ -55,7 +55,7 @@ export default memo(function Search({ searchEnginesList, handleModal }: Props) {
                 name="searchInput"
                 type="text"
                 placeholder="검색어를 입력해주세요"
-                className="w-full h-3 p-4 bg-neutral-50 text-sm text-neutral-400 dark:focus:outline-sky-600 xs:w-[calc(100%-8rem)] xs:h-full sm:w-[calc(100%-12rem)] sm:text-base placeholder:text-xs placeholder:md:text-sm"
+                className="w-full h-3 rounded-none p-4 bg-neutral-50 text-sm text-neutral-400 dark:focus:outline-sky-600 xs:w-[calc(100%-8rem)] xs:h-full sm:w-[calc(100%-12rem)] sm:text-base placeholder:text-xs placeholder:md:text-sm"
                 value={inputValue}
                 onChange={handleChange}
             />

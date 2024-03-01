@@ -5,6 +5,35 @@ import "tailwindcss/tailwind.css";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]/setting";
 import { cookies } from "next/headers";
+import localFont from "next/font/local";
+
+const pretendard = localFont({
+    src: [
+        {
+            path: "../public/fonts/Pretendard-Bold.subset.woff2",
+            weight: "700",
+            style: "normal",
+        },
+        {
+            path: "../public/fonts/Pretendard-Bold.subset.woff",
+            weight: "700",
+            style: "normal",
+        },
+        {
+            path: "../public/fonts/Pretendard-Regular.subset.woff2",
+            weight: "400",
+            style: "normal",
+        },
+        {
+            path: "../public/fonts/Pretendard-Regular.subset.woff",
+            weight: "400",
+            style: "normal",
+        },
+    ],
+    display: "swap",
+    preload: true,
+    variable: "--font-pretendard",
+});
 
 // TODO: use next-auth session on server components
 export default async function RootLayout({
@@ -26,7 +55,12 @@ export default async function RootLayout({
     })()`;
 
     return (
-        <html lang="ko" className={theme?.value === "dark" ? "dark" : ""}>
+        <html
+            lang="ko"
+            className={`${theme?.value === "dark" ? "dark" : ""} ${
+                pretendard.variable
+            } font-sans`}
+        >
             <body className="bg-stone-200 dark:bg-neutral-800">
                 <Providers session={session}>{children}</Providers>
                 <div id="modal_root" />
