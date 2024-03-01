@@ -18,10 +18,12 @@ export default function SubscriptionOption({
         <ListItemBox
             onClick={changeDisplayFlag(origins, !visibleState[origins])}
         >
-            <div>{origins || alternativeString}</div>
+            <p className="mr-4 pt-1 whitespace-nowrap overflow-hidden text-ellipsis">
+                {origins || alternativeString}
+            </p>
             <label
                 htmlFor={`checkDisplay_${origins ?? alternativeString}`}
-                className="w-5 h-5 border border-neutral-500 rounded p-0.5 cursor-pointer dark:border-gray-300"
+                className="w-5 min-w-5 h-5 border border-neutral-500 rounded p-0.5 cursor-pointer dark:border-gray-300"
                 onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
