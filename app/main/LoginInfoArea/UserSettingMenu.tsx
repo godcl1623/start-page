@@ -42,7 +42,7 @@ export default function UserSettingMenu({
                 {document.documentElement.offsetWidth < 768 ? (
                     <button
                         type="button"
-                        className="absolute top-4 right-4 flex justify-center items-center w-4 h-4"
+                        className="absolute top-4 right-4 flex justify-center items-center w-4 h-4 text-neutral-700 dark:text-neutral-100"
                         onClick={updateModalState(false)}
                     >
                         ✕
