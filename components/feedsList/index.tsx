@@ -42,7 +42,7 @@ export default function FeedsList({
     }, [feedsFromServer, isFilterFavorite, isFilterSources]);
 
     return (
-        <ul className="w-full h-full">
+        <menu className="w-full h-full">
             {feedsToDisplay.map((feed: ParsedFeedsDataType) => (
                 <li key={`${feed.id}+${nanoid()}`}>
                     <Card
@@ -52,6 +52,6 @@ export default function FeedsList({
                     />
                 </li>
             ))}
-        </ul>
+        </menu>
     );
 }

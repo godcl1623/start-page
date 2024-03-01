@@ -23,16 +23,16 @@ const FilterByTextView = forwardRef<HTMLInputElement, Props>(
     ) => {
         return (
             <form
-                className="relative flex w-full my-2 h-full rounded-md shadow-md text-xs dark:shadow-zinc-600 md:mx-2 md:my-0"
+                className="relative flex w-full my-2 h-full max-h-8 rounded-md shadow-md text-xs dark:shadow-zinc-600 md:mx-2 md:my-0"
                 onSubmit={handleSubmit}
             >
                 <SelectDiv
                     optionValues={searchOptions}
-                    customStyles="w-20 h-full rounded-l-md bg-white"
+                    customStyles="w-20 h-full rounded-l-md bg-neutral-50"
                 />
                 <input
                     ref={ref}
-                    className="w-full h-full px-3 text-neutral-400"
+                    className="w-full h-full px-3 rounded-none bg-neutral-50 text-neutral-400"
                     onChange={checkIfInputFilled}
                 />
                 {isInputFilled && (

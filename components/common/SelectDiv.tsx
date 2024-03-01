@@ -51,11 +51,15 @@ export default memo(function SelectDiv({
     });
 
     const selectOptions = Array.isArray(optionValues) ? (
-        optionValues?.map((optionValue: string, index: number) => (
+        optionValues?.map((optionValue: string, index: number, arraySelf) => (
             <li
                 key={`${optionValue}_${nanoid()}`}
                 className={`${
-                    index === 0 ? "rounded-t-md" : ""
+                    index === 0
+                        ? "rounded-t-md"
+                        : index === arraySelf.length - 1
+                        ? "rounded-b-md"
+                        : ""
                 } text-neutral-700 dark:text-gray-300 hover:bg-sky-400 hover:text-neutral-100 hover:dark:bg-sky-800`}
             >
                 <button
@@ -84,7 +88,7 @@ export default memo(function SelectDiv({
             <button
                 type="button"
                 ref={toggleButtonRef}
-                className="relative flex items-center w-full h-full"
+                className="relative flex items-center w-full h-full min-h-8"
                 onClick={toggleList}
                 value={selectedValue}
             >

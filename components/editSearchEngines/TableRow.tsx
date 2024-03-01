@@ -16,7 +16,9 @@ export default function TableRow({
             <td className="w-[20%] border-r border-neutral-500 dark:border-neutral-200">
                 {engineName}
             </td>
-            <td className="w-[65%]">{engineUrl}</td>
+            <td className="w-[65%] whitespace-nowrap overflow-hidden text-ellipsis">
+                {engineUrl}
+            </td>
             <td className="flex w-[15%]">
                 <button
                     type="button"

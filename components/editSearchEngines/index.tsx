@@ -130,6 +130,14 @@ export default memo(function EditSearchEngines({
         )
     );
 
+    if (document.documentElement.offsetWidth < 640) {
+        return (
+            <div className="flex justify-center items-center h-40">
+                모바일 환경에서는 편집이 불가능합니다.
+            </div>
+        );
+    }
+
     return (
         <section className="h-full w-full p-4 pt-6">
             <article className="mb-8">

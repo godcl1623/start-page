@@ -16,7 +16,11 @@ export default function FilterBySource({
     refetchFeeds,
 }: Readonly<Props>) {
     if (displayState == null || Object.keys(displayState).length === 0) {
-        return <></>;
+        return (
+            <div className=" flex justify-center items-center h-40">
+                구독 중인 사이트가 없습니다.
+            </div>
+        );
     }
 
     const changeDisplayFlag = (target: string, value: boolean) => {

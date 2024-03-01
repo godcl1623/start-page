@@ -40,12 +40,12 @@ export default memo(function Search({ searchEnginesList, handleModal }: Props) {
 
     return (
         <form
-            className="relative flex w-full h-12 rounded-md shadow-lg dark:shadow-zinc-600"
+            className="relative flex flex-col w-full h-max rounded-md shadow-lg dark:shadow-zinc-600 xs:flex-row xs:h-10 md:h-12"
             onSubmit={handleSubmit}
         >
             <SelectDiv
                 optionValues={namesList}
-                customStyles="w-24 rounded-l-md bg-white"
+                customStyles="w-full h-max rounded-t-md bg-neutral-50 text-xs xs:w-24 xs:h-full xs:rounded-l-md xs:rounded-r-none xs:px-2.5 xs:py-0 sm:w-24 sm:text-sm"
                 options={{
                     enableEdit: true,
                     editHandler: handleModal,
@@ -55,14 +55,14 @@ export default memo(function Search({ searchEnginesList, handleModal }: Props) {
                 name="searchInput"
                 type="text"
                 placeholder="검색어를 입력해주세요"
-                className="w-[calc(100%-12rem)] h-full p-4 text-neutral-400 dark:focus:outline-sky-600"
+                className="w-full h-3 rounded-none p-4 bg-neutral-50 text-sm text-neutral-400 dark:focus:outline-sky-600 xs:w-[calc(100%-8rem)] xs:h-full sm:w-[calc(100%-12rem)] sm:text-base placeholder:text-xs placeholder:md:text-sm"
                 value={inputValue}
                 onChange={handleChange}
             />
             {isInputFilled && (
                 <Button
                     type="button"
-                    customStyle="absolute right-24 w-10 h-full shadow-none bg-transparent text-neutral-400 dark:bg-transparent"
+                    customStyle="absolute top-8 right-0 w-10 h-8 shadow-none bg-transparent text-xs text-neutral-400 dark:bg-transparent xs:top-0 xs:right-20 xs:h-full sm:right-24 sm:text-sm"
                     clickHandler={clearInput}
                 >
                     ✕
@@ -70,7 +70,7 @@ export default memo(function Search({ searchEnginesList, handleModal }: Props) {
             )}
             <Button
                 type="submit"
-                customStyle="w-24 h-full rounded-r-md bg-sky-400 font-bold text-base text-neutral-100 dark:bg-sky-600 dark:text-gray-300 cursor-pointer shadow-none rounded-l-none"
+                customStyle="w-full h-full rounded-b-md rounded-t-none bg-sky-400 font-bold text-xs  text-neutral-100 dark:bg-sky-600 dark:text-gray-300 cursor-pointer shadow-none xs:w-20 xs:rounded-l-none xs:rounded-r-md sm:w-24 sm:text-sm"
             >
                 검색
             </Button>

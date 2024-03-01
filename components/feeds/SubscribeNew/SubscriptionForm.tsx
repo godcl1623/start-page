@@ -6,9 +6,9 @@ interface Props {
 
 export default function SubscriptionForm({ handleSubmit }: Props) {
     return (
-        <section className="w-full h-full">
+        <article className="w-full h-48">
             <form
-                className="flex flex-col justify-center items-center w-full h-full"
+                className="flex flex-col justify-evenly items-center w-full h-full"
                 onSubmit={handleSubmit}
             >
                 <input
@@ -24,6 +24,6 @@ export default function SubscriptionForm({ handleSubmit }: Props) {
                     추가
                 </Button>
             </form>
-        </section>
+        </article>
     );
 }
