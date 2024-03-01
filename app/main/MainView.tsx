@@ -186,10 +186,7 @@ export default memo(function MainView({
     return (
         <>
             <header className="p-8 pb-0 fhd:max-w-[1920px]">
-                <LoginInfoArea
-                    handleModal={handleModal}
-                    userId={userId}
-                />
+                <LoginInfoArea handleModal={handleModal} userId={userId} />
             </header>
             <main
                 className="flex items-center space-between flex-col w-full h-max min-h-full p-8 pt-0 dark:text-neutral-200"
@@ -339,18 +336,6 @@ export default memo(function MainView({
                         </SubscriptionDialogBox>
                     </Modal>
                 )}
-                {
-                    modalState.handleInquiry && (
-                        <Modal closeModal={closeModal('handleInquiry')}>
-                            <SubscriptionDialogBox
-                                closeModal={closeModal('handleInquiry')}
-                                customStyle="w-screen lg:w-[768px]"
-                            >
-                                <h1>foo</h1>
-                            </SubscriptionDialogBox>
-                        </Modal>
-                    )
-                }
             </main>
         </>
     );

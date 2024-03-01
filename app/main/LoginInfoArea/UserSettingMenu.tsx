@@ -2,7 +2,6 @@ import Button from "components/common/Button";
 import { ChangeEvent } from "react";
 import { MdDarkMode, MdFormatColorReset, MdLightMode } from "react-icons/md";
 import { Theme } from ".";
-import { ModalKeys } from "../MainView";
 import { nanoid } from "nanoid";
 
 interface Props {
@@ -15,7 +14,7 @@ interface Props {
     uploadUserData: (event: ChangeEvent<HTMLInputElement>) => void;
     handleUserData: () => void;
     handleTheme: (value: Theme) => () => void;
-    handleModal: () => void;
+    mailTo: () => void;
 }
 
 export default function UserSettingMenu({
@@ -28,7 +27,7 @@ export default function UserSettingMenu({
     uploadUserData,
     handleUserData,
     handleTheme,
-    handleModal,
+    mailTo
 }: Readonly<Props>) {
     const buttonsData = [
         {
@@ -49,7 +48,7 @@ export default function UserSettingMenu({
         {
             text: "문의하기",
             style: "w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300",
-            clickHandler: handleModal,
+            clickHandler: mailTo,
         },
     ];
     const buttonsList = buttonsData.map((buttonData, index, arraySelf) => {

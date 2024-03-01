@@ -132,12 +132,19 @@ export default function LoginInfoArea({
         }
     };
 
+    const mailTo = () => {
+        const anchor = document.createElement('a');
+        anchor.href = `mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`;
+        anchor.click();
+    };
+
     return (
         <LoginInfoAreaView
             handleModal={handleModal}
             getTotalData={getTotalData}
             uploadUserData={uploadUserData}
             handleUserData={handleUserData}
+            mailTo={mailTo}
         />
     );
 }
