@@ -224,7 +224,7 @@ export default memo(function MainView({
                                     <Button
                                         type="button"
                                         clickHandler={handleFeedUpdate}
-                                        customStyle="bg-neutral-500 text-neutral-100 hover:bg-neutral-400"
+                                        customStyle="bg-neutral-500 text-neutral-100"
                                     >
                                         피드 갱신
                                     </Button>
@@ -282,6 +282,7 @@ export default memo(function MainView({
                     <Modal closeModal={closeModal("addSubscription")}>
                         <SubscriptionDialogBox
                             closeModal={closeModal("addSubscription")}
+                            customStyle="w-screen rounded-none sm:w-96 sm:rounded-md"
                         >
                             <SubscribeNew userId={userId} />
                         </SubscriptionDialogBox>
@@ -291,6 +292,7 @@ export default memo(function MainView({
                     <Modal closeModal={closeModal("cancelSubscription")}>
                         <SubscriptionDialogBox
                             closeModal={closeModal("cancelSubscription")}
+                            customStyle="w-screen rounded-none sm:w-96 sm:rounded-md"
                         >
                             <CancelSubscription
                                 sources={sourcesList}
@@ -303,6 +305,7 @@ export default memo(function MainView({
                     <Modal closeModal={closeModal("filterBySource")}>
                         <SubscriptionDialogBox
                             closeModal={closeModal("filterBySource")}
+                            customStyle="w-screen rounded-none sm:w-96 sm:rounded-md"
                         >
                             <FilterBySource
                                 displayState={sourceDisplayState}
