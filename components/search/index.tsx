@@ -40,7 +40,7 @@ export default memo(function Search({ searchEnginesList, handleModal }: Props) {
 
     return (
         <form
-            className="relative flex flex-col w-full h-max rounded-md shadow-lg dark:shadow-zinc-600 xs:flex-row xs:h-8 sm:h-10 md:h-12"
+            className="relative flex flex-col w-full h-max rounded-md shadow-lg dark:shadow-zinc-600 xs:flex-row xs:h-10 md:h-12"
             onSubmit={handleSubmit}
         >
             <SelectDiv
