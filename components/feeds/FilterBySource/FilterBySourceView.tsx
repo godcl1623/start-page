@@ -73,17 +73,17 @@ export default function FilterBySourceView({
     const buttonsData: ButtonsData = {
         취소: {
             customStyle:
-                "w-16 bg-red-400 font-bold text-xs text-neutral-100 dark:bg-red-700 dark:text-gray-300",
+                "w-full bg-red-400 font-bold text-xs text-neutral-100 dark:bg-red-700 dark:text-gray-300 xs:w-16",
             clickHandler: closeModal,
         },
         초기화: {
             customStyle:
-                "w-16 bg-neutral-500 font-bold text-xs text-neutral-100 dark:bg-neutral-500 dark:text-gray-300",
+                "w-full bg-neutral-500 font-bold text-xs text-neutral-100 dark:bg-neutral-500 dark:text-gray-300 xs:w-16",
             clickHandler: initiateDisplayFilter,
         },
         저장: {
             customStyle:
-                "w-16 bg-sky-400 font-bold text-xs text-neutral-100 dark:bg-sky-600 dark:text-gray-300",
+                "w-full bg-sky-400 font-bold text-xs text-neutral-100 dark:bg-sky-600 dark:text-gray-300 xs:w-16",
             clickHandler: enableDisplayFilter(saveDisplayState),
         },
     };
@@ -110,7 +110,7 @@ export default function FilterBySourceView({
                 headingTitle={title}
                 listItems={subscriptionOptions}
             />
-            <div className="flex justify-evenly w-full">
+            <div className="flex flex-col gap-0.5 justify-evenly w-full xs:flex-row">
                 {filterHandlersList}
             </div>
         </section>

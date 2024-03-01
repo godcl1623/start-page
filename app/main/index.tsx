@@ -10,6 +10,7 @@ import { setCookie } from "cookies-next";
 import RequestControllers from "controllers/requestControllers";
 import { generateSearchParameters } from "controllers/utils";
 import { SearchEnginesData } from "controllers/searchEngines";
+import useResizeEvent from "hooks/useResizeEvent";
 
 export interface ParsedFeedsDataType {
     id: string;
@@ -258,20 +259,15 @@ export default function MainPage({
         setCurrentPage(value);
     };
 
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            const callback = () => {
-                if (window.innerWidth > 768) {
-                    setIsMobileLayout(false);
-                } else {
-                    setIsMobileLayout(true);
-                }
-            };
-            callback();
-            window.addEventListener("resize", callback);
-            return () => window.removeEventListener("resize", callback);
+    const detectIfMobileLayout = useCallback(() => {
+        if (document.documentElement.offsetWidth >= 768) {
+            setIsMobileLayout(false);
+        } else {
+            setIsMobileLayout(true);
         }
     }, []);
+
+    useResizeEvent(detectIfMobileLayout, true, [detectIfMobileLayout]);
 
     useEffect(() => {
         if (feeds) {

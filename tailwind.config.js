@@ -13,7 +13,10 @@ module.exports = {
             fhd: "1920px",
             ...defaultTheme.screens,
         },
+        fontFamily: {
+            sans: ["var(--font-pretendard)"],
+        },
     },
-    darkMode: 'selector',
+    darkMode: "selector",
     plugins: [],
 };
