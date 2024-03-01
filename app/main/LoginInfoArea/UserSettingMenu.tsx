@@ -55,10 +55,10 @@ export default function UserSettingMenu({
                     customStyle="w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300"
                     clickHandler={getTotalData}
                 >
-                    피드 / 출처 내보내기
+                    사용자 데이터 내보내기
                 </Button>
                 <label className="w-44 px-4 py-2 rounded-md bg-neutral-500 text-center text-sm text-neutral-100 cursor-pointer dark:text-gray-300">
-                    피드 / 출처 불러오기
+                    사용자 데이터 불러오기
                     <input
                         type="file"
                         accept="application/json"
