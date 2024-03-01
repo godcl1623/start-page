@@ -3,12 +3,12 @@ import { ModalKeys } from "../MainView";
 
 interface Props {
     isUserSignedIn: boolean;
-    handleAuthenticationModal: (target: ModalKeys) => () => void;
+    handleModal: (target: ModalKeys) => () => void;
 }
 
 export default function LoginHandleButton({
     isUserSignedIn,
-    handleAuthenticationModal,
+    handleModal,
 }: Readonly<Props>) {
     const commonStyle = "w-24 rounded-l-none font-bold text-sm";
     const loginStyle =
@@ -20,7 +20,7 @@ export default function LoginHandleButton({
             customStyle={`${commonStyle} ${
                 isUserSignedIn ? logoutStyle : loginStyle
             }`}
-            clickHandler={handleAuthenticationModal("handleAuthentication")}
+            clickHandler={handleModal("handleAuthentication")}
         >
             {isUserSignedIn ? "Logout" : "Login"}
         </Button>

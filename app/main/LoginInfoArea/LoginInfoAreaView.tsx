@@ -11,17 +11,19 @@ import { signOut, useSession } from "next-auth/react";
 import { ModalKeys } from "../MainView";
 
 interface Props {
-    handleAuthenticationModal: (target: ModalKeys) => () => void;
+    handleModal: (target: ModalKeys) => () => void;
     getTotalData: () => void;
     uploadUserData: (event: ChangeEvent<HTMLInputElement>) => void;
     handleUserData: () => void;
+    mailTo: () => void;
 }
 
 export default function LoginInfoAreaView({
-    handleAuthenticationModal,
+    handleModal,
     getTotalData,
     uploadUserData,
     handleUserData,
+    mailTo
 }: Readonly<Props>) {
     const [modalState, setModalState] = useState(false);
     const [userMenu, setUserMenu] = useState<HTMLDivElement | null>(null);
@@ -103,7 +105,7 @@ export default function LoginInfoAreaView({
                 ) : (
                     <LoginHandleButton
                         isUserSignedIn={false}
-                        handleAuthenticationModal={handleAuthenticationModal}
+                        handleModal={handleModal}
                     />
                 )}
             </div>
@@ -118,6 +120,7 @@ export default function LoginInfoAreaView({
                     uploadUserData={uploadUserData}
                     handleUserData={handleUserData}
                     handleTheme={handleTheme}
+                    mailTo={mailTo}
                 />
             ) : (
                 <></>
