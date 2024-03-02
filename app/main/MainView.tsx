@@ -327,7 +327,7 @@ export default memo(function MainView({
                     <Modal closeModal={closeModal("editSearchEngine")}>
                         <SubscriptionDialogBox
                             closeModal={closeModal("editSearchEngine")}
-                            customStyle="w-screen lg:w-[768px]"
+                            customStyle="w-screen rounded-none sm:rounded-md lg:w-[768px]"
                         >
                             <EditSearchEngines
                                 userId={userId}
