@@ -298,9 +298,7 @@ export default function MainPage({
     }, [storedFeed, isMobileLayout]);
 
     useEffect(() => {
-        if (!isMobileLayout) {
-            refetchStoredFeeds();
-        }
+        refetchStoredFeeds();
     }, [
         isFilterFavorite,
         searchTexts,
