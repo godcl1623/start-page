@@ -51,7 +51,8 @@ export type ModalKeys =
     | "cancelSubscription"
     | "filterBySource"
     | "handleAuthentication"
-    | "editSearchEngine";
+    | "editSearchEngine"
+    | "handleInquiry";
 
 type ModalStateType = {
     [key in ModalKeys]: boolean;
@@ -86,6 +87,7 @@ export default memo(function MainView({
         filterBySource: false,
         handleAuthentication: false,
         editSearchEngine: false,
+        handleInquiry: false,
     });
     const [shouldHideRenewState, setShouldHideRenewState] = useState(true);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -184,10 +186,7 @@ export default memo(function MainView({
     return (
         <>
             <header className="p-8 pb-0 fhd:max-w-[1920px]">
-                <LoginInfoArea
-                    handleAuthenticationModal={handleModal}
-                    userId={userId}
-                />
+                <LoginInfoArea handleModal={handleModal} userId={userId} />
             </header>
             <main
                 className="flex items-center space-between flex-col w-full h-max min-h-full p-8 pt-0 dark:text-neutral-200"
