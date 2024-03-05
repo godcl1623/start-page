@@ -203,7 +203,7 @@ export default function MainPage({
         },
         [isMobileLayout, currentPage]
     );
-    const updateSourceDisplay = useCallback(
+    const filterBySources = useCallback(
         (newDisplay: SourceDisplayState) => {
             const lastDisplayState = JSON.stringify(sourceDisplayState);
             const newDisplayState = JSON.stringify(newDisplay);
@@ -620,7 +620,7 @@ export default function MainPage({
             isFilterFavorite={isFilterFavorite}
             searchEnginesList={searchEnginesList}
             checkAndUpdateNewFeeds={checkAndUpdateNewFeeds}
-            updateSourceDisplay={updateSourceDisplay}
+            filterBySources={filterBySources}
         />
     );
 }
