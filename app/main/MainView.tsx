@@ -2,7 +2,12 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 
-import { ErrorResponse, ParsedFeedsDataType, STATE_MESSAGE_STRINGS } from ".";
+import {
+    ErrorResponse,
+    ParsedFeedsDataType,
+    STATE_MESSAGE_STRINGS,
+    SourceDisplayState,
+} from ".";
 import { FilterType } from "hooks/useFilters";
 import { SourceData } from "controllers/sources/helpers";
 
@@ -44,6 +49,7 @@ interface Props {
     isFilterFavorite: boolean;
     searchEnginesList: SearchEnginesData[] | ErrorResponse | null | undefined;
     checkAndUpdateNewFeeds: () => void;
+    updateSourceDisplay: (newDisplayState: SourceDisplayState) => void;
 }
 
 export type ModalKeys =
@@ -80,6 +86,7 @@ export default memo(function MainView({
     isFilterFavorite,
     searchEnginesList,
     checkAndUpdateNewFeeds,
+    updateSourceDisplay,
 }: Props) {
     const [modalState, setModalState] = useState<ModalStateType>({
         addSubscription: false,
@@ -310,7 +317,7 @@ export default memo(function MainView({
                                 displayState={sourceDisplayState}
                                 setDisplayFlag={setSourceDisplayState}
                                 closeModal={closeModal("filterBySource")}
-                                refetchFeeds={refetchStoredFeeds}
+                                updateSourceDisplay={updateSourceDisplay}
                             />
                         </SubscriptionDialogBox>
                     </Modal>
