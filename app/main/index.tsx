@@ -214,13 +214,10 @@ export default function MainPage({
                     lastPageParam.current.basic = Object.values(
                         basicCache.current
                     ).filter((cachedList) => cachedList.length > 0).length;
-                    lastPage =
-                        lastPageParam.current.basic > 1
-                            ? lastPageParam.current.basic
-                            : 1;
+                    lastPage = 1;
                     break;
-                case (Object.values(sourceDisplayState).includes(false) ||
-                    !Object.values(sourceDisplayState).includes(false)) &&
+                case Object.values(sourceDisplayState).includes(false) &&
+                    Object.values(newDisplay).includes(false) &&
                     lastDisplayState !== newDisplayState:
                     sourceCache.current = {
                         ...sourceCache.current,
@@ -243,8 +240,8 @@ export default function MainPage({
                         sourceCache.current
                     ).filter((cachedList) => cachedList.length > 0).length;
                     lastPage =
-                        lastPageParam.current.source > 1
-                            ? lastPageParam.current.source
+                        lastPageParam.current.basic > 1
+                            ? lastPageParam.current.basic
                             : 1;
                     break;
             }
@@ -252,6 +249,9 @@ export default function MainPage({
         },
         [sourceDisplayState, totalCount]
     );
+    useEffect(() => {
+        console.log("current page: ", currentPage);
+    }, [currentPage]);
     const filterBySearchTexts = useCallback(
         (target: string, value: string) => {
             let lastPage: number = 1;
