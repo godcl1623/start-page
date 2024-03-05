@@ -252,6 +252,71 @@ export default function MainPage({
         },
         [sourceDisplayState, totalCount]
     );
+    const filterBySearchTexts = useCallback(
+        (target: string, value: string) => {
+            let lastPage: number = 1;
+            switch (true) {
+                case Object.values(searchTexts).every(
+                    (searchText: string) => searchText.length === 0
+                ) && value.length >= 2:
+                    lastPageParam.current.basic = Object.values(
+                        basicCache.current
+                    ).filter((cachedList) => cachedList.length > 0).length;
+                    lastPage = 1;
+                    break;
+                case Object.values(searchTexts).some(
+                    (searchText: string) => searchText.length >= 2
+                ) &&
+                    value.length >= 2 &&
+                    searchTexts[target] !== value:
+                    textsCache.current = {
+                        ...textsCache.current,
+                        ...Array.from(
+                            { length: Math.ceil(totalCount / 10) },
+                            (_, k) => k + 1
+                        ).reduce(
+                            (result, pageIndex) => ({
+                                ...result,
+                                [pageIndex]: [],
+                            }),
+                            {}
+                        ),
+                    };
+                    lastPageParam.current.texts = 1;
+                    lastPage = 1;
+                    break;
+                case value === "":
+                    textsCache.current = {
+                        ...textsCache.current,
+                        ...Array.from(
+                            { length: Math.ceil(totalCount / 10) },
+                            (_, k) => k + 1
+                        ).reduce(
+                            (result, pageIndex) => ({
+                                ...result,
+                                [pageIndex]: [],
+                            }),
+                            {}
+                        ),
+                    };
+                    lastPageParam.current.texts = 1;
+                    lastPage = lastPageParam.current.basic;
+                    break;
+                default:
+                    lastPageParam.current.texts = Object.values(
+                        textsCache.current
+                    ).filter((cachedList) => cachedList.length > 0).length;
+                    lastPage =
+                        lastPageParam.current.texts > 1
+                            ? lastPageParam.current.texts
+                            : 1;
+                    break;
+            }
+            setCurrentPage(lastPage);
+            setSearchTexts(target, value);
+        },
+        [setSearchTexts, searchTexts, totalCount]
+    );
     const handleFeedsAndCache = useCallback(
         (feedsList: ParsedFeedsDataType[]) => {
             let cache: FeedsCache = basicCache.current;
@@ -614,7 +679,7 @@ export default function MainPage({
             userId={userId}
             updateObserverElement={updateObserverElement}
             refetchStoredFeeds={refetchStoredFeeds}
-            setSearchTexts={setSearchTexts}
+            filterBySearchTexts={filterBySearchTexts}
             filterFavorites={filterFavorites}
             renewState={renewState}
             isFilterFavorite={isFilterFavorite}

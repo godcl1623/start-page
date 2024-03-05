@@ -8,14 +8,14 @@ import SelectDiv from "components/common/SelectDiv";
 interface Props {
     handleClick: (target: ModalKeys) => () => void;
     filterFavorites: () => void;
-    setSearchTexts: (target: string, value: string) => void;
+    filterBySearchTexts: (target: string, value: string) => void;
     setSortState: (stateString: string) => void;
 }
 
 export default memo(function PostHandleOptions({
     handleClick,
     filterFavorites,
-    setSearchTexts,
+    filterBySearchTexts,
     setSortState,
 }: Props) {
     const subscriptionOptions = useMemo(
@@ -28,8 +28,8 @@ export default memo(function PostHandleOptions({
         [filterFavorites, handleClick]
     );
     const filterByText = useMemo(
-        () => <FilterByText setTextFilter={setSearchTexts} />,
-        [setSearchTexts]
+        () => <FilterByText setTextFilter={filterBySearchTexts} />,
+        [filterBySearchTexts]
     );
     const selectBox = useMemo(
         () => (

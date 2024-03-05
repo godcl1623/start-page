@@ -43,7 +43,7 @@ interface Props {
     userId: string;
     updateObserverElement: (element: HTMLDivElement) => void;
     refetchStoredFeeds: () => void;
-    setSearchTexts: (target: string, value: string) => void;
+    filterBySearchTexts: (target: string, value: string) => void;
     filterFavorites: () => void;
     renewState: string;
     isFilterFavorite: boolean;
@@ -80,7 +80,7 @@ export default memo(function MainView({
     userId,
     updateObserverElement,
     refetchStoredFeeds,
-    setSearchTexts,
+    filterBySearchTexts,
     filterFavorites,
     renewState,
     isFilterFavorite,
@@ -239,7 +239,7 @@ export default memo(function MainView({
                             <PostHandleOptions
                                 filterFavorites={filterFavorites}
                                 handleClick={handleModal}
-                                setSearchTexts={setSearchTexts}
+                                filterBySearchTexts={filterBySearchTexts}
                                 setSortState={setSortState}
                             />
                             {sourcesList.length > 0 ? (
