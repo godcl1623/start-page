@@ -7,14 +7,14 @@ interface Props {
     displayState?: FilterType<boolean>;
     closeModal: () => void;
     setDisplayFlag: (target: string, value: boolean) => void;
-    filterBySource: (newSourceDisplay: SourceDisplayState) => void;
+    filterBySources: (newSourceDisplay: SourceDisplayState) => void;
 }
 
 export default function FilterBySource({
     displayState,
     closeModal,
     setDisplayFlag,
-    filterBySource,
+    filterBySources,
 }: Readonly<Props>) {
     if (displayState == null || Object.keys(displayState).length === 0) {
         return (
@@ -41,7 +41,7 @@ export default function FilterBySource({
                     {}
                 );
             }
-            filterBySource(newDisplayState);
+            filterBySources(newDisplayState);
             closeModal();
         };
 

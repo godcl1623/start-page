@@ -49,7 +49,7 @@ interface Props {
     isFilterFavorite: boolean;
     searchEnginesList: SearchEnginesData[] | ErrorResponse | null | undefined;
     checkAndUpdateNewFeeds: () => void;
-    filterBySource: (newDisplayState: SourceDisplayState) => void;
+    filterBySources: (newDisplayState: SourceDisplayState) => void;
 }
 
 export type ModalKeys =
@@ -86,7 +86,7 @@ export default memo(function MainView({
     isFilterFavorite,
     searchEnginesList,
     checkAndUpdateNewFeeds,
-    filterBySource,
+    filterBySources,
 }: Props) {
     const [modalState, setModalState] = useState<ModalStateType>({
         addSubscription: false,
@@ -317,7 +317,7 @@ export default memo(function MainView({
                                 displayState={sourceDisplayState}
                                 setDisplayFlag={setSourceDisplayState}
                                 closeModal={closeModal("filterBySource")}
-                                filterBySource={filterBySource}
+                                filterBySources={filterBySources}
                             />
                         </SubscriptionDialogBox>
                     </Modal>
