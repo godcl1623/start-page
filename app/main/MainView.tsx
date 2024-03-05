@@ -34,7 +34,7 @@ interface Props {
     feedsFromServer: ParsedFeedsDataType[];
     currentPage: number;
     setCurrentPage: (value: number | ((value: number) => number)) => void;
-    setSortState: (stateString: string) => void;
+    filterBySort: (stateString: string) => void;
     totalCount: number;
     isMobileLayout: boolean;
     sources: string;
@@ -71,7 +71,7 @@ export default memo(function MainView({
     feedsFromServer,
     currentPage,
     setCurrentPage,
-    setSortState,
+    filterBySort,
     totalCount,
     isMobileLayout,
     sources,
@@ -240,7 +240,7 @@ export default memo(function MainView({
                                 filterFavorites={filterFavorites}
                                 handleClick={handleModal}
                                 filterBySearchTexts={filterBySearchTexts}
-                                setSortState={setSortState}
+                                filterBySort={filterBySort}
                             />
                             {sourcesList.length > 0 ? (
                                 <FeedsList

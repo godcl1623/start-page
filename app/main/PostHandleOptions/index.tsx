@@ -9,14 +9,14 @@ interface Props {
     handleClick: (target: ModalKeys) => () => void;
     filterFavorites: () => void;
     filterBySearchTexts: (target: string, value: string) => void;
-    setSortState: (stateString: string) => void;
+    filterBySort: (stateString: string) => void;
 }
 
 export default memo(function PostHandleOptions({
     handleClick,
     filterFavorites,
     filterBySearchTexts,
-    setSortState,
+    filterBySort,
 }: Props) {
     const subscriptionOptions = useMemo(
         () => (
@@ -36,7 +36,7 @@ export default memo(function PostHandleOptions({
             <SelectDiv
                 optionValues={SORT_STANDARD}
                 customStyles="max-h-8 rounded-md shadow-md bg-neutral-50 text-xs dark:shadow-zinc-600 md:w-[20%]"
-                setSortState={setSortState}
+                filterBySort={filterBySort}
             />
         ),
         []

@@ -532,10 +532,36 @@ export default function MainPage({
         //     }
     };
 
-    const setSortState = useCallback(
+    const filterBySort = useCallback(
         (stateStringArray: string[]) => (stateString: string) => {
+            let lastPage: number = 1;
             if (stateStringArray.includes(stateString)) {
-                setCurrentSort(stateStringArray.indexOf(stateString));
+                const stateIndex = stateStringArray.indexOf(stateString);
+                if (stateIndex > 0) {
+                    console.log("##### fired #####");
+                    const filledBasicCacheList = Object.values(
+                        basicCache.current
+                    ).filter((cachedList) => cachedList.length > 0).length;
+                    if (lastPageParam.current.basic !== filledBasicCacheList) {
+                        lastPageParam.current.basic = filledBasicCacheList;
+                    }
+                    sortsCache.current = {
+                        ...sortsCache.current,
+                        ...Object.entries(sortsCache.current).reduce(
+                            (result, [pageIndex]) => ({
+                                ...result,
+                                [pageIndex]: [],
+                            }),
+                            {}
+                        ),
+                    };
+                    lastPageParam.current.sorts = 1;
+                    lastPage = 1;
+                } else {
+                    lastPage = lastPageParam.current.basic;
+                }
+                setCurrentPage(lastPage);
+                setCurrentSort(stateIndex);
             } else {
                 setCurrentSort(0);
             }
@@ -666,11 +692,10 @@ export default function MainPage({
 
     return (
         <MainView
-            // feedsFromServer={feedsFromServer}
             feedsFromServer={feedsToDisplay}
             currentPage={currentPage}
             setCurrentPage={updateCurrentPage}
-            setSortState={setSortState(SORT_STANDARD)}
+            filterBySort={filterBySort(SORT_STANDARD)}
             totalCount={totalCount}
             isMobileLayout={isMobileLayout}
             sources={sources}
