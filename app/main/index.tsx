@@ -247,7 +247,7 @@ export default function MainPage({
                         sourceCache.current
                     ).filter((cachedList) => cachedList.length > 0).length;
                     lastPage =
-                        lastPageParam.current.basic > 1
+                        isMobileLayout && lastPageParam.current.basic > 1
                             ? lastPageParam.current.basic
                             : 1;
                     break;
@@ -304,14 +304,14 @@ export default function MainPage({
                         ),
                     };
                     lastPageParam.current.texts = 1;
-                    lastPage = lastPageParam.current.basic;
+                    lastPage = isMobileLayout ? lastPageParam.current.basic : 1;
                     break;
                 default:
                     lastPageParam.current.texts = Object.values(
                         textsCache.current
                     ).filter((cachedList) => cachedList.length > 0).length;
                     lastPage =
-                        lastPageParam.current.texts > 1
+                        isMobileLayout && lastPageParam.current.texts > 1
                             ? lastPageParam.current.texts
                             : 1;
                     break;
@@ -321,6 +321,9 @@ export default function MainPage({
         },
         [setSearchTexts, searchTexts, totalCount]
     );
+    useEffect(() => {
+        console.log("current page: ", currentPage);
+    }, [currentPage]);
     const handleFeedsAndCache = useCallback(
         (feedsList: ParsedFeedsDataType[]) => {
             let cache: FeedsCache = basicCache.current;
@@ -489,7 +492,7 @@ export default function MainPage({
                     lastPageParam.current.sorts = 1;
                     lastPage = 1;
                 } else {
-                    lastPage = lastPageParam.current.basic;
+                    lastPage = isMobileLayout ? lastPageParam.current.basic : 1;
                 }
                 setCurrentPage(lastPage);
                 setCurrentSort(stateIndex);
@@ -510,7 +513,7 @@ export default function MainPage({
                 (cachedList: ParsedFeedsDataType[]) => cachedList.length > 0
             ).length;
             lastPage =
-                lastPageParam.current.favorite > 1
+                isMobileLayout && lastPageParam.current.favorite > 1
                     ? lastPageParam.current.favorite
                     : 1;
         } else {
@@ -520,7 +523,7 @@ export default function MainPage({
                 (cachedList: ParsedFeedsDataType[]) => cachedList.length > 0
             ).length;
             lastPage =
-                lastPageParam.current.basic > 1
+                isMobileLayout && lastPageParam.current.basic > 1
                     ? lastPageParam.current.basic
                     : 1;
         }
