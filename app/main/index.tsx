@@ -6,7 +6,6 @@ import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import useFilters from "hooks/useFilters";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import { SORT_STANDARD } from "common/constants";
-import { setCookie } from "cookies-next";
 import RequestControllers from "controllers/requestControllers";
 import { generateSearchParameters } from "controllers/utils";
 import { SearchEnginesData } from "controllers/searchEngines";
@@ -98,7 +97,6 @@ export default function MainPage({
     const [totalCount, setTotalCount] = useState<number>(0);
     const [isMobileLayout, setIsMobileLayout] = useState<boolean>(false);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [formerFeedsList, setFormerFeedsList] = useState<FeedsCache>({});
     const [renewState, setRenewState] = useState<string>(
         STATE_MESSAGE_STRINGS.start
     );
@@ -120,7 +118,7 @@ export default function MainPage({
                       `/search_engines?userId=${userId}`
                   ),
     });
-    /* ########## TEST ########## */
+
     const [feedsToDisplay, setFeedsToDisplay] = useState<ParsedFeedsDataType[]>(
         []
     );
@@ -143,25 +141,34 @@ export default function MainPage({
         texts: 1,
         sorts: 1,
     });
+    const queryFn = useCallback(
+        ({ pageParam }: { pageParam: number }) =>
+            getDataFrom<string>(
+                `/feeds?userId=${userId}${queryParameters.current}&page=${pageParam}`
+            ),
+        [getDataFrom, userId]
+    );
     const {
         data: storedFeed,
         refetch: refetchStoredFeeds,
         fetchNextPage,
         hasNextPage,
     } = useInfiniteQuery({
-        queryKey: [`/feeds?userId=${userId}${queryParameters.current}`],
-        initialPageParam: 1,
-        queryFn: ({ pageParam }) =>
-            getDataFrom<string>(
-                `/feeds?userId=${userId}${queryParameters.current}&page=${pageParam}`
-            ),
+        queryKey: [
+            `/feeds?userId=${userId}${queryParameters.current}&page=${currentPage}`,
+        ],
+        initialPageParam: currentPage,
+        queryFn,
         getNextPageParam: (lastPage) => {
             if (lastPage === "" || !JSON.parse(lastPage).data) return 1;
             const totalCount = JSON.parse(lastPage)?.count;
             if (currentPage >= Math.ceil(totalCount / 10)) return;
             return currentPage + 1;
         },
-        getPreviousPageParam: () => 1,
+        getPreviousPageParam: () => {
+            if (currentPage <= 0) return;
+            return currentPage - 1;
+        },
     });
     const updateFeedsCache = useCallback(
         (
@@ -249,9 +256,6 @@ export default function MainPage({
         },
         [sourceDisplayState, totalCount]
     );
-    useEffect(() => {
-        console.log("current page: ", currentPage);
-    }, [currentPage]);
     const filterBySearchTexts = useCallback(
         (target: string, value: string) => {
             let lastPage: number = 1;
@@ -418,119 +422,47 @@ export default function MainPage({
             }
         }
     }, [storedFeed, isMobileLayout, handleFeedsAndCache]);
-    useEffect(() => {
-        console.log(feedsToDisplay);
-        switch (true) {
-            case isFilterFavorite:
-                console.log("favorite: ", favoriteCache.current);
-                break;
-            case Object.values(sourceDisplayState).includes(false):
-                console.log("source: ", sourceCache.current);
-                break;
-            case Object.values(searchTexts).some(
-                (searchText: string) => searchText.length >= 2
-            ):
-                console.log("texts: ", textsCache.current);
-                break;
-            case currentSort > 0:
-                console.log("sort: ", sortsCache.current);
-                break;
-            default:
-                console.log("basic: ", basicCache.current);
-                break;
+
+    const checkAndUpdateNewFeeds = useCallback(async () => {
+        try {
+            setRenewState(STATE_MESSAGE_STRINGS.proceed);
+            abortControllerRef.current = new AbortController();
+            const signal = abortControllerRef.current.signal;
+            const newFeedsRequestResult = await getDataFrom<
+                PageParamData | ErrorResponse
+            >(`/feeds/new?userId=${userId}`, { signal });
+            if (newFeedsRequestResult != null) {
+                switch (true) {
+                    case "data" in newFeedsRequestResult:
+                        const { data, count, updated } = newFeedsRequestResult;
+                        if (count !== totalCount) {
+                            setTotalCount(count);
+                        }
+                        if (updated !== 0) {
+                            setRenewState(
+                                updated + STATE_MESSAGE_STRINGS.added
+                            );
+                        } else {
+                            setRenewState(STATE_MESSAGE_STRINGS.end);
+                        }
+                        handleFeedsAndCache(data);
+                        break;
+                    case "error" in newFeedsRequestResult:
+                        setRenewState(
+                            STATE_MESSAGE_STRINGS[newFeedsRequestResult.error]
+                        );
+                        break;
+                    default:
+                        setRenewState(STATE_MESSAGE_STRINGS.no_change);
+                        break;
+                }
+            } else {
+                throw new Error("피드 갱신에 실패했습니다.");
+            }
+        } catch (error) {
+            console.error(error);
         }
-    }, [
-        feedsToDisplay,
-        isFilterFavorite,
-        sourceDisplayState,
-        searchTexts,
-        currentSort,
-    ]);
-    /* ########## TEST END ########## */
-
-    // const {
-    //     data: storedFeed,
-    //     refetch: refetchStoredFeeds,
-    //     fetchNextPage,
-    //     hasNextPage,
-    // } = useInfiniteQuery({
-    //     queryKey: [
-    //         `/feeds?userId=${userId}`,
-    //         { isMobileLayout, currentPage, sourceDisplayState },
-    //     ],
-    //     initialPageParam: currentPage,
-    //     queryFn: ({ pageParam }) =>
-    //         isLocal
-    //             ? "{}"
-    //             : getDataFrom<string>(
-    //                   `/feeds?userId=${userId}${generateSearchParameters({
-    //                       ...(isFilterFavorite && {
-    //                           favorites: isFilterFavorite,
-    //                       }),
-    //                       ...(Object.values(sourceDisplayState).includes(
-    //                           false
-    //                       ) && {
-    //                           displayOption: JSON.stringify(sourceDisplayState),
-    //                       }),
-    //                       ...(Object.values(searchTexts).some(
-    //                           (searchText: string) => searchText.length >= 2
-    //                       ) && { textOption: JSON.stringify(searchTexts) }),
-    //                       ...(currentSort > 0 && { sortOption: currentSort }),
-    //                       page: pageParam,
-    //                   })}`
-    //               ),
-    //     getNextPageParam: (lastPage: string) => {
-    //         if (lastPage === "" || !JSON.parse(lastPage).data) return 1;
-    //         const totalCount = JSON.parse(lastPage)?.count;
-    //         if (currentPage >= Math.ceil(totalCount / 10)) return;
-    //         return currentPage + 1;
-    //     },
-    //     getPreviousPageParam: () => {
-    //         if (currentPage <= 0) return;
-    //         return currentPage - 1;
-    //     },
-    // });
-
-    const checkAndUpdateNewFeeds = async () => {
-        //     try {
-        //         setRenewState(STATE_MESSAGE_STRINGS.proceed);
-        //         abortControllerRef.current = new AbortController();
-        //         const signal = abortControllerRef.current.signal;
-        //         const newFeedsRequestResult = await getDataFrom<
-        //             PageParamData | ErrorResponse
-        //         >(`/feeds/new?userId=${userId}`, { signal });
-        //         if (newFeedsRequestResult != null) {
-        //             switch (true) {
-        //                 case "data" in newFeedsRequestResult:
-        //                     const { data, count, updated } = newFeedsRequestResult;
-        //                     if (count !== totalCount) {
-        //                         setTotalCount(count);
-        //                     }
-        //                     if (updated !== 0) {
-        //                         setRenewState(
-        //                             updated + STATE_MESSAGE_STRINGS.added
-        //                         );
-        //                     } else {
-        //                         setRenewState(STATE_MESSAGE_STRINGS.end);
-        //                     }
-        //                     updateFormerFeedsList(data);
-        //                     break;
-        //                 case "error" in newFeedsRequestResult:
-        //                     setRenewState(
-        //                         STATE_MESSAGE_STRINGS[newFeedsRequestResult.error]
-        //                     );
-        //                     break;
-        //                 default:
-        //                     setRenewState(STATE_MESSAGE_STRINGS.no_change);
-        //                     break;
-        //             }
-        //         } else {
-        //             throw new Error("피드 갱신에 실패했습니다.");
-        //         }
-        //     } catch (error) {
-        //         console.error(error);
-        //     }
-    };
+    }, [getDataFrom, handleFeedsAndCache, totalCount, userId]);
 
     const filterBySort = useCallback(
         (stateStringArray: string[]) => (stateString: string) => {
@@ -613,45 +545,6 @@ export default function MainPage({
     }, []);
 
     useResizeEvent(detectIfMobileLayout, true, [detectIfMobileLayout]);
-
-    // useEffect(() => {
-    //     refetchStoredFeeds();
-    // }, [
-    //     isFilterFavorite,
-    //     searchTexts,
-    //     currentPage,
-    //     isMobileLayout,
-    //     currentSort,
-    // ]);
-
-    // useEffect(() => {
-    //     if (isMobileLayout) {
-    //         const firstEmptyPageIndex = (
-    //             Object.values(basicCache.current) as any[]
-    //         ).findIndex((value: any[]) => value?.length === 0);
-    //         // setCurrentPage(firstEmptyPageIndex);
-    //         console.log('first empty: ', firstEmptyPageIndex)
-    //         Object.keys(formerFeedsList).forEach((key: string, index) => {
-    //             if (index > firstEmptyPageIndex) {
-    //                 setFormerFeedsList((previousObject: any) => ({
-    //                     ...previousObject,
-    //                     [key]: [],
-    //                 }));
-    //             }
-    //         });
-    //     } else {
-    //         const fetchedPages = (
-    //             Object.values(formerFeedsList) as any[]
-    //         ).reduce(
-    //             (totalNumber: number, currentDataArray: any[]) =>
-    //                 currentDataArray?.length > 0
-    //                     ? (totalNumber += 1)
-    //                     : totalNumber,
-    //             0
-    //         );
-    //         setCurrentPage(fetchedPages > 0 ? fetchedPages : 1);
-    //     }
-    // }, [isMobileLayout, basicCache]);
 
     useEffect(() => {
         if (observerElement != null) {
