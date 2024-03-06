@@ -388,33 +388,28 @@ export default function MainPage({
                 case enabledFilters.current[
                     enabledFilters.current.length - 1
                 ] === "favorite":
-                    console.log("favorite");
                     cache = favoriteCache.current;
                     lastPage = lastPageParam.current.favorite;
                     break;
                 case enabledFilters.current[
                     enabledFilters.current.length - 1
                 ] === "source":
-                    console.log("source");
                     cache = sourceCache.current;
                     lastPage = lastPageParam.current.source;
                     break;
                 case enabledFilters.current[
                     enabledFilters.current.length - 1
                 ] === "texts":
-                    console.log("text");
                     cache = textsCache.current;
                     lastPage = lastPageParam.current.texts;
                     break;
                 case enabledFilters.current[
                     enabledFilters.current.length - 1
                 ] === "sorts":
-                    console.log("sorts");
                     cache = sortsCache.current;
                     lastPage = lastPageParam.current.sorts;
                     break;
                 default:
-                    console.log("basic");
                     cache = basicCache.current;
                     lastPage = lastPageParam.current.basic;
                     break;
@@ -595,10 +590,7 @@ export default function MainPage({
             ).filter(
                 (cachedList: ParsedFeedsDataType[]) => cachedList.length > 0
             ).length;
-            lastPage =
-                isMobileLayout && lastPageParam.current.favorite > 1
-                    ? lastPageParam.current.favorite
-                    : 1;
+            lastPage = 1;
             updateEnabledFilters("favorite");
         } else {
             lastPageParam.current.favorite = Object.values(
@@ -655,7 +647,6 @@ export default function MainPage({
                 entries.forEach((entry: IntersectionObserverEntry) => {
                     if (entry.isIntersecting) {
                         if (hasNextPage) {
-                            fetchNextPage();
                             setCurrentPage(
                                 (previousValue) => previousValue + 1
                             );
