@@ -470,7 +470,6 @@ export default function MainPage({
             if (stateStringArray.includes(stateString)) {
                 const stateIndex = stateStringArray.indexOf(stateString);
                 if (stateIndex > 0) {
-                    console.log("##### fired #####");
                     const filledBasicCacheList = Object.values(
                         basicCache.current
                     ).filter((cachedList) => cachedList.length > 0).length;
@@ -505,8 +504,8 @@ export default function MainPage({
         setIsFilterFavorite(!isFilterFavorite);
         let lastPage: number = 1;
         if (!isFilterFavorite) {
-            lastPageParam.current.favorite = Object.values(
-                favoriteCache.current
+            lastPageParam.current.basic = Object.values(
+                basicCache.current
             ).filter(
                 (cachedList: ParsedFeedsDataType[]) => cachedList.length > 0
             ).length;
@@ -515,8 +514,8 @@ export default function MainPage({
                     ? lastPageParam.current.favorite
                     : 1;
         } else {
-            lastPageParam.current.basic = Object.values(
-                basicCache.current
+            lastPageParam.current.favorite = Object.values(
+                favoriteCache.current
             ).filter(
                 (cachedList: ParsedFeedsDataType[]) => cachedList.length > 0
             ).length;
