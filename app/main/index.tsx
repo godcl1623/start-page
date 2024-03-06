@@ -123,6 +123,9 @@ export default function MainPage({
         []
     );
     const queryParameters = useRef<string>("");
+    const enabledFilters = useRef<
+        ("favorite" | "source" | "texts" | "sorts")[]
+    >([]);
     const basicCache = useRef<FeedsCache>({});
     const favoriteCache = useRef<FeedsCache>({});
     const sourceCache = useRef<FeedsCache>({});
@@ -141,6 +144,30 @@ export default function MainPage({
         texts: 1,
         sorts: 1,
     });
+    const updateEnabledFilters = useCallback(
+        (
+            value: "favorite" | "source" | "texts" | "sorts",
+            enable: "enable" | "disable" = "enable"
+        ) => {
+            const currentList = enabledFilters.current;
+            if (enable === "enable") {
+                if (!currentList.includes(value)) {
+                    enabledFilters.current.push(value);
+                } else {
+                    enabledFilters.current = enabledFilters.current
+                        .filter((enabledItem) => enabledItem !== value)
+                        .concat([value]);
+                }
+            } else if (enable === "disable") {
+                if (currentList.includes(value)) {
+                    enabledFilters.current = enabledFilters.current.filter(
+                        (enabledItem) => enabledItem !== value
+                    );
+                }
+            }
+        },
+        []
+    );
     const queryFn = useCallback(
         ({ pageParam }: { pageParam: number }) =>
             getDataFrom<string>(
@@ -222,6 +249,7 @@ export default function MainPage({
                         basicCache.current
                     ).filter((cachedList) => cachedList.length > 0).length;
                     lastPage = 1;
+                    updateEnabledFilters("source");
                     break;
                 case Object.values(sourceDisplayState).includes(false) &&
                     Object.values(newDisplay).includes(false) &&
@@ -241,15 +269,28 @@ export default function MainPage({
                     };
                     lastPageParam.current.source = 1;
                     lastPage = 1;
+                    updateEnabledFilters("source");
                     break;
                 default:
                     lastPageParam.current.source = Object.values(
                         sourceCache.current
                     ).filter((cachedList) => cachedList.length > 0).length;
-                    lastPage =
-                        isMobileLayout && lastPageParam.current.basic > 1
-                            ? lastPageParam.current.basic
-                            : 1;
+                    lastPage = isMobileLayout
+                        ? enabledFilters.current.length > 1
+                            ? lastPageParam.current[
+                                  enabledFilters.current[
+                                      enabledFilters.current.length - 1
+                                  ]
+                              ] > 0
+                                ? lastPageParam.current[
+                                      enabledFilters.current[
+                                          enabledFilters.current.length - 1
+                                      ]
+                                  ]
+                                : 1
+                            : lastPageParam.current.basic
+                        : 1;
+                    updateEnabledFilters("source", "disable");
                     break;
             }
             setCurrentPage(lastPage);
@@ -267,6 +308,7 @@ export default function MainPage({
                         basicCache.current
                     ).filter((cachedList) => cachedList.length > 0).length;
                     lastPage = 1;
+                    updateEnabledFilters("texts");
                     break;
                 case Object.values(searchTexts).some(
                     (searchText: string) => searchText.length >= 2
@@ -288,6 +330,7 @@ export default function MainPage({
                     };
                     lastPageParam.current.texts = 1;
                     lastPage = 1;
+                    updateEnabledFilters("texts");
                     break;
                 case value === "":
                     textsCache.current = {
@@ -304,7 +347,22 @@ export default function MainPage({
                         ),
                     };
                     lastPageParam.current.texts = 1;
-                    lastPage = isMobileLayout ? lastPageParam.current.basic : 1;
+                    lastPage = isMobileLayout
+                        ? enabledFilters.current.length > 1
+                            ? lastPageParam.current[
+                                  enabledFilters.current[
+                                      enabledFilters.current.length - 1
+                                  ]
+                              ] > 0
+                                ? lastPageParam.current[
+                                      enabledFilters.current[
+                                          enabledFilters.current.length - 1
+                                      ]
+                                  ]
+                                : 1
+                            : lastPageParam.current.basic
+                        : 1;
+                    updateEnabledFilters("texts", "disable");
                     break;
                 default:
                     lastPageParam.current.texts = Object.values(
@@ -314,6 +372,7 @@ export default function MainPage({
                         isMobileLayout && lastPageParam.current.texts > 1
                             ? lastPageParam.current.texts
                             : 1;
+                    updateEnabledFilters("texts");
                     break;
             }
             setCurrentPage(lastPage);
@@ -321,33 +380,41 @@ export default function MainPage({
         },
         [setSearchTexts, searchTexts, totalCount]
     );
-    useEffect(() => {
-        console.log("current page: ", currentPage);
-    }, [currentPage]);
     const handleFeedsAndCache = useCallback(
         (feedsList: ParsedFeedsDataType[]) => {
             let cache: FeedsCache = basicCache.current;
             let lastPage: number = 1;
             switch (true) {
-                case isFilterFavorite:
+                case enabledFilters.current[
+                    enabledFilters.current.length - 1
+                ] === "favorite":
+                    console.log("favorite");
                     cache = favoriteCache.current;
                     lastPage = lastPageParam.current.favorite;
                     break;
-                case Object.values(sourceDisplayState).includes(false):
+                case enabledFilters.current[
+                    enabledFilters.current.length - 1
+                ] === "source":
+                    console.log("source");
                     cache = sourceCache.current;
                     lastPage = lastPageParam.current.source;
                     break;
-                case Object.values(searchTexts).some(
-                    (searchText: string) => searchText.length >= 2
-                ):
+                case enabledFilters.current[
+                    enabledFilters.current.length - 1
+                ] === "texts":
+                    console.log("text");
                     cache = textsCache.current;
                     lastPage = lastPageParam.current.texts;
                     break;
-                case currentSort > 0:
+                case enabledFilters.current[
+                    enabledFilters.current.length - 1
+                ] === "sorts":
+                    console.log("sorts");
                     cache = sortsCache.current;
                     lastPage = lastPageParam.current.sorts;
                     break;
                 default:
+                    console.log("basic");
                     cache = basicCache.current;
                     lastPage = lastPageParam.current.basic;
                     break;
@@ -491,8 +558,24 @@ export default function MainPage({
                     };
                     lastPageParam.current.sorts = 1;
                     lastPage = 1;
+                    updateEnabledFilters("sorts");
                 } else {
-                    lastPage = isMobileLayout ? lastPageParam.current.basic : 1;
+                    lastPage = isMobileLayout
+                        ? enabledFilters.current.length > 1
+                            ? lastPageParam.current[
+                                  enabledFilters.current[
+                                      enabledFilters.current.length - 1
+                                  ]
+                              ] > 0
+                                ? lastPageParam.current[
+                                      enabledFilters.current[
+                                          enabledFilters.current.length - 1
+                                      ]
+                                  ]
+                                : 1
+                            : lastPageParam.current.basic
+                        : 1;
+                    updateEnabledFilters("sorts", "disable");
                 }
                 setCurrentPage(lastPage);
                 setCurrentSort(stateIndex);
@@ -516,16 +599,29 @@ export default function MainPage({
                 isMobileLayout && lastPageParam.current.favorite > 1
                     ? lastPageParam.current.favorite
                     : 1;
+            updateEnabledFilters("favorite");
         } else {
             lastPageParam.current.favorite = Object.values(
                 favoriteCache.current
             ).filter(
                 (cachedList: ParsedFeedsDataType[]) => cachedList.length > 0
             ).length;
-            lastPage =
-                isMobileLayout && lastPageParam.current.basic > 1
-                    ? lastPageParam.current.basic
-                    : 1;
+            lastPage = isMobileLayout
+                ? enabledFilters.current.length > 1
+                    ? lastPageParam.current[
+                          enabledFilters.current[
+                              enabledFilters.current.length - 1
+                          ]
+                      ] > 0
+                        ? lastPageParam.current[
+                              enabledFilters.current[
+                                  enabledFilters.current.length - 1
+                              ]
+                          ]
+                        : 1
+                    : lastPageParam.current.basic
+                : 1;
+            updateEnabledFilters("favorite", "disable");
         }
         setCurrentPage(lastPage);
     };
