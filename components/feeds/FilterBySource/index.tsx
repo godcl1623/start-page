@@ -1,19 +1,20 @@
 import { FilterType } from "hooks/useFilters";
 
 import FilterBySourceView from "./FilterBySourceView";
+import { SourceDisplayState } from "app/main";
 
 interface Props {
     displayState?: FilterType<boolean>;
     closeModal: () => void;
     setDisplayFlag: (target: string, value: boolean) => void;
-    refetchFeeds: () => void;
+    filterBySources: (newSourceDisplay: SourceDisplayState) => void;
 }
 
 export default function FilterBySource({
     displayState,
     closeModal,
     setDisplayFlag,
-    refetchFeeds,
+    filterBySources,
 }: Readonly<Props>) {
     if (displayState == null || Object.keys(displayState).length === 0) {
         return (
@@ -27,20 +28,22 @@ export default function FilterBySource({
         setDisplayFlag(target, value);
     };
 
-    const enableDisplayFilter = (callback?: () => void) => () => {
-        if (callback != null) {
-            callback();
-        }
-        refetchFeeds();
-        closeModal();
-    };
-
-    const initiateDisplayFilter = () => {
-        Object.keys(displayState).forEach((key: string) =>
-            setDisplayFlag(key, true)
-        );
-        closeModal();
-    };
+    const enableDisplayFilter =
+        (returnNewDisplayState?: () => [string, boolean][]) => () => {
+            let newDisplayState: SourceDisplayState = {};
+            if (returnNewDisplayState != null) {
+                const newDisplayStateList = returnNewDisplayState();
+                newDisplayState = newDisplayStateList.reduce(
+                    (
+                        totalStates: SourceDisplayState,
+                        [sourceKey, displayState]: [string, boolean]
+                    ) => ({ ...totalStates, [sourceKey]: displayState }),
+                    {}
+                );
+            }
+            filterBySources(newDisplayState);
+            closeModal();
+        };
 
     return (
         <FilterBySourceView
@@ -48,7 +51,6 @@ export default function FilterBySource({
             changeDisplayFlag={changeDisplayFlag}
             closeModal={closeModal}
             enableDisplayFilter={enableDisplayFilter}
-            initiateDisplayFilter={initiateDisplayFilter}
         />
     );
 }

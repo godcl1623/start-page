@@ -9,8 +9,9 @@ interface Props {
     displayState: FilterType<boolean>;
     changeDisplayFlag: (target: string, value: boolean) => void;
     closeModal: () => void;
-    enableDisplayFilter: (callback?: () => void) => () => void;
-    initiateDisplayFilter: () => void;
+    enableDisplayFilter: (
+        returnNewDisplayState?: () => [string, boolean][]
+    ) => () => void;
 }
 
 interface ButtonsDataValue {
@@ -27,7 +28,6 @@ export default function FilterBySourceView({
     changeDisplayFlag,
     closeModal,
     enableDisplayFilter,
-    initiateDisplayFilter,
 }: Readonly<Props>) {
     const [visibleState, setVisibleState] = useState<FilterType<boolean>>({});
     const title = "표시할 출처를 선택해주세요";
@@ -39,11 +39,11 @@ export default function FilterBySourceView({
         }));
     };
 
-    const saveDisplayState = () => {
-        Object.entries(visibleState).forEach(([feedSource, state]) => {
-            changeDisplayFlag(feedSource, state);
+    const saveDisplayState = (value?: boolean) => (): [string, boolean][] =>
+        Object.entries(visibleState).map(([feedSource, state]) => {
+            changeDisplayFlag(feedSource, value ?? state);
+            return [feedSource, value ?? state];
         });
-    };
 
     useEffect(() => {
         if (displayState != null) {
@@ -79,12 +79,12 @@ export default function FilterBySourceView({
         초기화: {
             customStyle:
                 "w-full bg-neutral-500 font-bold text-xs text-neutral-100 dark:bg-neutral-500 dark:text-gray-300 xs:w-16",
-            clickHandler: initiateDisplayFilter,
+            clickHandler: enableDisplayFilter(saveDisplayState(true)),
         },
         저장: {
             customStyle:
                 "w-full bg-sky-400 font-bold text-xs text-neutral-100 dark:bg-sky-600 dark:text-gray-300 xs:w-16",
-            clickHandler: enableDisplayFilter(saveDisplayState),
+            clickHandler: enableDisplayFilter(saveDisplayState()),
         },
     };
     const filterHandlersList = Object.entries(buttonsData).map(

@@ -17,7 +17,7 @@ export default function Modal({ children, closeModal }: ModalProps) {
     return (
         <>
             {createPortal(
-                <div className="absolute top-0 w-full h-full">
+                <div className="absolute top-0 w-full h-full z-50">
                     <div
                         className="w-full h-full bg-neutral-900 opacity-50"
                         onClick={handleModal}

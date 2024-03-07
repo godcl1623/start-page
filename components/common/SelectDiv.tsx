@@ -7,7 +7,7 @@ import { FaCheck } from "react-icons/fa6";
 interface Props {
     optionValues: string[];
     customStyles?: string;
-    setSortState?: (stateString: string) => void;
+    filterBySort?: (stateString: string) => void;
     options?: {
         enableEdit?: boolean;
         editHandler?: () => void;
@@ -17,7 +17,7 @@ interface Props {
 export default memo(function SelectDiv({
     optionValues,
     customStyles,
-    setSortState,
+    filterBySort,
     options,
 }: Props) {
     const [selectedValue, setSelectedValue] = useState(optionValues[0]);
@@ -31,8 +31,8 @@ export default memo(function SelectDiv({
 
     const handleOptionButton = (event: MouseEvent<HTMLButtonElement>) => {
         setSelectedValue(event.currentTarget.value);
-        if (setSortState) {
-            setSortState(event.currentTarget.value);
+        if (filterBySort) {
+            filterBySort(event.currentTarget.value);
         }
         toggleList();
     };

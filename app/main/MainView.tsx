@@ -2,7 +2,12 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 
-import { ErrorResponse, ParsedFeedsDataType, STATE_MESSAGE_STRINGS } from ".";
+import {
+    ErrorResponse,
+    ParsedFeedsDataType,
+    STATE_MESSAGE_STRINGS,
+    SourceDisplayState,
+} from ".";
 import { FilterType } from "hooks/useFilters";
 import { SourceData } from "controllers/sources/helpers";
 
@@ -29,7 +34,7 @@ interface Props {
     feedsFromServer: ParsedFeedsDataType[];
     currentPage: number;
     setCurrentPage: (value: number | ((value: number) => number)) => void;
-    setSortState: (stateString: string) => void;
+    filterBySort: (stateString: string) => void;
     totalCount: number;
     isMobileLayout: boolean;
     sources: string;
@@ -38,12 +43,15 @@ interface Props {
     userId: string;
     updateObserverElement: (element: HTMLDivElement) => void;
     refetchStoredFeeds: () => void;
-    setSearchTexts: (target: string, value: string) => void;
+    filterBySearchTexts: (target: string, value: string) => void;
     filterFavorites: () => void;
     renewState: string;
     isFilterFavorite: boolean;
     searchEnginesList: SearchEnginesData[] | ErrorResponse | null | undefined;
     checkAndUpdateNewFeeds: () => void;
+    filterBySources: (newDisplayState: SourceDisplayState) => void;
+    isFilterBySorts: boolean;
+    isFilterByTexts: boolean;
 }
 
 export type ModalKeys =
@@ -65,7 +73,7 @@ export default memo(function MainView({
     feedsFromServer,
     currentPage,
     setCurrentPage,
-    setSortState,
+    filterBySort,
     totalCount,
     isMobileLayout,
     sources,
@@ -74,12 +82,15 @@ export default memo(function MainView({
     userId,
     updateObserverElement,
     refetchStoredFeeds,
-    setSearchTexts,
+    filterBySearchTexts,
     filterFavorites,
     renewState,
     isFilterFavorite,
     searchEnginesList,
     checkAndUpdateNewFeeds,
+    filterBySources,
+    isFilterBySorts,
+    isFilterByTexts,
 }: Props) {
     const [modalState, setModalState] = useState<ModalStateType>({
         addSubscription: false,
@@ -195,7 +206,7 @@ export default memo(function MainView({
                 <section
                     className={`flex flex-col items-center w-full h-full min-h-[calc(100vh-140px)] xs:min-h-[calc(100vh-100px)] fhd:max-w-[1920px]`}
                 >
-                    <div className="flex flex-col justify-center my-auto">
+                    <div className="flex flex-col justify-center items-center w-full my-auto">
                         <article className="flex-center w-full mt-24 mb-20 sm:mt-32 sm:mb-28 lg:w-[768px]">
                             <Search
                                 handleModal={handleModal("editSearchEngine")}
@@ -232,8 +243,12 @@ export default memo(function MainView({
                             <PostHandleOptions
                                 filterFavorites={filterFavorites}
                                 handleClick={handleModal}
-                                setSearchTexts={setSearchTexts}
-                                setSortState={setSortState}
+                                filterBySearchTexts={filterBySearchTexts}
+                                filterBySort={filterBySort}
+                                isFilterFavorite={isFilterFavorite}
+                                isFilterSources={isFilterSources}
+                                isFilterSorts={isFilterBySorts}
+                                isFilterTexts={isFilterByTexts}
                             />
                             {sourcesList.length > 0 ? (
                                 <FeedsList
@@ -310,7 +325,7 @@ export default memo(function MainView({
                                 displayState={sourceDisplayState}
                                 setDisplayFlag={setSourceDisplayState}
                                 closeModal={closeModal("filterBySource")}
-                                refetchFeeds={refetchStoredFeeds}
+                                filterBySources={filterBySources}
                             />
                         </SubscriptionDialogBox>
                     </Modal>
@@ -326,7 +341,7 @@ export default memo(function MainView({
                     <Modal closeModal={closeModal("editSearchEngine")}>
                         <SubscriptionDialogBox
                             closeModal={closeModal("editSearchEngine")}
-                            customStyle="w-screen lg:w-[768px]"
+                            customStyle="w-screen rounded-none sm:rounded-md lg:w-[768px]"
                         >
                             <EditSearchEngines
                                 userId={userId}

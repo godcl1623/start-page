@@ -6,11 +6,14 @@ import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import useFilters from "hooks/useFilters";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import { SORT_STANDARD } from "common/constants";
-import { setCookie } from "cookies-next";
 import RequestControllers from "controllers/requestControllers";
 import { generateSearchParameters } from "controllers/utils";
 import { SearchEnginesData } from "controllers/searchEngines";
 import useResizeEvent from "hooks/useResizeEvent";
+import useFileCaches, {
+    FeedsCache,
+    getLastPageOfConsecutiveList,
+} from "./hooks/useFileCaches";
 
 export interface ParsedFeedsDataType {
     id: string;
@@ -46,13 +49,13 @@ interface PageParamData {
     updated: number;
 }
 
-interface FeedsCache {
-    [key: number]: ParsedFeedsDataType[];
-}
-
 export interface ErrorResponse {
     error: string;
     status: number;
+}
+
+export interface SourceDisplayState {
+    [key: string]: boolean;
 }
 
 export const STATE_MESSAGE_STRINGS: { [key: string]: string } = {
@@ -94,7 +97,6 @@ export default function MainPage({
     const [totalCount, setTotalCount] = useState<number>(0);
     const [isMobileLayout, setIsMobileLayout] = useState<boolean>(false);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [formerFeedsList, setFormerFeedsList] = useState<FeedsCache>({});
     const [renewState, setRenewState] = useState<string>(
         STATE_MESSAGE_STRINGS.start
     );
@@ -116,6 +118,48 @@ export default function MainPage({
                       `/search_engines?userId=${userId}`
                   ),
     });
+
+    const [feedsToDisplay, setFeedsToDisplay] = useState<ParsedFeedsDataType[]>(
+        []
+    );
+    const queryParameters = useRef<string>("");
+    const enabledFilters = useRef<
+        ("favorite" | "source" | "texts" | "sorts")[]
+    >([]);
+    const updateEnabledFilters = useCallback(
+        (
+            value: "favorite" | "source" | "texts" | "sorts",
+            enable: "enable" | "disable" = "enable"
+        ) => {
+            const currentList = enabledFilters.current;
+            if (enable === "enable") {
+                if (!currentList.includes(value)) {
+                    enabledFilters.current.push(value);
+                } else {
+                    enabledFilters.current = enabledFilters.current
+                        .filter((enabledItem) => enabledItem !== value)
+                        .concat([value]);
+                }
+            } else if (enable === "disable") {
+                if (currentList.includes(value)) {
+                    enabledFilters.current = enabledFilters.current.filter(
+                        (enabledItem) => enabledItem !== value
+                    );
+                }
+            }
+        },
+        []
+    );
+    const cacheContainer = useFileCaches();
+    const queryFn = useCallback(
+        ({ pageParam }: { pageParam: number }) =>
+            isLocal
+                ? null
+                : getDataFrom<string>(
+                      `/feeds?userId=${userId}${queryParameters.current}&page=${pageParam}`
+                  ),
+        [getDataFrom, userId, isLocal]
+    );
     const {
         data: storedFeed,
         refetch: refetchStoredFeeds,
@@ -123,31 +167,12 @@ export default function MainPage({
         hasNextPage,
     } = useInfiniteQuery({
         queryKey: [
-            `/feeds?userId=${userId}`,
-            { isMobileLayout, currentPage, sourceDisplayState },
+            `/feeds?userId=${userId}${queryParameters.current}&page=${currentPage}`,
         ],
         initialPageParam: currentPage,
-        queryFn: ({ pageParam }) =>
-            isLocal
-                ? "{}"
-                : getDataFrom<string>(
-                      `/feeds?userId=${userId}${generateSearchParameters({
-                          ...(isFilterFavorite && {
-                              favorites: isFilterFavorite,
-                          }),
-                          ...(Object.values(sourceDisplayState).includes(
-                              false
-                          ) && {
-                              displayOption: JSON.stringify(sourceDisplayState),
-                          }),
-                          ...(Object.values(searchTexts).some(
-                              (searchText: string) => searchText.length >= 2
-                          ) && { textOption: JSON.stringify(searchTexts) }),
-                          ...(currentSort > 0 && { sortOption: currentSort }),
-                          page: pageParam,
-                      })}`
-                  ),
-        getNextPageParam: (lastPage: string) => {
+        queryFn,
+        getNextPageParam: (lastPage) => {
+            if (lastPage == null) return;
             if (lastPage === "" || !JSON.parse(lastPage).data) return 1;
             const totalCount = JSON.parse(lastPage)?.count;
             if (currentPage >= Math.ceil(totalCount / 10)) return;
@@ -158,13 +183,242 @@ export default function MainPage({
             return currentPage - 1;
         },
     });
-    const feedsFromServer = isMobileLayout
-        ? (Object.values(formerFeedsList) as any[])
-              .filter((feedListPerPage: any[]) => feedListPerPage?.length > 0)
-              .reduce((acc, x) => acc?.concat(x), [])
-        : formerFeedsList[currentPage];
+    const updateFeedsCache = useCallback(
+        (
+            feedsList: ParsedFeedsDataType[],
+            cacheData: { cache: FeedsCache; lastPage: number }
+        ) => {
+            const { cache, lastPage } = cacheData;
+            const pageNumber = currentPage > lastPage ? currentPage : lastPage;
+            const currentPageList = cache[pageNumber];
+            if (currentPageList?.length > 0) {
+                const isListsIdentical = currentPageList.every(
+                    (feedData, index) => feedData.id === feedsList[index]?.id
+                );
+                if (!isListsIdentical) {
+                    cache[pageNumber] = currentPageList
+                        .slice(currentPageList.length)
+                        .concat(feedsList);
+                }
+            } else {
+                cache[pageNumber] = currentPageList
+                    .slice(currentPageList.length)
+                    .concat(feedsList);
+            }
+        },
+        [currentPage]
+    );
+    const updateFeedsToDisplay = useCallback(
+        (cache: FeedsCache) => {
+            if (isMobileLayout) {
+                const lastFilledPage = getLastPageOfConsecutiveList(cache);
+                const joinedList = Object.values(cache)
+                    .slice(0, lastFilledPage + 1)
+                    .filter(
+                        (feedListPerPage: any[]) => feedListPerPage?.length > 0
+                    )
+                    .reduce((acc, x) => acc?.concat(x), []);
+                setFeedsToDisplay(joinedList);
+            } else {
+                setFeedsToDisplay(cache[currentPage]);
+            }
+        },
+        [isMobileLayout, currentPage]
+    );
+    const initializeFilteredCache = useCallback(() => {
+        cacheContainer.filtered.cache = {
+            ...cacheContainer.filtered.cache,
+            ...Array.from(
+                { length: Math.ceil(totalCount / 10) },
+                (_, k) => k + 1
+            ).reduce(
+                (result, pageIndex) => ({
+                    ...result,
+                    [pageIndex]: [],
+                }),
+                {}
+            ),
+        };
+    }, [cacheContainer, totalCount]);
+    const filterBySources = useCallback(
+        (newDisplay: SourceDisplayState) => {
+            const lastDisplayState = JSON.stringify(sourceDisplayState);
+            const newDisplayState = JSON.stringify(newDisplay);
+            let lastPage: number = 1;
+            switch (true) {
+                case !Object.values(sourceDisplayState).includes(false) &&
+                    lastDisplayState !== newDisplayState:
+                    cacheContainer.default.lastPage =
+                        getLastPageOfConsecutiveList(
+                            cacheContainer.default.cache
+                        );
+                    initializeFilteredCache();
+                    updateEnabledFilters("source");
+                    break;
+                case Object.values(sourceDisplayState).includes(false) &&
+                    Object.values(newDisplay).includes(false) &&
+                    lastDisplayState !== newDisplayState:
+                    initializeFilteredCache();
+                    cacheContainer.filtered.lastPage = 1;
+                    updateEnabledFilters("source");
+                    break;
+                default:
+                    cacheContainer.filtered.lastPage =
+                        getLastPageOfConsecutiveList(
+                            cacheContainer.filtered.cache
+                        );
+                    lastPage = isMobileLayout
+                        ? enabledFilters.current.length > 1
+                            ? cacheContainer.filtered.lastPage > 0
+                                ? cacheContainer.filtered.lastPage
+                                : 1
+                            : cacheContainer.default.lastPage
+                        : 1;
+                    updateEnabledFilters("source", "disable");
+                    break;
+            }
+            setCurrentPage(lastPage);
+        },
+        [
+            sourceDisplayState,
+            cacheContainer,
+            isMobileLayout,
+            updateEnabledFilters,
+            initializeFilteredCache,
+        ]
+    );
+    const filterBySearchTexts = useCallback(
+        (target: string, value: string) => {
+            let lastPage: number = 1;
+            switch (true) {
+                case Object.values(searchTexts).every(
+                    (searchText: string) => searchText.length === 0
+                ) && value.length >= 2:
+                    cacheContainer.default.lastPage =
+                        getLastPageOfConsecutiveList(
+                            cacheContainer.default.cache
+                        );
+                    initializeFilteredCache();
+                    updateEnabledFilters("texts");
+                    break;
+                case Object.values(searchTexts).some(
+                    (searchText: string) => searchText.length >= 2
+                ) &&
+                    value.length >= 2 &&
+                    searchTexts[target] !== value:
+                    initializeFilteredCache();
+                    cacheContainer.filtered.lastPage = 1;
+                    updateEnabledFilters("texts");
+                    break;
+                case value === "":
+                    initializeFilteredCache();
+                    cacheContainer.filtered.lastPage = 1;
+                    lastPage = isMobileLayout
+                        ? enabledFilters.current.length > 1
+                            ? cacheContainer.filtered.lastPage > 0
+                                ? cacheContainer.filtered.lastPage
+                                : 1
+                            : cacheContainer.default.lastPage
+                        : 1;
+                    updateEnabledFilters("texts", "disable");
+                    break;
+                default:
+                    cacheContainer.filtered.lastPage =
+                        getLastPageOfConsecutiveList(
+                            cacheContainer.filtered.cache
+                        );
+                    lastPage =
+                        isMobileLayout && cacheContainer.filtered.lastPage > 1
+                            ? cacheContainer.filtered.lastPage
+                            : 1;
+                    updateEnabledFilters("texts");
+                    break;
+            }
+            setCurrentPage(lastPage);
+            setSearchTexts(target, value);
+        },
+        [
+            setSearchTexts,
+            searchTexts,
+            cacheContainer,
+            isMobileLayout,
+            updateEnabledFilters,
+            initializeFilteredCache,
+        ]
+    );
+    const handleFeedsAndCache = useCallback(
+        (feedsList: ParsedFeedsDataType[]) => {
+            let cache: FeedsCache = cacheContainer.default.cache;
+            let lastPage: number = 1;
+            if (enabledFilters.current.length > 0) {
+                cache = cacheContainer.filtered.cache;
+                lastPage = cacheContainer.filtered.lastPage;
+            } else {
+                cache = cacheContainer.default.cache;
+                lastPage = cacheContainer.default.lastPage;
+            }
+            updateFeedsCache(feedsList, { cache, lastPage });
+            updateFeedsToDisplay(cache);
+        },
+        [updateFeedsCache, updateFeedsToDisplay, cacheContainer]
+    );
+    const initializeCache = useCallback(
+        (indexList: number[], feedsList: ParsedFeedsDataType[]) => {
+            Object.entries(cacheContainer).forEach(([cacheKey, cacheData]) => {
+                indexList.forEach((pageIndex) => {
+                    if (cacheKey === "basic") {
+                        cacheData.cache[pageIndex] =
+                            pageIndex === 1 ? feedsList : [];
+                    } else {
+                        cacheData.cache[pageIndex] = [];
+                    }
+                });
+            });
+        },
+        [cacheContainer]
+    );
+    useEffect(() => {
+        if (feeds) {
+            const {
+                data,
+                count,
+            }: { data: ParsedFeedsDataType[]; count: number } =
+                JSON.parse(feeds);
+            setTotalCount(count);
+            const indexList = Array.from(
+                { length: Math.ceil(count / 10) },
+                (_, k) => k + 1
+            );
+            initializeCache(indexList, data);
+        }
+    }, [feeds, initializeCache]);
+    useEffect(() => {
+        queryParameters.current = generateSearchParameters({
+            ...(isFilterFavorite && {
+                favorites: isFilterFavorite,
+            }),
+            ...(Object.values(sourceDisplayState).includes(false) && {
+                displayOption: JSON.stringify(sourceDisplayState),
+            }),
+            ...(Object.values(searchTexts).some(
+                (searchText: string) => searchText.length >= 2
+            ) && { textOption: JSON.stringify(searchTexts) }),
+            ...(currentSort > 0 && { sortOption: currentSort }),
+        });
+    }, [isFilterFavorite, currentSort, searchTexts, sourceDisplayState]);
+    useEffect(() => {
+        if (storedFeed?.pages) {
+            const { data, count } = JSON.parse(
+                storedFeed.pages[storedFeed.pages.length - 1] ?? "{}"
+            );
+            if (count != null) setTotalCount(count);
+            if (data != null) {
+                handleFeedsAndCache(data);
+            }
+        }
+    }, [storedFeed, isMobileLayout, handleFeedsAndCache]);
 
-    const checkAndUpdateNewFeeds = async () => {
+    const checkAndUpdateNewFeeds = useCallback(async () => {
         try {
             setRenewState(STATE_MESSAGE_STRINGS.proceed);
             abortControllerRef.current = new AbortController();
@@ -186,7 +440,7 @@ export default function MainPage({
                         } else {
                             setRenewState(STATE_MESSAGE_STRINGS.end);
                         }
-                        updateFormerFeedsList(data);
+                        handleFeedsAndCache(data);
                         break;
                     case "error" in newFeedsRequestResult:
                         setRenewState(
@@ -203,52 +457,72 @@ export default function MainPage({
         } catch (error) {
             console.error(error);
         }
-    };
+    }, [getDataFrom, handleFeedsAndCache, totalCount, userId]);
 
-    const updateFormerFeedsList = (feedsList: ParsedFeedsDataType[]) => {
-        setFormerFeedsList(
-            (previousObject: { [key in number]: ParsedFeedsDataType[] }) => {
-                if (previousObject[currentPage] != null) {
-                    if (
-                        currentPage > 1 &&
-                        previousObject[currentPage - 1].length > 0 &&
-                        previousObject[currentPage - 1].every(
-                            (feed: ParsedFeedsDataType, index: number) =>
-                                feed.id === feedsList[index]?.id
-                        )
-                    ) {
-                        return previousObject;
-                    }
-                    return {
-                        ...previousObject,
-                        [currentPage]: previousObject[currentPage]
-                            ?.slice(previousObject[currentPage].length)
-                            .concat(feedsList),
-                    };
-                } else {
-                    return {
-                        [currentPage]: feedsList,
-                    };
-                }
-            }
-        );
-    };
-
-    const setSortState = useCallback(
+    const filterBySort = useCallback(
         (stateStringArray: string[]) => (stateString: string) => {
+            let lastPage: number = 1;
             if (stateStringArray.includes(stateString)) {
-                setCurrentSort(stateStringArray.indexOf(stateString));
+                const stateIndex = stateStringArray.indexOf(stateString);
+                if (stateIndex > 0) {
+                    const filledBasicCacheList = getLastPageOfConsecutiveList(
+                        cacheContainer.default.cache
+                    );
+                    if (
+                        cacheContainer.default.lastPage !== filledBasicCacheList
+                    ) {
+                        cacheContainer.default.lastPage = filledBasicCacheList;
+                    }
+                    initializeFilteredCache();
+                    cacheContainer.filtered.lastPage = 1;
+                    updateEnabledFilters("sorts");
+                } else {
+                    lastPage = isMobileLayout
+                        ? enabledFilters.current.length > 1
+                            ? cacheContainer.filtered.lastPage > 0
+                                ? cacheContainer.filtered.lastPage
+                                : 1
+                            : cacheContainer.default.lastPage
+                        : 1;
+                    updateEnabledFilters("sorts", "disable");
+                }
+                setCurrentPage(lastPage);
+                setCurrentSort(stateIndex);
             } else {
                 setCurrentSort(0);
             }
         },
-        []
+        [
+            cacheContainer,
+            isMobileLayout,
+            updateEnabledFilters,
+            initializeFilteredCache,
+        ]
     );
 
     const filterFavorites = () => {
         setIsFilterFavorite(!isFilterFavorite);
-        setCurrentPage(1);
-        refetchStoredFeeds();
+        let lastPage: number = 1;
+        if (!isFilterFavorite) {
+            cacheContainer.default.lastPage = getLastPageOfConsecutiveList(
+                cacheContainer.default.cache
+            );
+            initializeFilteredCache();
+            updateEnabledFilters("favorite");
+        } else {
+            cacheContainer.filtered.lastPage = getLastPageOfConsecutiveList(
+                cacheContainer.filtered.cache
+            );
+            lastPage = isMobileLayout
+                ? enabledFilters.current.length > 1
+                    ? cacheContainer.filtered.lastPage > 0
+                        ? cacheContainer.filtered.lastPage
+                        : 1
+                    : cacheContainer.default.lastPage
+                : 1;
+            updateEnabledFilters("favorite", "disable");
+        }
+        setCurrentPage(lastPage);
     };
 
     const updateObserverElement = (element: HTMLDivElement) => {
@@ -270,75 +544,7 @@ export default function MainPage({
     useResizeEvent(detectIfMobileLayout, true, [detectIfMobileLayout]);
 
     useEffect(() => {
-        if (feeds) {
-            const {
-                data,
-                count,
-            }: { data: ParsedFeedsDataType[]; count: number } =
-                JSON.parse(feeds);
-            setTotalCount(count);
-            Array.from({ length: Math.ceil(count / 10) }, (v, k) =>
-                setFormerFeedsList((previousObject: any) => ({
-                    ...previousObject,
-                    [k + 1]: [],
-                }))
-            );
-            updateFormerFeedsList(data);
-        }
-    }, [feeds]);
-
-    useEffect(() => {
-        if (storedFeed?.pages) {
-            const { data, count } = JSON.parse(
-                storedFeed.pages[storedFeed.pages.length - 1]
-            );
-            if (count != null) setTotalCount(count);
-            if (data != null) updateFormerFeedsList(data);
-        }
-    }, [storedFeed, isMobileLayout]);
-
-    useEffect(() => {
-        if (!isMobileLayout) {
-            refetchStoredFeeds();
-        }
-    }, [
-        isFilterFavorite,
-        searchTexts,
-        currentPage,
-        isMobileLayout,
-        currentSort,
-    ]);
-
-    useEffect(() => {
-        if (isMobileLayout) {
-            const firstEmptyPageIndex = (
-                Object.values(formerFeedsList) as any[]
-            ).findIndex((value: any[]) => value?.length === 0);
-            setCurrentPage(firstEmptyPageIndex);
-            Object.keys(formerFeedsList).forEach((key: string, index) => {
-                if (index > firstEmptyPageIndex) {
-                    setFormerFeedsList((previousObject: any) => ({
-                        ...previousObject,
-                        [key]: [],
-                    }));
-                }
-            });
-        } else {
-            const fetchedPages = (
-                Object.values(formerFeedsList) as any[]
-            ).reduce(
-                (totalNumber: number, currentDataArray: any[]) =>
-                    currentDataArray?.length > 0
-                        ? (totalNumber += 1)
-                        : totalNumber,
-                0
-            );
-            setCurrentPage(fetchedPages > 0 ? fetchedPages : 1);
-        }
-    }, [isMobileLayout]);
-
-    useEffect(() => {
-        if (typeof window !== "undefined" && observerElement != null) {
+        if (observerElement != null) {
             const observerOption: IntersectionObserverInit = {
                 threshold: 0.5,
             };
@@ -348,7 +554,6 @@ export default function MainPage({
                 entries.forEach((entry: IntersectionObserverEntry) => {
                     if (entry.isIntersecting) {
                         if (hasNextPage) {
-                            fetchNextPage();
                             setCurrentPage(
                                 (previousValue) => previousValue + 1
                             );
@@ -363,7 +568,7 @@ export default function MainPage({
             observer.observe(observerElement);
             return () => observer.unobserve(observerElement);
         }
-    }, [observerElement, hasNextPage]);
+    }, [observerElement, hasNextPage, fetchNextPage]);
 
     useEffect(() => {
         if (abortControllerRef.current) {
@@ -374,12 +579,14 @@ export default function MainPage({
         }
     }, [renewState]);
 
+    useEffect(() => {}, []);
+
     return (
         <MainView
-            feedsFromServer={feedsFromServer}
+            feedsFromServer={feedsToDisplay}
             currentPage={currentPage}
             setCurrentPage={updateCurrentPage}
-            setSortState={setSortState(SORT_STANDARD)}
+            filterBySort={filterBySort(SORT_STANDARD)}
             totalCount={totalCount}
             isMobileLayout={isMobileLayout}
             sources={sources}
@@ -388,12 +595,17 @@ export default function MainPage({
             userId={userId}
             updateObserverElement={updateObserverElement}
             refetchStoredFeeds={refetchStoredFeeds}
-            setSearchTexts={setSearchTexts}
+            filterBySearchTexts={filterBySearchTexts}
             filterFavorites={filterFavorites}
             renewState={renewState}
             isFilterFavorite={isFilterFavorite}
             searchEnginesList={searchEnginesList}
             checkAndUpdateNewFeeds={checkAndUpdateNewFeeds}
+            filterBySources={filterBySources}
+            isFilterBySorts={currentSort > 0}
+            isFilterByTexts={Object.values(searchTexts).some(
+                (searchText: string) => searchText.length >= 2
+            )}
         />
     );
 }

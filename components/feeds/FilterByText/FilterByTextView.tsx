@@ -5,6 +5,7 @@ import Button from "components/common/Button";
 interface Props {
     searchOptions: string[];
     isInputFilled: boolean;
+    customStyle?: string;
     handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
     checkIfInputFilled: (event: ChangeEvent<HTMLInputElement>) => void;
     clearInput: () => void;
@@ -18,12 +19,13 @@ const FilterByTextView = forwardRef<HTMLInputElement, Props>(
             checkIfInputFilled,
             isInputFilled,
             clearInput,
+            customStyle
         }: Props,
         ref
     ) => {
         return (
             <form
-                className="relative flex w-full my-2 h-full max-h-8 rounded-md shadow-md text-xs dark:shadow-zinc-600 md:mx-2 md:my-0"
+                className={`relative flex w-full my-2 h-full max-h-8 rounded-md shadow-md text-xs dark:shadow-zinc-600 md:mx-2 md:my-0 ${customStyle}`}
                 onSubmit={handleSubmit}
             >
                 <SelectDiv
