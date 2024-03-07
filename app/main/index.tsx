@@ -222,9 +222,21 @@ export default function MainPage({
         },
         [isMobileLayout, currentPage]
     );
-    useEffect(() => {
-        console.log(cacheContainer)
-    }, [isFilterFavorite, currentSort, searchTexts, sourceDisplayState, currentPage, cacheContainer]);
+    const initializeFilteredCache = useCallback(() => {
+        cacheContainer.filtered.cache = {
+            ...cacheContainer.filtered.cache,
+            ...Array.from(
+                { length: Math.ceil(totalCount / 10) },
+                (_, k) => k + 1
+            ).reduce(
+                (result, pageIndex) => ({
+                    ...result,
+                    [pageIndex]: [],
+                }),
+                {}
+            ),
+        };
+    }, [cacheContainer, totalCount]);
     const filterBySources = useCallback(
         (newDisplay: SourceDisplayState) => {
             const lastDisplayState = JSON.stringify(sourceDisplayState);
@@ -233,35 +245,25 @@ export default function MainPage({
             switch (true) {
                 case !Object.values(sourceDisplayState).includes(false) &&
                     lastDisplayState !== newDisplayState:
-                    cacheContainer.default.lastPage = getLastPageOfConsecutiveList(
-                        cacheContainer.default.cache
-                    );
+                    cacheContainer.default.lastPage =
+                        getLastPageOfConsecutiveList(
+                            cacheContainer.default.cache
+                        );
+                    initializeFilteredCache();
                     updateEnabledFilters("source");
                     break;
                 case Object.values(sourceDisplayState).includes(false) &&
                     Object.values(newDisplay).includes(false) &&
                     lastDisplayState !== newDisplayState:
-                    cacheContainer.filtered.cache = {
-                        ...cacheContainer.filtered.cache,
-                        ...Array.from(
-                            { length: Math.ceil(totalCount / 10) },
-                            (_, k) => k + 1
-                        ).reduce(
-                            (result, pageIndex) => ({
-                                ...result,
-                                [pageIndex]: [],
-                            }),
-                            {}
-                        ),
-                    };
+                    initializeFilteredCache();
                     cacheContainer.filtered.lastPage = 1;
                     updateEnabledFilters("source");
                     break;
                 default:
-                    cacheContainer.filtered.lastPage = getLastPageOfConsecutiveList(
-                        cacheContainer.filtered.cache
-                    );
-                    // TODO: 체크
+                    cacheContainer.filtered.lastPage =
+                        getLastPageOfConsecutiveList(
+                            cacheContainer.filtered.cache
+                        );
                     lastPage = isMobileLayout
                         ? enabledFilters.current.length > 1
                             ? cacheContainer.filtered.lastPage > 0
@@ -276,10 +278,10 @@ export default function MainPage({
         },
         [
             sourceDisplayState,
-            totalCount,
             cacheContainer,
             isMobileLayout,
             updateEnabledFilters,
+            initializeFilteredCache,
         ]
     );
     const filterBySearchTexts = useCallback(
@@ -289,9 +291,11 @@ export default function MainPage({
                 case Object.values(searchTexts).every(
                     (searchText: string) => searchText.length === 0
                 ) && value.length >= 2:
-                    cacheContainer.default.lastPage = getLastPageOfConsecutiveList(
-                        cacheContainer.default.cache
-                    );
+                    cacheContainer.default.lastPage =
+                        getLastPageOfConsecutiveList(
+                            cacheContainer.default.cache
+                        );
+                    initializeFilteredCache();
                     updateEnabledFilters("texts");
                     break;
                 case Object.values(searchTexts).some(
@@ -299,38 +303,13 @@ export default function MainPage({
                 ) &&
                     value.length >= 2 &&
                     searchTexts[target] !== value:
-                    cacheContainer.filtered.cache = {
-                        ...cacheContainer.filtered.cache,
-                        ...Array.from(
-                            { length: Math.ceil(totalCount / 10) },
-                            (_, k) => k + 1
-                        ).reduce(
-                            (result, pageIndex) => ({
-                                ...result,
-                                [pageIndex]: [],
-                            }),
-                            {}
-                        ),
-                    };
+                    initializeFilteredCache();
                     cacheContainer.filtered.lastPage = 1;
                     updateEnabledFilters("texts");
                     break;
                 case value === "":
-                    cacheContainer.filtered.cache = {
-                        ...cacheContainer.filtered.cache,
-                        ...Array.from(
-                            { length: Math.ceil(totalCount / 10) },
-                            (_, k) => k + 1
-                        ).reduce(
-                            (result, pageIndex) => ({
-                                ...result,
-                                [pageIndex]: [],
-                            }),
-                            {}
-                        ),
-                    };
+                    initializeFilteredCache();
                     cacheContainer.filtered.lastPage = 1;
-                    // TODO: 체크
                     lastPage = isMobileLayout
                         ? enabledFilters.current.length > 1
                             ? cacheContainer.filtered.lastPage > 0
@@ -341,10 +320,10 @@ export default function MainPage({
                     updateEnabledFilters("texts", "disable");
                     break;
                 default:
-                    cacheContainer.filtered.lastPage = getLastPageOfConsecutiveList(
-                        cacheContainer.filtered.cache
-                    );
-                    // TODO: 체크
+                    cacheContainer.filtered.lastPage =
+                        getLastPageOfConsecutiveList(
+                            cacheContainer.filtered.cache
+                        );
                     lastPage =
                         isMobileLayout && cacheContainer.filtered.lastPage > 1
                             ? cacheContainer.filtered.lastPage
@@ -358,10 +337,10 @@ export default function MainPage({
         [
             setSearchTexts,
             searchTexts,
-            totalCount,
             cacheContainer,
             isMobileLayout,
             updateEnabledFilters,
+            initializeFilteredCache,
         ]
     );
     const handleFeedsAndCache = useCallback(
@@ -491,20 +470,10 @@ export default function MainPage({
                     ) {
                         cacheContainer.default.lastPage = filledBasicCacheList;
                     }
-                    cacheContainer.filtered.cache = {
-                        ...cacheContainer.filtered.cache,
-                        ...Object.entries(cacheContainer.filtered.cache).reduce(
-                            (result, [pageIndex]) => ({
-                                ...result,
-                                [pageIndex]: [],
-                            }),
-                            {}
-                        ),
-                    };
+                    initializeFilteredCache();
                     cacheContainer.filtered.lastPage = 1;
                     updateEnabledFilters("sorts");
                 } else {
-                    // TODO: 체크
                     lastPage = isMobileLayout
                         ? enabledFilters.current.length > 1
                             ? cacheContainer.filtered.lastPage > 0
@@ -520,7 +489,12 @@ export default function MainPage({
                 setCurrentSort(0);
             }
         },
-        [cacheContainer, isMobileLayout, updateEnabledFilters]
+        [
+            cacheContainer,
+            isMobileLayout,
+            updateEnabledFilters,
+            initializeFilteredCache,
+        ]
     );
 
     const filterFavorites = () => {
@@ -530,12 +504,12 @@ export default function MainPage({
             cacheContainer.default.lastPage = getLastPageOfConsecutiveList(
                 cacheContainer.default.cache
             );
+            initializeFilteredCache();
             updateEnabledFilters("favorite");
         } else {
             cacheContainer.filtered.lastPage = getLastPageOfConsecutiveList(
                 cacheContainer.filtered.cache
             );
-            // TODO: 체크
             lastPage = isMobileLayout
                 ? enabledFilters.current.length > 1
                     ? cacheContainer.filtered.lastPage > 0
@@ -601,6 +575,8 @@ export default function MainPage({
             };
         }
     }, [renewState]);
+
+    useEffect(() => {}, []);
 
     return (
         <MainView
