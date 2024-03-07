@@ -10,6 +10,7 @@ import RequestControllers from "controllers/requestControllers";
 import { generateSearchParameters } from "controllers/utils";
 import { SearchEnginesData } from "controllers/searchEngines";
 import useResizeEvent from "hooks/useResizeEvent";
+import useFileCaches, { FeedsCache } from "./hooks/useFileCaches";
 
 export interface ParsedFeedsDataType {
     id: string;
@@ -43,10 +44,6 @@ interface PageParamData {
     data: ParsedFeedsDataType[];
     count: number;
     updated: number;
-}
-
-interface FeedsCache {
-    [key: number]: ParsedFeedsDataType[];
 }
 
 export interface ErrorResponse {
@@ -126,24 +123,6 @@ export default function MainPage({
     const enabledFilters = useRef<
         ("favorite" | "source" | "texts" | "sorts")[]
     >([]);
-    const basicCache = useRef<FeedsCache>({});
-    const favoriteCache = useRef<FeedsCache>({});
-    const sourceCache = useRef<FeedsCache>({});
-    const textsCache = useRef<FeedsCache>({});
-    const sortsCache = useRef<FeedsCache>({});
-    const lastPageParam = useRef<{
-        basic: number;
-        favorite: number;
-        source: number;
-        texts: number;
-        sorts: number;
-    }>({
-        basic: 1,
-        favorite: 1,
-        source: 1,
-        texts: 1,
-        sorts: 1,
-    });
     const updateEnabledFilters = useCallback(
         (
             value: "favorite" | "source" | "texts" | "sorts",
@@ -168,6 +147,7 @@ export default function MainPage({
         },
         []
     );
+    const cacheContainer = useFileCaches();
     const queryFn = useCallback(
         ({ pageParam }: { pageParam: number }) =>
             getDataFrom<string>(
@@ -245,8 +225,8 @@ export default function MainPage({
             switch (true) {
                 case !Object.values(sourceDisplayState).includes(false) &&
                     lastDisplayState !== newDisplayState:
-                    lastPageParam.current.basic = Object.values(
-                        basicCache.current
+                    cacheContainer.basic.lastPage = Object.values(
+                        cacheContainer.basic.cache
                     ).filter((cachedList) => cachedList.length > 0).length;
                     lastPage = 1;
                     updateEnabledFilters("source");
@@ -254,8 +234,8 @@ export default function MainPage({
                 case Object.values(sourceDisplayState).includes(false) &&
                     Object.values(newDisplay).includes(false) &&
                     lastDisplayState !== newDisplayState:
-                    sourceCache.current = {
-                        ...sourceCache.current,
+                    cacheContainer.source.cache = {
+                        ...cacheContainer.source.cache,
                         ...Array.from(
                             { length: Math.ceil(totalCount / 10) },
                             (_, k) => k + 1
@@ -267,35 +247,35 @@ export default function MainPage({
                             {}
                         ),
                     };
-                    lastPageParam.current.source = 1;
+                    cacheContainer.source.lastPage = 1;
                     lastPage = 1;
                     updateEnabledFilters("source");
                     break;
                 default:
-                    lastPageParam.current.source = Object.values(
-                        sourceCache.current
+                    cacheContainer.source.lastPage = Object.values(
+                        cacheContainer.source.cache
                     ).filter((cachedList) => cachedList.length > 0).length;
                     lastPage = isMobileLayout
                         ? enabledFilters.current.length > 1
-                            ? lastPageParam.current[
+                            ? cacheContainer[
                                   enabledFilters.current[
                                       enabledFilters.current.length - 1
                                   ]
-                              ] > 0
-                                ? lastPageParam.current[
+                              ].lastPage > 0
+                                ? cacheContainer[
                                       enabledFilters.current[
                                           enabledFilters.current.length - 1
                                       ]
-                                  ]
+                                  ].lastPage
                                 : 1
-                            : lastPageParam.current.basic
+                            : cacheContainer.basic.lastPage
                         : 1;
                     updateEnabledFilters("source", "disable");
                     break;
             }
             setCurrentPage(lastPage);
         },
-        [sourceDisplayState, totalCount]
+        [sourceDisplayState, totalCount, cacheContainer]
     );
     const filterBySearchTexts = useCallback(
         (target: string, value: string) => {
@@ -304,8 +284,8 @@ export default function MainPage({
                 case Object.values(searchTexts).every(
                     (searchText: string) => searchText.length === 0
                 ) && value.length >= 2:
-                    lastPageParam.current.basic = Object.values(
-                        basicCache.current
+                    cacheContainer.basic.lastPage = Object.values(
+                        cacheContainer.basic.cache
                     ).filter((cachedList) => cachedList.length > 0).length;
                     lastPage = 1;
                     updateEnabledFilters("texts");
@@ -315,8 +295,8 @@ export default function MainPage({
                 ) &&
                     value.length >= 2 &&
                     searchTexts[target] !== value:
-                    textsCache.current = {
-                        ...textsCache.current,
+                    cacheContainer.texts.cache = {
+                        ...cacheContainer.texts.cache,
                         ...Array.from(
                             { length: Math.ceil(totalCount / 10) },
                             (_, k) => k + 1
@@ -328,13 +308,13 @@ export default function MainPage({
                             {}
                         ),
                     };
-                    lastPageParam.current.texts = 1;
+                    cacheContainer.texts.lastPage = 1;
                     lastPage = 1;
                     updateEnabledFilters("texts");
                     break;
                 case value === "":
-                    textsCache.current = {
-                        ...textsCache.current,
+                    cacheContainer.texts.cache = {
+                        ...cacheContainer.texts.cache,
                         ...Array.from(
                             { length: Math.ceil(totalCount / 10) },
                             (_, k) => k + 1
@@ -346,31 +326,32 @@ export default function MainPage({
                             {}
                         ),
                     };
-                    lastPageParam.current.texts = 1;
+                    // FIXME: 수정 대상
+                    cacheContainer.texts.lastPage = 1;
                     lastPage = isMobileLayout
                         ? enabledFilters.current.length > 1
-                            ? lastPageParam.current[
+                            ? cacheContainer[
                                   enabledFilters.current[
                                       enabledFilters.current.length - 1
                                   ]
-                              ] > 0
-                                ? lastPageParam.current[
+                              ].lastPage > 0
+                                ? cacheContainer[
                                       enabledFilters.current[
                                           enabledFilters.current.length - 1
                                       ]
-                                  ]
+                                  ].lastPage
                                 : 1
-                            : lastPageParam.current.basic
+                            : cacheContainer.basic.lastPage
                         : 1;
                     updateEnabledFilters("texts", "disable");
                     break;
                 default:
-                    lastPageParam.current.texts = Object.values(
-                        textsCache.current
+                    cacheContainer.texts.lastPage = Object.values(
+                        cacheContainer.texts.cache
                     ).filter((cachedList) => cachedList.length > 0).length;
                     lastPage =
-                        isMobileLayout && lastPageParam.current.texts > 1
-                            ? lastPageParam.current.texts
+                        isMobileLayout && cacheContainer.texts.lastPage > 1
+                            ? cacheContainer.texts.lastPage
                             : 1;
                     updateEnabledFilters("texts");
                     break;
@@ -378,40 +359,46 @@ export default function MainPage({
             setCurrentPage(lastPage);
             setSearchTexts(target, value);
         },
-        [setSearchTexts, searchTexts, totalCount]
+        [setSearchTexts, searchTexts, totalCount, cacheContainer]
     );
     const handleFeedsAndCache = useCallback(
         (feedsList: ParsedFeedsDataType[]) => {
-            let cache: FeedsCache = basicCache.current;
+            let cache: FeedsCache = cacheContainer.basic.cache;
             let lastPage: number = 1;
             switch (true) {
+                // FIXME: 수정 대상
                 case enabledFilters.current[
                     enabledFilters.current.length - 1
                 ] === "favorite":
-                    cache = favoriteCache.current;
-                    lastPage = lastPageParam.current.favorite;
+                console.log('favorite')
+                    cache = cacheContainer.favorite.cache;
+                    lastPage = cacheContainer.favorite.lastPage;
                     break;
                 case enabledFilters.current[
                     enabledFilters.current.length - 1
                 ] === "source":
-                    cache = sourceCache.current;
-                    lastPage = lastPageParam.current.source;
+                console.log('source')
+                    cache = cacheContainer.source.cache;
+                    lastPage = cacheContainer.source.lastPage;
                     break;
                 case enabledFilters.current[
                     enabledFilters.current.length - 1
                 ] === "texts":
-                    cache = textsCache.current;
-                    lastPage = lastPageParam.current.texts;
+                console.log('texts')
+                    cache = cacheContainer.texts.cache;
+                    lastPage = cacheContainer.texts.lastPage;
                     break;
                 case enabledFilters.current[
                     enabledFilters.current.length - 1
                 ] === "sorts":
-                    cache = sortsCache.current;
-                    lastPage = lastPageParam.current.sorts;
+                console.log('sorts')
+                    cache = cacheContainer.sorts.cache;
+                    lastPage = cacheContainer.sorts.lastPage;
                     break;
                 default:
-                    cache = basicCache.current;
-                    lastPage = lastPageParam.current.basic;
+                    console.log('basic')
+                    cache = cacheContainer.basic.cache;
+                    lastPage = cacheContainer.basic.lastPage;
                     break;
             }
             updateFeedsCache(feedsList, { cache, lastPage });
@@ -424,17 +411,14 @@ export default function MainPage({
             sourceDisplayState,
             searchTexts,
             currentSort,
+            cacheContainer,
         ]
     );
     const initializeCache = useCallback(
         (indexList: number[], feedsList: ParsedFeedsDataType[]) => {
-            const cacheList = [
-                basicCache.current,
-                favoriteCache.current,
-                sourceCache.current,
-                textsCache.current,
-                sortsCache.current,
-            ];
+            const cacheList = Object.values(cacheContainer).map(
+                (cacheData) => cacheData.cache
+            );
             cacheList.forEach((cache, index) => {
                 indexList.forEach((pageIndex) => {
                     if (index === 0) {
@@ -445,7 +429,7 @@ export default function MainPage({
                 });
             });
         },
-        []
+        [cacheContainer]
     );
     useEffect(() => {
         if (feeds) {
@@ -536,14 +520,16 @@ export default function MainPage({
                 const stateIndex = stateStringArray.indexOf(stateString);
                 if (stateIndex > 0) {
                     const filledBasicCacheList = Object.values(
-                        basicCache.current
+                        cacheContainer.basic.cache
                     ).filter((cachedList) => cachedList.length > 0).length;
-                    if (lastPageParam.current.basic !== filledBasicCacheList) {
-                        lastPageParam.current.basic = filledBasicCacheList;
+                    if (
+                        cacheContainer.basic.lastPage !== filledBasicCacheList
+                    ) {
+                        cacheContainer.basic.lastPage = filledBasicCacheList;
                     }
-                    sortsCache.current = {
-                        ...sortsCache.current,
-                        ...Object.entries(sortsCache.current).reduce(
+                    cacheContainer.sorts.cache = {
+                        ...cacheContainer.sorts.cache,
+                        ...Object.entries(cacheContainer.sorts.cache).reduce(
                             (result, [pageIndex]) => ({
                                 ...result,
                                 [pageIndex]: [],
@@ -551,24 +537,24 @@ export default function MainPage({
                             {}
                         ),
                     };
-                    lastPageParam.current.sorts = 1;
+                    cacheContainer.sorts.lastPage = 1;
                     lastPage = 1;
                     updateEnabledFilters("sorts");
                 } else {
                     lastPage = isMobileLayout
                         ? enabledFilters.current.length > 1
-                            ? lastPageParam.current[
+                            ? cacheContainer[
                                   enabledFilters.current[
                                       enabledFilters.current.length - 1
                                   ]
-                              ] > 0
-                                ? lastPageParam.current[
+                              ].lastPage > 0
+                                ? cacheContainer[
                                       enabledFilters.current[
                                           enabledFilters.current.length - 1
                                       ]
-                                  ]
+                                  ].lastPage
                                 : 1
-                            : lastPageParam.current.basic
+                            : cacheContainer.basic.lastPage
                         : 1;
                     updateEnabledFilters("sorts", "disable");
                 }
@@ -578,40 +564,40 @@ export default function MainPage({
                 setCurrentSort(0);
             }
         },
-        []
+        [cacheContainer]
     );
 
     const filterFavorites = () => {
         setIsFilterFavorite(!isFilterFavorite);
         let lastPage: number = 1;
         if (!isFilterFavorite) {
-            lastPageParam.current.basic = Object.values(
-                basicCache.current
+            cacheContainer.basic.lastPage = Object.values(
+                cacheContainer.basic.cache
             ).filter(
                 (cachedList: ParsedFeedsDataType[]) => cachedList.length > 0
             ).length;
             lastPage = 1;
             updateEnabledFilters("favorite");
         } else {
-            lastPageParam.current.favorite = Object.values(
-                favoriteCache.current
+            cacheContainer.favorite.lastPage = Object.values(
+                cacheContainer.favorite.cache
             ).filter(
                 (cachedList: ParsedFeedsDataType[]) => cachedList.length > 0
             ).length;
             lastPage = isMobileLayout
                 ? enabledFilters.current.length > 1
-                    ? lastPageParam.current[
+                    ? cacheContainer[
                           enabledFilters.current[
                               enabledFilters.current.length - 1
                           ]
-                      ] > 0
-                        ? lastPageParam.current[
+                      ].lastPage > 0
+                        ? cacheContainer[
                               enabledFilters.current[
                                   enabledFilters.current.length - 1
                               ]
-                          ]
+                          ].lastPage
                         : 1
-                    : lastPageParam.current.basic
+                    : cacheContainer.basic.lastPage
                 : 1;
             updateEnabledFilters("favorite", "disable");
         }
@@ -661,7 +647,7 @@ export default function MainPage({
             observer.observe(observerElement);
             return () => observer.unobserve(observerElement);
         }
-    }, [observerElement, hasNextPage]);
+    }, [observerElement, hasNextPage, fetchNextPage]);
 
     useEffect(() => {
         if (abortControllerRef.current) {
