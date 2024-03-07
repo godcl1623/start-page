@@ -366,37 +366,31 @@ export default function MainPage({
             let cache: FeedsCache = cacheContainer.basic.cache;
             let lastPage: number = 1;
             switch (true) {
-                // FIXME: 수정 대상
                 case enabledFilters.current[
                     enabledFilters.current.length - 1
                 ] === "favorite":
-                console.log('favorite')
                     cache = cacheContainer.favorite.cache;
                     lastPage = cacheContainer.favorite.lastPage;
                     break;
                 case enabledFilters.current[
                     enabledFilters.current.length - 1
                 ] === "source":
-                console.log('source')
                     cache = cacheContainer.source.cache;
                     lastPage = cacheContainer.source.lastPage;
                     break;
                 case enabledFilters.current[
                     enabledFilters.current.length - 1
                 ] === "texts":
-                console.log('texts')
                     cache = cacheContainer.texts.cache;
                     lastPage = cacheContainer.texts.lastPage;
                     break;
                 case enabledFilters.current[
                     enabledFilters.current.length - 1
                 ] === "sorts":
-                console.log('sorts')
                     cache = cacheContainer.sorts.cache;
                     lastPage = cacheContainer.sorts.lastPage;
                     break;
                 default:
-                    console.log('basic')
                     cache = cacheContainer.basic.cache;
                     lastPage = cacheContainer.basic.lastPage;
                     break;
@@ -416,15 +410,13 @@ export default function MainPage({
     );
     const initializeCache = useCallback(
         (indexList: number[], feedsList: ParsedFeedsDataType[]) => {
-            const cacheList = Object.values(cacheContainer).map(
-                (cacheData) => cacheData.cache
-            );
-            cacheList.forEach((cache, index) => {
+            Object.entries(cacheContainer).forEach(([cacheKey, cacheData]) => {
                 indexList.forEach((pageIndex) => {
-                    if (index === 0) {
-                        cache[pageIndex] = pageIndex === 1 ? feedsList : [];
+                    if (cacheKey === "basic") {
+                        cacheData.cache[pageIndex] =
+                            pageIndex === 1 ? feedsList : [];
                     } else {
-                        cache[pageIndex] = [];
+                        cacheData.cache[pageIndex] = [];
                     }
                 });
             });
