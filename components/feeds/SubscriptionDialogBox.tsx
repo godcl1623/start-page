@@ -18,7 +18,7 @@ export default function SubscriptionDialogBox({
 
     return (
         <article
-            className={`w-96 min-h-48 h-max rounded-md shadow-lg px-6 py-4 bg-neutral-100 text-center text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 ${customStyle}`}
+            className={`w-96 min-h-48 h-max rounded-md shadow-lg px-6 py-4 bg-neutral-100 text-center text-neutral-700 dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 z-50 ${customStyle}`}
         >
             <CloseIcon
                 className="absolute right-4 text-xl cursor-pointer"

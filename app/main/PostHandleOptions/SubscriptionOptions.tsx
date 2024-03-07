@@ -5,26 +5,43 @@ import { nanoid } from "nanoid";
 interface Props {
     handleClick: (target: ModalKeys) => () => void;
     filterFavorites: () => void;
+    isFilterFavorite: boolean;
+    isFilterSources: boolean;
+}
+
+interface ButtonData {
+    clickHandler: () => void;
+    isFiltering?: boolean;
 }
 
 export default function SubscriptionOptions({
     handleClick,
     filterFavorites,
-}: Props) {
+    isFilterFavorite,
+    isFilterSources,
+}: Readonly<Props>) {
     const buttonData = {
-        "구독 추가": handleClick("addSubscription"),
-        "구독 취소": handleClick("cancelSubscription"),
-        즐겨찾기: filterFavorites,
-        "출처별 필터": handleClick("filterBySource"),
+        "구독 추가": {
+            clickHandler: handleClick("addSubscription"),
+        },
+        "구독 취소": { clickHandler: handleClick("cancelSubscription") },
+        즐겨찾기: {
+            clickHandler: filterFavorites,
+            isFiltering: isFilterFavorite,
+        },
+        "출처별 필터": {
+            clickHandler: handleClick("filterBySource"),
+            isFiltering: isFilterSources,
+        },
     };
     const optionButtonsList = Object.entries(buttonData).map(
-        (buttonData: [string, () => void]) => {
-            const [buttonText, clickHandler] = buttonData;
+        (buttonData: [string, ButtonData]) => {
+            const [buttonText, { clickHandler, isFiltering }] = buttonData;
             return (
                 <li key={`${buttonText}_${nanoid()}`} className="w-full">
                     <Button
                         type="button"
-                        customStyle="w-full bg-neutral-500 text-xs text-neutral-100 dark:bg-neutral-500 "
+                        customStyle={`w-full bg-neutral-500 text-xs text-neutral-100 dark:bg-neutral-500 ${isFiltering ? 'brightness-150' : ''}`}
                         clickHandler={clickHandler}
                     >
                         {buttonText}

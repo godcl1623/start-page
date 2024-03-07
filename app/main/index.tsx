@@ -599,6 +599,10 @@ export default function MainPage({
             searchEnginesList={searchEnginesList}
             checkAndUpdateNewFeeds={checkAndUpdateNewFeeds}
             filterBySources={filterBySources}
+            isFilterBySorts={currentSort > 0}
+            isFilterByTexts={Object.values(searchTexts).some(
+                (searchText: string) => searchText.length >= 2
+            )}
         />
     );
 }

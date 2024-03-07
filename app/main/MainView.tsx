@@ -50,6 +50,8 @@ interface Props {
     searchEnginesList: SearchEnginesData[] | ErrorResponse | null | undefined;
     checkAndUpdateNewFeeds: () => void;
     filterBySources: (newDisplayState: SourceDisplayState) => void;
+    isFilterBySorts: boolean;
+    isFilterByTexts: boolean;
 }
 
 export type ModalKeys =
@@ -87,6 +89,8 @@ export default memo(function MainView({
     searchEnginesList,
     checkAndUpdateNewFeeds,
     filterBySources,
+    isFilterBySorts,
+    isFilterByTexts
 }: Props) {
     const [modalState, setModalState] = useState<ModalStateType>({
         addSubscription: false,
@@ -241,6 +245,10 @@ export default memo(function MainView({
                                 handleClick={handleModal}
                                 filterBySearchTexts={filterBySearchTexts}
                                 filterBySort={filterBySort}
+                                isFilterFavorite={isFilterFavorite}
+                                isFilterSources={isFilterSources}
+                                isFilterSorts={isFilterBySorts}
+                                isFilterTexts={isFilterByTexts}
                             />
                             {sourcesList.length > 0 ? (
                                 <FeedsList

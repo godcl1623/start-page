@@ -6,6 +6,7 @@ import FilterByTextView from "./FilterByTextView";
 
 interface Props {
     setTextFilter: (target: string, value: string) => void;
+    customStyle?: string;
 }
 
 type SearchOptions = {
@@ -17,7 +18,7 @@ export const SEARCH_OPTIONS: SearchOptions = {
     본문: "description",
 };
 
-export default memo(function FilterByText({ setTextFilter }: Props) {
+export default memo(function FilterByText({ setTextFilter, customStyle }: Props) {
     const [isInputFilled, setIsInputFilled] = useState<boolean>(false);
     const inputElement = useRef<HTMLInputElement>(null);
     const searchOptions = Object.keys(SEARCH_OPTIONS);
@@ -57,6 +58,7 @@ export default memo(function FilterByText({ setTextFilter }: Props) {
             clearInput={clearInput}
             handleSubmit={handleSubmit}
             isInputFilled={isInputFilled}
+            customStyle={customStyle}
             ref={inputElement}
         />
     );
