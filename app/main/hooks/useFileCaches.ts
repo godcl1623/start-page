@@ -1,8 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { ParsedFeedsDataType } from "..";
 
 export interface FeedsCache {
-    name?: string;
     [key: number]: ParsedFeedsDataType[];
 }
 
@@ -13,28 +12,20 @@ interface CachesContainer {
     };
 }
 
+const CACHE_KEYS = ["basic", "favorite", "source", "texts", "sorts"];
+
 const useFileCaches = () => {
     const caches = useRef<CachesContainer>({
-        basic: {
-            cache: {},
-            lastPage: 1,
-        },
-        favorite: {
-            cache: {},
-            lastPage: 1,
-        },
-        source: {
-            cache: {},
-            lastPage: 1,
-        },
-        texts: {
-            cache: {},
-            lastPage: 1,
-        },
-        sorts: {
-            cache: {},
-            lastPage: 1,
-        },
+        ...CACHE_KEYS.reduce(
+            (resultObject, cacheKey) => ({
+                ...resultObject,
+                [cacheKey]: {
+                    cache: {},
+                    lastPage: 1,
+                },
+            }),
+            {}
+        ),
     });
 
     return caches.current;
