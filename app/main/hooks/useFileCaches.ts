@@ -42,3 +42,12 @@ const useFileCaches = () => {
 };
 
 export default useFileCaches;
+
+export const getLastPageOfConsecutiveList = (cacheData: FeedsCache) => {
+    const firstEmptyPage = Object.entries(cacheData).find(
+        ([_, cachedList]) => cachedList.length === 0
+    )?.[0];
+    return !Number.isNaN(firstEmptyPage) && Number(firstEmptyPage) > 1
+        ? Number(firstEmptyPage) - 1
+        : 1;
+};

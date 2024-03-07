@@ -10,7 +10,10 @@ import RequestControllers from "controllers/requestControllers";
 import { generateSearchParameters } from "controllers/utils";
 import { SearchEnginesData } from "controllers/searchEngines";
 import useResizeEvent from "hooks/useResizeEvent";
-import useFileCaches, { FeedsCache } from "./hooks/useFileCaches";
+import useFileCaches, {
+    FeedsCache,
+    getLastPageOfConsecutiveList,
+} from "./hooks/useFileCaches";
 
 export interface ParsedFeedsDataType {
     id: string;
@@ -205,7 +208,9 @@ export default function MainPage({
     const updateFeedsToDisplay = useCallback(
         (cache: FeedsCache) => {
             if (isMobileLayout) {
+                const lastFilledPage = getLastPageOfConsecutiveList(cache);
                 const joinedList = Object.values(cache)
+                    .slice(0, lastFilledPage + 1)
                     .filter(
                         (feedListPerPage: any[]) => feedListPerPage?.length > 0
                     )
@@ -217,6 +222,9 @@ export default function MainPage({
         },
         [isMobileLayout, currentPage]
     );
+    useEffect(() => {
+        console.log(cacheContainer)
+    }, [isFilterFavorite, currentSort, searchTexts, sourceDisplayState, currentPage, cacheContainer]);
     const filterBySources = useCallback(
         (newDisplay: SourceDisplayState) => {
             const lastDisplayState = JSON.stringify(sourceDisplayState);
@@ -225,9 +233,9 @@ export default function MainPage({
             switch (true) {
                 case !Object.values(sourceDisplayState).includes(false) &&
                     lastDisplayState !== newDisplayState:
-                    cacheContainer.default.lastPage = Object.values(
+                    cacheContainer.default.lastPage = getLastPageOfConsecutiveList(
                         cacheContainer.default.cache
-                    ).filter((cachedList) => cachedList.length > 0).length;
+                    );
                     updateEnabledFilters("source");
                     break;
                 case Object.values(sourceDisplayState).includes(false) &&
@@ -250,9 +258,10 @@ export default function MainPage({
                     updateEnabledFilters("source");
                     break;
                 default:
-                    cacheContainer.filtered.lastPage = Object.values(
+                    cacheContainer.filtered.lastPage = getLastPageOfConsecutiveList(
                         cacheContainer.filtered.cache
-                    ).filter((cachedList) => cachedList.length > 0).length;
+                    );
+                    // TODO: 체크
                     lastPage = isMobileLayout
                         ? enabledFilters.current.length > 1
                             ? cacheContainer.filtered.lastPage > 0
@@ -280,9 +289,9 @@ export default function MainPage({
                 case Object.values(searchTexts).every(
                     (searchText: string) => searchText.length === 0
                 ) && value.length >= 2:
-                    cacheContainer.default.lastPage = Object.values(
+                    cacheContainer.default.lastPage = getLastPageOfConsecutiveList(
                         cacheContainer.default.cache
-                    ).filter((cachedList) => cachedList.length > 0).length;
+                    );
                     updateEnabledFilters("texts");
                     break;
                 case Object.values(searchTexts).some(
@@ -321,6 +330,7 @@ export default function MainPage({
                         ),
                     };
                     cacheContainer.filtered.lastPage = 1;
+                    // TODO: 체크
                     lastPage = isMobileLayout
                         ? enabledFilters.current.length > 1
                             ? cacheContainer.filtered.lastPage > 0
@@ -331,9 +341,10 @@ export default function MainPage({
                     updateEnabledFilters("texts", "disable");
                     break;
                 default:
-                    cacheContainer.filtered.lastPage = Object.values(
+                    cacheContainer.filtered.lastPage = getLastPageOfConsecutiveList(
                         cacheContainer.filtered.cache
-                    ).filter((cachedList) => cachedList.length > 0).length;
+                    );
+                    // TODO: 체크
                     lastPage =
                         isMobileLayout && cacheContainer.filtered.lastPage > 1
                             ? cacheContainer.filtered.lastPage
@@ -472,9 +483,9 @@ export default function MainPage({
             if (stateStringArray.includes(stateString)) {
                 const stateIndex = stateStringArray.indexOf(stateString);
                 if (stateIndex > 0) {
-                    const filledBasicCacheList = Object.values(
+                    const filledBasicCacheList = getLastPageOfConsecutiveList(
                         cacheContainer.default.cache
-                    ).filter((cachedList) => cachedList.length > 0).length;
+                    );
                     if (
                         cacheContainer.default.lastPage !== filledBasicCacheList
                     ) {
@@ -493,6 +504,7 @@ export default function MainPage({
                     cacheContainer.filtered.lastPage = 1;
                     updateEnabledFilters("sorts");
                 } else {
+                    // TODO: 체크
                     lastPage = isMobileLayout
                         ? enabledFilters.current.length > 1
                             ? cacheContainer.filtered.lastPage > 0
@@ -515,18 +527,15 @@ export default function MainPage({
         setIsFilterFavorite(!isFilterFavorite);
         let lastPage: number = 1;
         if (!isFilterFavorite) {
-            cacheContainer.default.lastPage = Object.values(
+            cacheContainer.default.lastPage = getLastPageOfConsecutiveList(
                 cacheContainer.default.cache
-            ).filter(
-                (cachedList: ParsedFeedsDataType[]) => cachedList.length > 0
-            ).length;
+            );
             updateEnabledFilters("favorite");
         } else {
-            cacheContainer.filtered.lastPage = Object.values(
+            cacheContainer.filtered.lastPage = getLastPageOfConsecutiveList(
                 cacheContainer.filtered.cache
-            ).filter(
-                (cachedList: ParsedFeedsDataType[]) => cachedList.length > 0
-            ).length;
+            );
+            // TODO: 체크
             lastPage = isMobileLayout
                 ? enabledFilters.current.length > 1
                     ? cacheContainer.filtered.lastPage > 0
