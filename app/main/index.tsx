@@ -153,10 +153,12 @@ export default function MainPage({
     const cacheContainer = useFileCaches();
     const queryFn = useCallback(
         ({ pageParam }: { pageParam: number }) =>
-            getDataFrom<string>(
-                `/feeds?userId=${userId}${queryParameters.current}&page=${pageParam}`
-            ),
-        [getDataFrom, userId]
+            isLocal
+                ? null
+                : getDataFrom<string>(
+                      `/feeds?userId=${userId}${queryParameters.current}&page=${pageParam}`
+                  ),
+        [getDataFrom, userId, isLocal]
     );
     const {
         data: storedFeed,
@@ -170,6 +172,7 @@ export default function MainPage({
         initialPageParam: currentPage,
         queryFn,
         getNextPageParam: (lastPage) => {
+            if (lastPage == null) return;
             if (lastPage === "" || !JSON.parse(lastPage).data) return 1;
             const totalCount = JSON.parse(lastPage)?.count;
             if (currentPage >= Math.ceil(totalCount / 10)) return;
@@ -406,7 +409,7 @@ export default function MainPage({
     useEffect(() => {
         if (storedFeed?.pages) {
             const { data, count } = JSON.parse(
-                storedFeed.pages[storedFeed.pages.length - 1]
+                storedFeed.pages[storedFeed.pages.length - 1] ?? "{}"
             );
             if (count != null) setTotalCount(count);
             if (data != null) {

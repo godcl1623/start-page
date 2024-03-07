@@ -90,7 +90,7 @@ export default memo(function MainView({
     checkAndUpdateNewFeeds,
     filterBySources,
     isFilterBySorts,
-    isFilterByTexts
+    isFilterByTexts,
 }: Props) {
     const [modalState, setModalState] = useState<ModalStateType>({
         addSubscription: false,
@@ -206,7 +206,7 @@ export default memo(function MainView({
                 <section
                     className={`flex flex-col items-center w-full h-full min-h-[calc(100vh-140px)] xs:min-h-[calc(100vh-100px)] fhd:max-w-[1920px]`}
                 >
-                    <div className="flex flex-col justify-center my-auto">
+                    <div className="flex flex-col justify-center items-center w-full my-auto">
                         <article className="flex-center w-full mt-24 mb-20 sm:mt-32 sm:mb-28 lg:w-[768px]">
                             <Search
                                 handleModal={handleModal("editSearchEngine")}

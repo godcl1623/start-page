@@ -77,7 +77,7 @@ export default memo(function CardView({
             onClick={handleCard(favoriteState)}
         >
             {cardData == null || cardData.id === "" ? (
-                <div className="flex justify-center items-center w-full h-[5.75rem]">
+                <div className="flex justify-center items-center min-w-full w-full h-[5.75rem]">
                     <SvgSpinners90RingWithBg className="w-6 h-6 fill-neutral-700 dark:fill-neutral-100" />
                 </div>
             ) : (
