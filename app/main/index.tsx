@@ -168,6 +168,7 @@ export default function MainPage({
     } = useInfiniteQuery({
         queryKey: [
             `/feeds?userId=${userId}${queryParameters.current}&page=${currentPage}`,
+            { isFilterFavorite, sourceDisplayState, currentSort, searchTexts },
         ],
         initialPageParam: currentPage,
         queryFn,
@@ -500,7 +501,7 @@ export default function MainPage({
         ]
     );
 
-    const filterFavorites = () => {
+    const filterFavorites = useCallback(() => {
         setIsFilterFavorite(!isFilterFavorite);
         let lastPage: number = 1;
         if (!isFilterFavorite) {
@@ -523,7 +524,13 @@ export default function MainPage({
             updateEnabledFilters("favorite", "disable");
         }
         setCurrentPage(lastPage);
-    };
+    }, [
+        cacheContainer,
+        initializeFilteredCache,
+        updateEnabledFilters,
+        isFilterFavorite,
+        isMobileLayout,
+    ]);
 
     const updateObserverElement = (element: HTMLDivElement) => {
         setObserverElement(element);
@@ -579,7 +586,18 @@ export default function MainPage({
         }
     }, [renewState]);
 
-    useEffect(() => {}, []);
+    // useEffect(() => {
+    //     console.log(cacheContainer);
+    // }, [
+    //     isFilterFavorite,
+    //     currentSort,
+    //     searchTexts,
+    //     sourceDisplayState,
+    //     currentPage,
+    //     cacheContainer,
+    //     enabledFilters,
+    //     queryParameters,
+    // ]);
 
     return (
         <MainView
