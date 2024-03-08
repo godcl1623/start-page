@@ -1,5 +1,10 @@
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import { ParsedFeedsDataType } from "..";
+
+interface Options {
+    totalFeedsCount: number;
+    currentPage: number;
+}
 
 export interface FeedsCache {
     [key: number]: ParsedFeedsDataType[];
@@ -21,7 +26,7 @@ const DEFAULT_CACHE_DATA: CachesContainerValue = {
     lastPage: 1,
 };
 
-const useFileCaches = () => {
+const useFileCaches = ({ totalFeedsCount, currentPage }: Options) => {
     const caches = useRef<CachesContainer>({
         ...CACHE_KEYS.reduce<CachesContainer>(
             (resultObject: CachesContainer, cacheKey: CacheKeys) => ({
@@ -38,7 +43,70 @@ const useFileCaches = () => {
         ),
     });
 
-    return caches.current;
+    const initializeCache = useCallback(
+        (indexList: number[], feedsList: ParsedFeedsDataType[]) => {
+            Object.entries(caches.current).forEach(([cacheKey, cacheData]) => {
+                indexList.forEach((pageIndex) => {
+                    if (cacheKey === "basic") {
+                        cacheData.cache[pageIndex] =
+                            pageIndex === 1 ? feedsList : [];
+                    } else {
+                        cacheData.cache[pageIndex] = [];
+                    }
+                });
+            });
+        },
+        [caches]
+    );
+
+    const initializeFilteredCache = useCallback(() => {
+        caches.current.filtered.cache = {
+            ...caches.current.filtered.cache,
+            ...Array.from(
+                { length: Math.ceil(totalFeedsCount / 10) },
+                (_, k) => k + 1
+            ).reduce(
+                (result, pageIndex) => ({
+                    ...result,
+                    [pageIndex]: [],
+                }),
+                {}
+            ),
+        };
+    }, [caches, totalFeedsCount]);
+
+    const updateFeedsCache = useCallback(
+        (
+            feedsList: ParsedFeedsDataType[],
+            cacheData: { cache: FeedsCache; lastPage: number }
+        ) => {
+            const { cache, lastPage } = cacheData;
+            const pageNumber = currentPage > lastPage ? currentPage : lastPage;
+            const currentPageList = cache[pageNumber];
+            if (currentPageList?.length > 0) {
+                const isListsIdentical = currentPageList.every(
+                    (feedData, index) => feedData.id === feedsList[index]?.id
+                );
+                if (!isListsIdentical) {
+                    cache[pageNumber] = currentPageList
+                        .slice(currentPageList.length)
+                        .concat(feedsList);
+                }
+            } else {
+                cache[pageNumber] = currentPageList
+                    .slice(currentPageList.length)
+                    .concat(feedsList);
+            }
+        },
+        [currentPage]
+    );
+
+    return {
+        cacheContainer: caches.current,
+        initializeCache,
+        initializeFilteredCache,
+        updateFeedsCache,
+    };
 };
 
 export default useFileCaches;
