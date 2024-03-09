@@ -41,7 +41,7 @@ export default function SubscriptionOptions({
                 <li key={`${buttonText}_${nanoid()}`} className="w-full">
                     <Button
                         type="button"
-                        customStyle={`w-full bg-neutral-500 text-xs text-neutral-100 dark:bg-neutral-500 ${isFiltering ? 'brightness-150' : ''}`}
+                        customStyle={`w-full bg-neutral-500 text-xs text-neutral-100 dark:bg-neutral-500 ${isFiltering ? 'brightness-75' : ''}`}
                         clickHandler={clickHandler}
                     >
                         {buttonText}
