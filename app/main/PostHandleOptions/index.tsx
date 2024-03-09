@@ -41,9 +41,7 @@ export default memo(function PostHandleOptions({
         () => (
             <FilterByText
                 setTextFilter={filterBySearchTexts}
-                customStyle={`${
-                    isFilterTexts ? "border-4 border-red-400" : ""
-                }`}
+                customStyle={`${isFilterTexts ? "" : ""}`}
             />
         ),
         [filterBySearchTexts, isFilterTexts]
@@ -53,7 +51,7 @@ export default memo(function PostHandleOptions({
             <SelectDiv
                 optionValues={SORT_STANDARD}
                 customStyles={`max-h-8 rounded-md shadow-md bg-neutral-50 text-xs dark:shadow-zinc-600 md:w-[20%] z-10 ${
-                    isFilterSorts ? "border-4 border-red-400" : ""
+                    isFilterSorts ? "" : ""
                 }`}
                 filterBySort={filterBySort}
             />
