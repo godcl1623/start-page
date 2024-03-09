@@ -26,7 +26,7 @@ const DEFAULT_CACHE_DATA: CachesContainerValue = {
     lastPage: 1,
 };
 
-const useFileCaches = ({ totalFeedsCount, currentPage }: Options) => {
+const useFeedsCaches = ({ totalFeedsCount, currentPage }: Options) => {
     const caches = useRef<CachesContainer>({
         ...CACHE_KEYS.reduce<CachesContainer>(
             (resultObject: CachesContainer, cacheKey: CacheKeys) => ({
@@ -109,7 +109,7 @@ const useFileCaches = ({ totalFeedsCount, currentPage }: Options) => {
     };
 };
 
-export default useFileCaches;
+export default useFeedsCaches;
 
 export const getLastPageOfConsecutiveList = (cacheData: FeedsCache) => {
     const firstEmptyPage = Object.entries(cacheData).find(

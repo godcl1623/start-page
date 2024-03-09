@@ -10,11 +10,12 @@ import RequestControllers from "controllers/requestControllers";
 import { generateSearchParameters } from "controllers/utils";
 import { SearchEnginesData } from "controllers/searchEngines";
 import useResizeEvent from "hooks/useResizeEvent";
-import useFileCaches, {
+import {
     FeedsCache,
     getLastPageOfConsecutiveList,
-} from "./hooks/useFileCaches";
+} from "./hooks/useFeedsCaches";
 import useObserveElement from "./hooks/useObserveElement";
+import useFilteredFeeds from "./hooks/useFilteredFeeds";
 
 export interface ParsedFeedsDataType {
     id: string;
@@ -105,19 +106,19 @@ export default function MainPage({
     );
 
     const queryParameters = useRef<string>("");
-    const enabledFilters = useRef<
-        ("favorite" | "source" | "texts" | "sorts")[]
-    >([]);
     const abortControllerRef = useRef<AbortController | null>(null);
 
     const {
-        cacheContainer,
+        getCachedFeedsToDisplay,
+        handleFavoritesFilter,
+        handleSearchTextsFilter,
+        handleSortFilter,
+        handleSourceFilter,
         initializeCache,
-        initializeFilteredCache,
-        updateFeedsCache,
-    } = useFileCaches({
+    } = useFilteredFeeds({
         totalFeedsCount: totalCount,
         currentPage,
+        commonFlagToChangeLogic: isMobileLayout,
     });
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
@@ -164,7 +165,6 @@ export default function MainPage({
     const {
         data: storedFeed,
         refetch: refetchStoredFeeds,
-        fetchNextPage,
         hasNextPage,
     } = useInfiniteQuery({
         queryKey: [
@@ -190,7 +190,6 @@ export default function MainPage({
         callback: () => setCurrentPage((oldPage) => oldPage + 1),
     });
 
-    // display 관련
     const updateFeedsToDisplay = useCallback(
         (cache: FeedsCache) => {
             if (isMobileLayout) {
@@ -209,25 +208,14 @@ export default function MainPage({
         [isMobileLayout, currentPage]
     );
 
-    // display 관련
     const handleFeedsAndCache = useCallback(
         (feedsList: ParsedFeedsDataType[]) => {
-            let cache: FeedsCache = cacheContainer.default.cache;
-            let lastPage: number = 1;
-            if (enabledFilters.current.length > 0) {
-                cache = cacheContainer.filtered.cache;
-                lastPage = cacheContainer.filtered.lastPage;
-            } else {
-                cache = cacheContainer.default.cache;
-                lastPage = cacheContainer.default.lastPage;
-            }
-            updateFeedsCache(feedsList, { cache, lastPage });
+            const cache = getCachedFeedsToDisplay(feedsList);
             updateFeedsToDisplay(cache);
         },
-        [updateFeedsCache, updateFeedsToDisplay, cacheContainer]
+        [updateFeedsToDisplay, getCachedFeedsToDisplay]
     );
 
-    // 디스플레이 관련
     const checkAndUpdateNewFeeds = useCallback(async () => {
         try {
             setRenewState(STATE_MESSAGE_STRINGS.proceed);
@@ -269,215 +257,44 @@ export default function MainPage({
         }
     }, [getDataFrom, handleFeedsAndCache, totalCount, userId]);
 
-    // 필터링 관련
-    const updateEnabledFilters = useCallback(
-        (
-            value: "favorite" | "source" | "texts" | "sorts",
-            enable: "enable" | "disable" = "enable"
-        ) => {
-            const currentList = enabledFilters.current;
-            if (enable === "enable") {
-                if (!currentList.includes(value)) {
-                    enabledFilters.current.push(value);
-                } else {
-                    enabledFilters.current = enabledFilters.current
-                        .filter((enabledItem) => enabledItem !== value)
-                        .concat([value]);
-                }
-            } else if (enable === "disable") {
-                if (currentList.includes(value)) {
-                    enabledFilters.current = enabledFilters.current.filter(
-                        (enabledItem) => enabledItem !== value
-                    );
-                }
-            }
-        },
-        []
-    );
-
-    // 필터링 관련
     const filterBySources = useCallback(
         (newDisplay: SourceDisplayState) => {
-            const lastDisplayState = JSON.stringify(sourceDisplayState);
-            const newDisplayState = JSON.stringify(newDisplay);
-            let lastPage: number = 1;
-            switch (true) {
-                case !Object.values(sourceDisplayState).includes(false) &&
-                    lastDisplayState !== newDisplayState:
-                    cacheContainer.default.lastPage =
-                        getLastPageOfConsecutiveList(
-                            cacheContainer.default.cache
-                        );
-                    initializeFilteredCache();
-                    updateEnabledFilters("source");
-                    break;
-                case Object.values(sourceDisplayState).includes(false) &&
-                    Object.values(newDisplay).includes(false) &&
-                    lastDisplayState !== newDisplayState:
-                    initializeFilteredCache();
-                    cacheContainer.filtered.lastPage = 1;
-                    updateEnabledFilters("source");
-                    break;
-                default:
-                    cacheContainer.filtered.lastPage =
-                        getLastPageOfConsecutiveList(
-                            cacheContainer.filtered.cache
-                        );
-                    lastPage = isMobileLayout
-                        ? enabledFilters.current.length > 1
-                            ? cacheContainer.filtered.lastPage > 0
-                                ? cacheContainer.filtered.lastPage
-                                : 1
-                            : cacheContainer.default.lastPage
-                        : 1;
-                    updateEnabledFilters("source", "disable");
-                    break;
-            }
+            const lastPage = handleSourceFilter(sourceDisplayState, newDisplay);
             setCurrentPage(lastPage);
         },
-        [
-            sourceDisplayState,
-            cacheContainer,
-            isMobileLayout,
-            updateEnabledFilters,
-            initializeFilteredCache,
-        ]
+        [sourceDisplayState, handleSourceFilter]
     );
 
-    // 필터링 관련
     const filterBySearchTexts = useCallback(
         (target: string, value: string) => {
-            let lastPage: number = 1;
-            switch (true) {
-                case Object.values(searchTexts).every(
-                    (searchText: string) => searchText.length === 0
-                ) && value.length >= 2:
-                    cacheContainer.default.lastPage =
-                        getLastPageOfConsecutiveList(
-                            cacheContainer.default.cache
-                        );
-                    initializeFilteredCache();
-                    updateEnabledFilters("texts");
-                    break;
-                case Object.values(searchTexts).some(
-                    (searchText: string) => searchText.length >= 2
-                ) &&
-                    value.length >= 2 &&
-                    searchTexts[target] !== value:
-                    initializeFilteredCache();
-                    cacheContainer.filtered.lastPage = 1;
-                    updateEnabledFilters("texts");
-                    break;
-                case value === "":
-                    initializeFilteredCache();
-                    cacheContainer.filtered.lastPage = 1;
-                    lastPage = isMobileLayout
-                        ? enabledFilters.current.length > 1
-                            ? cacheContainer.filtered.lastPage > 0
-                                ? cacheContainer.filtered.lastPage
-                                : 1
-                            : cacheContainer.default.lastPage
-                        : 1;
-                    updateEnabledFilters("texts", "disable");
-                    break;
-                default:
-                    cacheContainer.filtered.lastPage =
-                        getLastPageOfConsecutiveList(
-                            cacheContainer.filtered.cache
-                        );
-                    lastPage =
-                        isMobileLayout && cacheContainer.filtered.lastPage > 1
-                            ? cacheContainer.filtered.lastPage
-                            : 1;
-                    updateEnabledFilters("texts");
-                    break;
-            }
+            const lastPage = handleSearchTextsFilter(
+                searchTexts,
+                target,
+                value
+            );
             setCurrentPage(lastPage);
             setSearchTexts(target, value);
         },
-        [
-            setSearchTexts,
-            searchTexts,
-            cacheContainer,
-            isMobileLayout,
-            updateEnabledFilters,
-            initializeFilteredCache,
-        ]
+        [setSearchTexts, searchTexts, handleSearchTextsFilter]
     );
 
-    // 필터링 관련
     const filterBySort = useCallback(
         (stateStringArray: string[]) => (stateString: string) => {
-            let lastPage: number = 1;
-            if (stateStringArray.includes(stateString)) {
-                const stateIndex = stateStringArray.indexOf(stateString);
-                if (stateIndex > 0) {
-                    const filledBasicCacheList = getLastPageOfConsecutiveList(
-                        cacheContainer.default.cache
-                    );
-                    if (
-                        cacheContainer.default.lastPage !== filledBasicCacheList
-                    ) {
-                        cacheContainer.default.lastPage = filledBasicCacheList;
-                    }
-                    initializeFilteredCache();
-                    cacheContainer.filtered.lastPage = 1;
-                    updateEnabledFilters("sorts");
-                } else {
-                    lastPage = isMobileLayout
-                        ? enabledFilters.current.length > 1
-                            ? cacheContainer.filtered.lastPage > 0
-                                ? cacheContainer.filtered.lastPage
-                                : 1
-                            : cacheContainer.default.lastPage
-                        : 1;
-                    updateEnabledFilters("sorts", "disable");
-                }
-                setCurrentPage(lastPage);
-                setCurrentSort(stateIndex);
-            } else {
-                setCurrentSort(0);
-            }
+            const { lastPage, newSort } = handleSortFilter(
+                stateStringArray,
+                stateString
+            );
+            setCurrentPage(lastPage);
+            setCurrentSort(newSort);
         },
-        [
-            cacheContainer,
-            isMobileLayout,
-            updateEnabledFilters,
-            initializeFilteredCache,
-        ]
+        [handleSortFilter]
     );
 
-    // 필터링 관련
     const filterFavorites = useCallback(() => {
         setIsFilterFavorite(!isFilterFavorite);
-        let lastPage: number = 1;
-        if (!isFilterFavorite) {
-            cacheContainer.default.lastPage = getLastPageOfConsecutiveList(
-                cacheContainer.default.cache
-            );
-            initializeFilteredCache();
-            updateEnabledFilters("favorite");
-        } else {
-            cacheContainer.filtered.lastPage = getLastPageOfConsecutiveList(
-                cacheContainer.filtered.cache
-            );
-            lastPage = isMobileLayout
-                ? enabledFilters.current.length > 1
-                    ? cacheContainer.filtered.lastPage > 0
-                        ? cacheContainer.filtered.lastPage
-                        : 1
-                    : cacheContainer.default.lastPage
-                : 1;
-            updateEnabledFilters("favorite", "disable");
-        }
+        const lastPage = handleFavoritesFilter(isFilterFavorite);
         setCurrentPage(lastPage);
-    }, [
-        cacheContainer,
-        isFilterFavorite,
-        isMobileLayout,
-        updateEnabledFilters,
-        initializeFilteredCache,
-    ]);
+    }, [isFilterFavorite, handleFavoritesFilter]);
 
     useEffect(() => {
         if (feeds) {
@@ -530,19 +347,6 @@ export default function MainPage({
             };
         }
     }, [renewState]);
-
-    // useEffect(() => {
-    //     console.log(cacheContainer);
-    // }, [
-    //     isFilterFavorite,
-    //     currentSort,
-    //     searchTexts,
-    //     sourceDisplayState,
-    //     currentPage,
-    //     cacheContainer,
-    //     enabledFilters,
-    //     queryParameters,
-    // ]);
 
     return (
         <MainView
