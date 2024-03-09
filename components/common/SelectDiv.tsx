@@ -58,7 +58,9 @@ export default memo(function SelectDiv({
                     index === 0
                         ? "rounded-t-md"
                         : index === arraySelf.length - 1
-                        ? "rounded-b-md"
+                        ? options != null && options.enableEdit
+                            ? ""
+                            : "rounded-b-md"
                         : ""
                 } text-neutral-700 dark:text-gray-300 hover:bg-sky-400 hover:text-neutral-100 hover:dark:bg-sky-800`}
             >
