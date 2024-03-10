@@ -51,6 +51,25 @@ export async function GET(req: NextRequest) {
                 originId,
             });
 
+            const sourceNameList = sources.map((sources) => sources.name);
+            const parsedNameList = parseResult.map((data) => data.originName);
+            const areNamesSame = sourceNameList.every((sourceName) =>
+                parsedNameList.includes(sourceName)
+            );
+            if (!areNamesSame) {
+                const newSourceList = sources.map((sourceData, index) => ({
+                    ...sourceData,
+                    name: parsedNameList[index],
+                }));
+                const result = await fetch(
+                    `${process.env.NEXT_PUBLIC_REQUEST_API}/sources?userId=${rawId}`,
+                    {
+                        method: 'PUT',
+                        body: JSON.stringify(newSourceList)
+                    }
+                );
+            }
+
             const updatedFeedSets = updateFeedSetsDataBy(
                 parseResult,
                 storedFeeds
