@@ -4,12 +4,10 @@ import {
     newExtractUserIdFrom,
 } from "controllers/common";
 import {
-    CustomError,
     SourceData,
     SourceDataInput,
     checkIfDataExists,
 } from "controllers/sources/helpers";
-import { parseCookie } from "controllers/utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -83,12 +81,59 @@ export async function POST(req: NextRequest) {
     }
 }
 
+export async function PUT(req: NextRequest) {
+    try {
+        const [userId] = newExtractUserIdFrom(req);
+        if (userId == null) {
+            return NextResponse.json(
+                { error: "사용자 정보를 찾을 수 없습니다." },
+                { status: 404 }
+            );
+        }
+        const { remoteData: sourceData, Schema: Sources } = await initializeMongoDBWith(
+            userId,
+            "sources"
+        );
+        const sourceDataInput: SourceDataInput = await req.json();
+        const sourceUpdateResult = await Sources.updateOne(
+            { _uuid: userId },
+            { $set: { sources: sourceDataInput } }
+        );
+        if (sourceUpdateResult.acknowledged) {
+            return NextResponse.json(
+                {
+                    result: "success",
+                },
+                { status: 201 }
+            );
+        } else {
+            return NextResponse.json(
+                JSON.stringify({
+                    message: "update failed",
+                    status: 400,
+                }),
+                {
+                    statusText: "update failed",
+                    status: 400,
+                }
+            );
+        }
+    } catch (error) {
+        return NextResponse.json(
+            JSON.stringify({
+                message: "update failed",
+                status: 400,
+            }),
+            {
+                statusText: "update failed",
+                status: 400,
+            }
+        );
+    }
+}
+
 function forbiddenRequest() {
     return NextResponse.json({ status: 405, cause: "Method Not Allowed" });
 }
 
-export {
-    forbiddenRequest as PUT,
-    forbiddenRequest as PATCH,
-    forbiddenRequest as DELETE,
-};
+export { forbiddenRequest as PATCH, forbiddenRequest as DELETE };
