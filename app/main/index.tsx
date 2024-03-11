@@ -1,9 +1,14 @@
 "use client";
 
 import MainView from "./MainView";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import useFilters from "hooks/useFilters";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+    useQuery,
+    useInfiniteQuery,
+    useQueryClient,
+    QueryKey,
+} from "@tanstack/react-query";
+import useFilters, { FilterType } from "hooks/useFilters";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import { SORT_STANDARD } from "common/constants";
 import RequestControllers from "controllers/requestControllers";
@@ -104,8 +109,8 @@ export default function MainPage({
     const [feedsToDisplay, setFeedsToDisplay] = useState<ParsedFeedsDataType[]>(
         []
     );
+    const [queryParameters, setQueryParameters] = useState<string>("");
 
-    const queryParameters = useRef<string>("");
     const abortControllerRef = useRef<AbortController | null>(null);
 
     const {
@@ -143,6 +148,8 @@ export default function MainPage({
 
     useResizeEvent(detectIfMobileLayout, true, [detectIfMobileLayout]);
 
+    const queryClient = useQueryClient();
+
     const { data: searchEnginesList } = useQuery({
         queryKey: [`/search_engines?userId=${userId}`],
         queryFn: () =>
@@ -153,24 +160,32 @@ export default function MainPage({
                   ),
     });
 
+    const queryKey = useMemo(
+        () => [
+            `/feeds?userId=${userId}${queryParameters}&page=${currentPage}`,
+            { isFilterFavorite, sourceDisplayState, currentSort, searchTexts },
+        ],
+        [
+            currentPage,
+            currentSort,
+            isFilterFavorite,
+            searchTexts,
+            sourceDisplayState,
+            userId,
+            queryParameters,
+        ]
+    );
     const queryFn = useCallback(
         ({ pageParam }: { pageParam: number }) =>
             isLocal
                 ? null
                 : getDataFrom<string>(
-                      `/feeds?userId=${userId}${queryParameters.current}&page=${pageParam}`
+                      `/feeds?userId=${userId}${queryParameters}&page=${pageParam}`
                   ),
-        [getDataFrom, userId, isLocal]
+        [getDataFrom, userId, isLocal, queryParameters]
     );
-    const {
-        data: storedFeed,
-        refetch: refetchStoredFeeds,
-        hasNextPage,
-    } = useInfiniteQuery({
-        queryKey: [
-            `/feeds?userId=${userId}${queryParameters.current}&page=${currentPage}`,
-            { isFilterFavorite, sourceDisplayState, currentSort, searchTexts },
-        ],
+    const { data: storedFeed, hasNextPage } = useInfiniteQuery({
+        queryKey,
         initialPageParam: currentPage,
         queryFn,
         getNextPageParam: (lastPage) => {
@@ -189,6 +204,52 @@ export default function MainPage({
         callbackCondition: hasNextPage,
         callback: () => setCurrentPage((oldPage) => oldPage + 1),
     });
+
+    const generateQueryKey = useCallback(
+        ({
+            favoriteState = isFilterFavorite,
+            sourceDisplay = sourceDisplayState,
+            sortState = currentSort,
+            textsState = searchTexts,
+            pageState = currentPage,
+        }: {
+            favoriteState?: boolean;
+            sourceDisplay?: FilterType<boolean>;
+            sortState?: number;
+            textsState?: FilterType<string>;
+            pageState?: number;
+        }) => {
+            const localQueryParameters = generateSearchParameters({
+                ...(favoriteState && {
+                    favorites: favoriteState,
+                }),
+                ...(Object.values(sourceDisplay).includes(false) && {
+                    displayOption: JSON.stringify(sourceDisplay),
+                }),
+                ...(Object.values(textsState).some(
+                    (searchText: string) => searchText.length >= 2
+                ) && { textOption: JSON.stringify(textsState) }),
+                ...(sortState > 0 && { sortOption: sortState }),
+            });
+            return [
+                `/feeds?userId=${userId}${localQueryParameters}&page=${pageState}`,
+                {
+                    isFilterFavorite: favoriteState,
+                    sourceDisplayState: sourceDisplay,
+                    currentSort: sortState,
+                    searchTexts: textsState,
+                },
+            ];
+        },
+        [
+            currentPage,
+            currentSort,
+            isFilterFavorite,
+            searchTexts,
+            sourceDisplayState,
+            userId,
+        ]
+    );
 
     const updateFeedsToDisplay = useCallback(
         (cache: FeedsCache) => {
@@ -286,15 +347,29 @@ export default function MainPage({
             );
             setCurrentPage(lastPage);
             setCurrentSort(newSort);
+            const localQueryKey = generateQueryKey({
+                sortState: newSort,
+                pageState: lastPage,
+            });
+            queryClient.invalidateQueries({ queryKey: localQueryKey });
         },
-        [handleSortFilter]
+        [handleSortFilter, generateQueryKey, queryClient]
     );
 
     const filterFavorites = useCallback(() => {
         setIsFilterFavorite(!isFilterFavorite);
         const lastPage = handleFavoritesFilter(isFilterFavorite);
         setCurrentPage(lastPage);
-    }, [isFilterFavorite, handleFavoritesFilter]);
+        const localQueryKey = generateQueryKey({
+            favoriteState: !isFilterFavorite,
+        });
+        queryClient.invalidateQueries({ queryKey: localQueryKey });
+    }, [
+        isFilterFavorite,
+        handleFavoritesFilter,
+        generateQueryKey,
+        queryClient,
+    ]);
 
     useEffect(() => {
         if (feeds) {
@@ -313,18 +388,20 @@ export default function MainPage({
     }, [feeds, initializeCache]);
 
     useEffect(() => {
-        queryParameters.current = generateSearchParameters({
-            ...(isFilterFavorite && {
-                favorites: isFilterFavorite,
-            }),
-            ...(Object.values(sourceDisplayState).includes(false) && {
-                displayOption: JSON.stringify(sourceDisplayState),
-            }),
-            ...(Object.values(searchTexts).some(
-                (searchText: string) => searchText.length >= 2
-            ) && { textOption: JSON.stringify(searchTexts) }),
-            ...(currentSort > 0 && { sortOption: currentSort }),
-        });
+        setQueryParameters(
+            generateSearchParameters({
+                ...(isFilterFavorite && {
+                    favorites: isFilterFavorite,
+                }),
+                ...(Object.values(sourceDisplayState).includes(false) && {
+                    displayOption: JSON.stringify(sourceDisplayState),
+                }),
+                ...(Object.values(searchTexts).some(
+                    (searchText: string) => searchText.length >= 2
+                ) && { textOption: JSON.stringify(searchTexts) }),
+                ...(currentSort > 0 && { sortOption: currentSort }),
+            })
+        );
     }, [isFilterFavorite, currentSort, searchTexts, sourceDisplayState]);
 
     useEffect(() => {
@@ -361,7 +438,6 @@ export default function MainPage({
             setSourceDisplayState={setSourceDisplayState}
             userId={userId}
             updateObserverElement={updateObserverElement}
-            refetchStoredFeeds={refetchStoredFeeds}
             filterBySearchTexts={filterBySearchTexts}
             filterFavorites={filterFavorites}
             renewState={renewState}

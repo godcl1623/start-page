@@ -8,7 +8,6 @@ import CardView from "./CardView";
 
 interface CardProps {
     cardData: ParsedFeedsDataType;
-    refetchFeeds: () => void;
     userId: string;
 }
 
@@ -16,41 +15,49 @@ export type CallbackType = (value: any) => void;
 
 export default memo(function Card({
     cardData,
-    refetchFeeds,
     userId,
 }: CardProps) {
     const { link, origin, isFavorite, id } = cardData ?? {};
     const { patchDataTo } = new RequestControllers();
     const mutationFn = (newData: ParsedFeedsDataType) =>
         patchDataTo(`/feeds/${origin}/${id}?userId=${userId}`, newData);
-    const { mutate, isSuccess } = useMutation({
+    const { mutateAsync, isSuccess } = useMutation({
         mutationFn,
     });
 
-    const handleCard = (favoriteState: boolean) => (event: MouseEvent) => {
-        event.preventDefault();
-        if (!(event.target instanceof SVGElement)) {
-            const newData = {
-                ...cardData,
-                isRead: true,
-                isFavorite: favoriteState,
-            };
-            mutate(newData);
-            if (link) window.location.assign(link);
-        }
-    };
+    const handleCard =
+        (favoriteState: boolean) => async (event: MouseEvent) => {
+            try {
+                event.preventDefault();
+                if (!(event.target instanceof SVGElement)) {
+                    const newData = {
+                        ...cardData,
+                        isRead: true,
+                        isFavorite: favoriteState,
+                    };
+                    await mutateAsync(newData);
+                    if (link) window.location.assign(link);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        };
 
     const handleFavorite =
         (originalState: boolean, readState: boolean, callback: CallbackType) =>
-        (event: MouseEvent) => {
-            event.preventDefault();
-            callback(!originalState);
-            const newData = {
-                ...cardData,
-                isFavorite: !originalState,
-                isRead: readState,
-            };
-            mutate(newData);
+        async (event: MouseEvent) => {
+            try {
+                event.preventDefault();
+                callback(!originalState);
+                const newData = {
+                    ...cardData,
+                    isFavorite: !originalState,
+                    isRead: readState,
+                };
+                await mutateAsync(newData);
+            } catch (error) {
+                console.error(error);
+            }
         };
 
     const handleRead =
@@ -59,22 +66,20 @@ export default memo(function Card({
             favoriteState: boolean,
             callback: CallbackType
         ) =>
-        (event: MouseEvent) => {
-            event.preventDefault();
-            callback(!originalState);
-            const newData = {
-                ...cardData,
-                isRead: !originalState,
-                isFavorite: favoriteState,
-            };
-            mutate(newData);
+        async (event: MouseEvent) => {
+            try {
+                event.preventDefault();
+                callback(!originalState);
+                const newData = {
+                    ...cardData,
+                    isRead: !originalState,
+                    isFavorite: favoriteState,
+                };
+                await mutateAsync(newData);
+            } catch (error) {
+                console.error(error);
+            }
         };
-
-    useEffect(() => {
-        if (isSuccess && isFavorite) {
-            refetchFeeds();
-        }
-    }, [isSuccess, isFavorite]);
 
     return (
         <CardView

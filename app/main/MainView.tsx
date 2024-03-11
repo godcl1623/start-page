@@ -42,7 +42,6 @@ interface Props {
     setSourceDisplayState: (target: string, value: boolean) => void;
     userId: string;
     updateObserverElement: (element: HTMLDivElement) => void;
-    refetchStoredFeeds: () => void;
     filterBySearchTexts: (target: string, value: string) => void;
     filterFavorites: () => void;
     renewState: string;
@@ -81,7 +80,6 @@ export default memo(function MainView({
     setSourceDisplayState,
     userId,
     updateObserverElement,
-    refetchStoredFeeds,
     filterBySearchTexts,
     filterFavorites,
     renewState,
@@ -253,7 +251,6 @@ export default memo(function MainView({
                             {sourcesList.length > 0 ? (
                                 <FeedsList
                                     feedsFromServer={feedsFromServer}
-                                    refetchFeeds={refetchStoredFeeds}
                                     userId={userId}
                                     isFilterFavorite={isFilterFavorite}
                                     isFilterSources={isFilterSources}

@@ -8,13 +8,11 @@ interface Props {
     userId: string;
     isFilterFavorite: boolean;
     isFilterSources: boolean;
-    refetchFeeds: () => void;
 }
 
 export default function FeedsList({
     feedsFromServer,
     userId,
-    refetchFeeds,
     isFilterFavorite,
     isFilterSources,
 }: Readonly<Props>) {
@@ -45,11 +43,7 @@ export default function FeedsList({
         <menu className="w-full h-full">
             {feedsToDisplay.map((feed: ParsedFeedsDataType) => (
                 <li key={`${feed.id}+${nanoid()}`}>
-                    <Card
-                        cardData={feed}
-                        refetchFeeds={refetchFeeds}
-                        userId={userId}
-                    />
+                    <Card cardData={feed} userId={userId} />
                 </li>
             ))}
         </menu>
