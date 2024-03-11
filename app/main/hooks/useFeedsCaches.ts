@@ -94,7 +94,7 @@ const useFeedsCaches = ({ totalFeedsCount, currentPage }: Options) => {
                 }
             } else {
                 cache[pageNumber] = currentPageList
-                    .slice(currentPageList.length)
+                    ?.slice(currentPageList.length)
                     .concat(feedsList);
             }
         },
