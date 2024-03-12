@@ -1,25 +1,24 @@
-import { ChangeEvent, FormEvent, forwardRef } from "react";
-import SelectDiv from "components/common/SelectDiv";
+import { ChangeEvent, FormEvent, ReactNode, forwardRef } from "react";
 import Button from "components/common/Button";
 
 interface Props {
-    searchOptions: string[];
     isInputFilled: boolean;
     customStyle?: string;
     handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
     checkIfInputFilled: (event: ChangeEvent<HTMLInputElement>) => void;
     clearInput: () => void;
+    selectBox: ReactNode;
 }
 
 const FilterByTextView = forwardRef<HTMLInputElement, Props>(
     (
         {
             handleSubmit,
-            searchOptions,
             checkIfInputFilled,
             isInputFilled,
             clearInput,
-            customStyle
+            customStyle,
+            selectBox,
         }: Props,
         ref
     ) => {
@@ -28,10 +27,7 @@ const FilterByTextView = forwardRef<HTMLInputElement, Props>(
                 className={`relative flex w-full my-2 h-full max-h-8 rounded-md shadow-md text-xs dark:shadow-zinc-600 md:mx-2 md:my-0 ${customStyle}`}
                 onSubmit={handleSubmit}
             >
-                <SelectDiv
-                    optionValues={searchOptions}
-                    customStyles="w-20 h-full rounded-l-md bg-neutral-50"
-                />
+                {selectBox}
                 <input
                     ref={ref}
                     className="w-full h-full px-3 rounded-none bg-neutral-50 text-neutral-400"

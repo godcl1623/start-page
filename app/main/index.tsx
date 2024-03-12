@@ -493,6 +493,7 @@ export default function MainPage({
             isFilterByTexts={Object.values(searchTexts).some(
                 (searchText: string) => searchText.length >= 2
             )}
+            searchTexts={searchTexts}
         />
     );
 }

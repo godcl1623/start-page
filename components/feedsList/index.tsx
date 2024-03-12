@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { DEFAULT_CARD_DATA, ParsedFeedsDataType } from "app/main";
 import Card from "components/card";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[] | undefined;
@@ -10,15 +10,15 @@ interface Props {
     isFilterSources: boolean;
 }
 
-export default function FeedsList({
+export default memo(function FeedsList({
     feedsFromServer,
     userId,
     isFilterFavorite,
     isFilterSources,
 }: Readonly<Props>) {
-    const defaultFeedsList = Array.from(
-        { length: 10 },
-        () => DEFAULT_CARD_DATA
+    const defaultFeedsList = useMemo(
+        () => Array.from({ length: 10 }, () => DEFAULT_CARD_DATA),
+        []
     );
     const [feedsToDisplay, setFeedsToDisplay] =
         useState<ParsedFeedsDataType[]>(defaultFeedsList);
@@ -37,7 +37,7 @@ export default function FeedsList({
         } else {
             updateFeedsToDisplay([]);
         }
-    }, [feedsFromServer, isFilterFavorite, isFilterSources]);
+    }, [feedsFromServer, isFilterFavorite, isFilterSources, defaultFeedsList]);
 
     return (
         <menu className="w-full h-full">
@@ -48,4 +48,4 @@ export default function FeedsList({
             ))}
         </menu>
     );
-}
+});

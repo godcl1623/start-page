@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
 import {
     ErrorResponse,
@@ -51,6 +51,7 @@ interface Props {
     filterBySources: (newDisplayState: SourceDisplayState) => void;
     isFilterBySorts: boolean;
     isFilterByTexts: boolean;
+    searchTexts: FilterType<string>;
 }
 
 export type ModalKeys =
@@ -89,6 +90,7 @@ export default memo(function MainView({
     filterBySources,
     isFilterBySorts,
     isFilterByTexts,
+    searchTexts,
 }: Props) {
     const [modalState, setModalState] = useState<ModalStateType>({
         addSubscription: false,
@@ -192,18 +194,6 @@ export default memo(function MainView({
         </li>
     ));
 
-    const memoedFeedsList = useMemo(
-        () => (
-            <FeedsList
-                feedsFromServer={feedsFromServer}
-                userId={userId}
-                isFilterFavorite={isFilterFavorite}
-                isFilterSources={isFilterSources}
-            />
-        ),
-        [feedsFromServer, userId, isFilterFavorite, isFilterSources]
-    );
-
     return (
         <>
             <header className="p-8 pb-0 fhd:max-w-[1920px]">
@@ -259,11 +249,15 @@ export default memo(function MainView({
                                 isFilterSources={isFilterSources}
                                 isFilterSorts={isFilterBySorts}
                                 isFilterTexts={isFilterByTexts}
+                                searchTexts={searchTexts}
                             />
                             {sourcesList.length > 0 ? (
-                                <>
-                                    {memoedFeedsList}
-                                </>
+                                <FeedsList
+                                    feedsFromServer={feedsFromServer}
+                                    userId={userId}
+                                    isFilterFavorite={isFilterFavorite}
+                                    isFilterSources={isFilterSources}
+                                />
                             ) : (
                                 <></>
                             )}
