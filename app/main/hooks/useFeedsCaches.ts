@@ -106,11 +106,26 @@ const useFeedsCaches = ({ totalFeedsCount, currentPage }: Options) => {
         [currentPage]
     );
 
+    const patchCachedData = useCallback((newData: ParsedFeedsDataType) => {
+        const { id, isRead, isFavorite } = newData;
+        Object.values(caches.current).forEach((caches) =>
+            Object.values(caches.cache).forEach((cachedFeedList) =>
+                cachedFeedList.forEach((cachedFeed: ParsedFeedsDataType) => {
+                    if (cachedFeed.id === id) {
+                        cachedFeed.isRead = isRead;
+                        cachedFeed.isFavorite = isFavorite;
+                    }
+                })
+            )
+        );
+    }, []);
+
     return {
         cacheContainer: caches.current,
         initializeCache,
         initializeFilteredCache,
         updateFeedsCache,
+        patchCachedData
     };
 };
 

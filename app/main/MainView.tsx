@@ -52,6 +52,7 @@ interface Props {
     isFilterBySorts: boolean;
     isFilterByTexts: boolean;
     searchTexts: FilterType<string>;
+    patchCachedData: (newData: ParsedFeedsDataType) => void;
 }
 
 export type ModalKeys =
@@ -91,6 +92,7 @@ export default memo(function MainView({
     isFilterBySorts,
     isFilterByTexts,
     searchTexts,
+    patchCachedData
 }: Props) {
     const [modalState, setModalState] = useState<ModalStateType>({
         addSubscription: false,
@@ -257,6 +259,7 @@ export default memo(function MainView({
                                     userId={userId}
                                     isFilterFavorite={isFilterFavorite}
                                     isFilterSources={isFilterSources}
+                                    patchCachedData={patchCachedData}
                                 />
                             ) : (
                                 <></>

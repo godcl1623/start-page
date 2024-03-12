@@ -9,6 +9,7 @@ import CardView from "./CardView";
 interface CardProps {
     cardData: ParsedFeedsDataType;
     userId: string;
+    patchCachedData: (newData: ParsedFeedsDataType) => void;
 }
 
 export type CallbackType = (value: any) => void;
@@ -16,6 +17,7 @@ export type CallbackType = (value: any) => void;
 export default memo(function Card({
     cardData,
     userId,
+    patchCachedData
 }: CardProps) {
     const { link, origin, isFavorite, id } = cardData ?? {};
     const { patchDataTo } = new RequestControllers();
@@ -35,6 +37,7 @@ export default memo(function Card({
                         isRead: true,
                         isFavorite: favoriteState,
                     };
+                    patchCachedData(newData);
                     await mutateAsync(newData);
                     if (link) window.location.assign(link);
                 }
@@ -54,6 +57,7 @@ export default memo(function Card({
                     isFavorite: !originalState,
                     isRead: readState,
                 };
+                patchCachedData(newData);
                 await mutateAsync(newData);
             } catch (error) {
                 console.error(error);
@@ -75,6 +79,7 @@ export default memo(function Card({
                     isRead: !originalState,
                     isFavorite: favoriteState,
                 };
+                patchCachedData(newData);
                 await mutateAsync(newData);
             } catch (error) {
                 console.error(error);

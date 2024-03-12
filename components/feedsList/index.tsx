@@ -8,6 +8,7 @@ interface Props {
     userId: string;
     isFilterFavorite: boolean;
     isFilterSources: boolean;
+    patchCachedData: (newData: ParsedFeedsDataType) => void;
 }
 
 export default memo(function FeedsList({
@@ -15,6 +16,7 @@ export default memo(function FeedsList({
     userId,
     isFilterFavorite,
     isFilterSources,
+    patchCachedData,
 }: Readonly<Props>) {
     const defaultFeedsList = useMemo(
         () => Array.from({ length: 10 }, () => DEFAULT_CARD_DATA),
@@ -43,7 +45,11 @@ export default memo(function FeedsList({
         <menu className="w-full h-full">
             {feedsToDisplay.map((feed: ParsedFeedsDataType) => (
                 <li key={`${feed.id}+${nanoid()}`}>
-                    <Card cardData={feed} userId={userId} />
+                    <Card
+                        cardData={feed}
+                        userId={userId}
+                        patchCachedData={patchCachedData}
+                    />
                 </li>
             ))}
         </menu>

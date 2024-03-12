@@ -120,6 +120,7 @@ export default function MainPage({
         handleSortFilter,
         handleSourceFilter,
         initializeCache,
+        patchCachedData
     } = useFilteredFeeds({
         totalFeedsCount: totalCount,
         currentPage,
@@ -502,6 +503,7 @@ export default function MainPage({
                 (searchText: string) => searchText.length >= 2
             )}
             searchTexts={searchTexts}
+            patchCachedData={patchCachedData}
         />
     );
 }

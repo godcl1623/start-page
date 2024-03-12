@@ -24,6 +24,7 @@ const useFilteredFeeds = ({
         initializeCache,
         initializeFilteredCache,
         updateFeedsCache,
+        patchCachedData
     } = useFeedsCaches({
         totalFeedsCount,
         currentPage,
@@ -268,6 +269,7 @@ const useFilteredFeeds = ({
         handleSearchTextsFilter,
         handleSortFilter,
         handleSourceFilter,
+        patchCachedData,
         cacheContainer,
         enabledFilters
     };
