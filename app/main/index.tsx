@@ -134,10 +134,6 @@ export default function MainPage({
         ""
     );
 
-    const updateCurrentPage = (value: number | ((value: number) => number)) => {
-        setCurrentPage(value);
-    };
-
     const detectIfMobileLayout = useCallback(() => {
         if (document.documentElement.offsetWidth >= 768) {
             setIsMobileLayout(false);
@@ -260,6 +256,18 @@ export default function MainPage({
             ];
         },
         [isFilterFavorite, sourceDisplayState, currentSort, searchTexts]
+    );
+
+    const updateCurrentPage = useCallback(
+        (value: number) => {
+            setCurrentPage(value);
+            const localQueryUrl =
+                queryUrl.split("&page=")[0] + `&page=${value}`;
+            setQueryUrl(localQueryUrl);
+            const localQueryKey = generateQueryKey({ queryUrl: localQueryUrl });
+            queryClient.invalidateQueries({ queryKey: localQueryKey });
+        },
+        [generateQueryKey, queryClient, queryUrl]
     );
 
     const updateFeedsToDisplay = useCallback(

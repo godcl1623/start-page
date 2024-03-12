@@ -33,7 +33,7 @@ import Button from "components/common/Button";
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
     currentPage: number;
-    setCurrentPage: (value: number | ((value: number) => number)) => void;
+    setCurrentPage: (value: number) => void;
     filterBySort: (stateString: string) => void;
     totalCount: number;
     isMobileLayout: boolean;
@@ -132,13 +132,13 @@ export default memo(function MainView({
 
     const moveToPreviousPage = () => {
         if (currentPage !== 1) {
-            setCurrentPage((previousValue) => previousValue - 1);
+            setCurrentPage(currentPage - 1);
         }
     };
 
     const moveToNextPage = () => {
         if (Math.ceil(totalCount / 10) !== currentPage) {
-            setCurrentPage((previousValue) => previousValue + 1);
+            setCurrentPage(currentPage + 1);
         }
     };
 
