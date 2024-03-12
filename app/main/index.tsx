@@ -426,6 +426,7 @@ export default function MainPage({
         setCurrentPage(lastPage);
         const localQueryUrl = generateQueryUrl({
             favoriteState: !isFilterFavorite,
+            pageState: lastPage,
         });
         setQueryUrl(localQueryUrl);
         const localQueryKey = generateQueryKey({
