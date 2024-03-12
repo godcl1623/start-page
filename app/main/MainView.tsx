@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
     ErrorResponse,
@@ -92,7 +92,7 @@ export default memo(function MainView({
     isFilterBySorts,
     isFilterByTexts,
     searchTexts,
-    patchCachedData
+    patchCachedData,
 }: Props) {
     const [modalState, setModalState] = useState<ModalStateType>({
         addSubscription: false,
@@ -105,8 +105,13 @@ export default memo(function MainView({
     const [shouldHideRenewState, setShouldHideRenewState] = useState(true);
     const [isLoaded, setIsLoaded] = useState(false);
     const [shouldStartLoad, setShouldStartLoad] = useState(false);
+    const [isInitialLoad, setIsInitialLoad] = useState(false);
     const startPageRef = useRef<HTMLElement | null>(null);
-    const sourcesList = sources ? JSON.parse(sources) : [];
+    const renewButtonRef = useRef<HTMLButtonElement>(null);
+    const sourcesList = useMemo(
+        () => (sources ? JSON.parse(sources) : []),
+        [sources]
+    );
     const isFilterSources =
         Object.values(sourceDisplayState).filter((value) => !value).length > 0;
     const searchEngines =
@@ -149,6 +154,11 @@ export default memo(function MainView({
         checkAndUpdateNewFeeds();
     };
 
+    const activateInitialUpdate = useCallback(() => {
+        setIsInitialLoad(true);
+        renewButtonRef.current?.click();
+    }, []);
+
     useEffect(() => {
         if (Object.values(modalState).includes(true)) {
             document.documentElement.style.overflow = "hidden";
@@ -179,6 +189,22 @@ export default memo(function MainView({
         }
         return () => clearTimeout(timeout);
     }, [isLoaded]);
+
+    useEffect(() => {
+        if (
+            sourcesList.length > 0 &&
+            feedsFromServer == null &&
+            !isInitialLoad
+        ) {
+            activateInitialUpdate();
+        }
+    }, [feedsFromServer, sourcesList, isInitialLoad, activateInitialUpdate]);
+
+    useEffect(() => {
+        if (isInitialLoad && shouldHideRenewState && feedsFromServer == null) {
+            location.reload();
+        }
+    }, [isInitialLoad, shouldHideRenewState, feedsFromServer]);
 
     const pageIndicator = calculatePagesList(
         currentPage,
@@ -233,13 +259,14 @@ export default memo(function MainView({
                                 {sourcesList.length === 0 ? (
                                     <></>
                                 ) : (
-                                    <Button
+                                    <button
+                                        ref={renewButtonRef}
                                         type="button"
-                                        clickHandler={handleFeedUpdate}
-                                        customStyle="bg-neutral-500 text-neutral-100"
+                                        onClick={handleFeedUpdate}
+                                        className="px-3 py-2 rounded-md shadow-md dark:shadow-zinc-600 whitespace-pre bg-neutral-500 text-neutral-100"
                                     >
                                         피드 갱신
-                                    </Button>
+                                    </button>
                                 )}
                             </div>
                             <PostHandleOptions
@@ -301,7 +328,11 @@ export default memo(function MainView({
                             closeModal={closeModal("addSubscription")}
                             customStyle="w-screen rounded-none sm:w-96 sm:rounded-md"
                         >
-                            <SubscribeNew userId={userId} />
+                            <SubscribeNew
+                                userId={userId}
+                                activateInitialUpdate={activateInitialUpdate}
+                                closeModal={closeModal("addSubscription")}
+                            />
                         </SubscriptionDialogBox>
                     </Modal>
                 )}
