@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 import {
     ErrorResponse,
@@ -192,6 +192,18 @@ export default memo(function MainView({
         </li>
     ));
 
+    const memoedFeedsList = useMemo(
+        () => (
+            <FeedsList
+                feedsFromServer={feedsFromServer}
+                userId={userId}
+                isFilterFavorite={isFilterFavorite}
+                isFilterSources={isFilterSources}
+            />
+        ),
+        [feedsFromServer, userId, isFilterFavorite, isFilterSources]
+    );
+
     return (
         <>
             <header className="p-8 pb-0 fhd:max-w-[1920px]">
@@ -249,12 +261,9 @@ export default memo(function MainView({
                                 isFilterTexts={isFilterByTexts}
                             />
                             {sourcesList.length > 0 ? (
-                                <FeedsList
-                                    feedsFromServer={feedsFromServer}
-                                    userId={userId}
-                                    isFilterFavorite={isFilterFavorite}
-                                    isFilterSources={isFilterSources}
-                                />
+                                <>
+                                    {memoedFeedsList}
+                                </>
                             ) : (
                                 <></>
                             )}

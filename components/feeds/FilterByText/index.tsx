@@ -46,9 +46,10 @@ export default memo(function FilterByText({ setTextFilter, customStyle }: Props)
             inputElement.current.value = "";
         }
         setIsInputFilled(false);
-        Object.values(SEARCH_OPTIONS).forEach((value: string) =>
-            setTextFilter(value, "")
-        );
+        // Object.values(SEARCH_OPTIONS).forEach((value: string) =>
+        //     setTextFilter(value, "")
+        // );
+        setTextFilter('title', '')
     };
 
     return (

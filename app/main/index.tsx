@@ -109,7 +109,7 @@ export default function MainPage({
     const [feedsToDisplay, setFeedsToDisplay] = useState<ParsedFeedsDataType[]>(
         []
     );
-    const [queryParameters, setQueryParameters] = useState<string>("");
+    const [queryUrl, setQueryUrl] = useState(`/feeds?userId=${userId}&page=1`);
 
     const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -162,27 +162,20 @@ export default function MainPage({
 
     const queryKey = useMemo(
         () => [
-            `/feeds?userId=${userId}${queryParameters}&page=${currentPage}`,
+            queryUrl,
             { isFilterFavorite, sourceDisplayState, currentSort, searchTexts },
         ],
         [
-            currentPage,
+            searchTexts,
             currentSort,
             isFilterFavorite,
-            searchTexts,
             sourceDisplayState,
-            userId,
-            queryParameters,
+            queryUrl,
         ]
     );
     const queryFn = useCallback(
-        ({ pageParam }: { pageParam: number }) =>
-            isLocal
-                ? null
-                : getDataFrom<string>(
-                      `/feeds?userId=${userId}${queryParameters}&page=${pageParam}`
-                  ),
-        [getDataFrom, userId, isLocal, queryParameters]
+        () => (isLocal ? null : getDataFrom<string>(queryUrl)),
+        [getDataFrom, queryUrl, isLocal]
     );
     const { data: storedFeed, hasNextPage } = useInfiniteQuery({
         queryKey,
@@ -205,7 +198,7 @@ export default function MainPage({
         callback: () => setCurrentPage((oldPage) => oldPage + 1),
     });
 
-    const generateQueryKey = useCallback(
+    const generateQueryUrl = useCallback(
         ({
             favoriteState = isFilterFavorite,
             sourceDisplay = sourceDisplayState,
@@ -231,15 +224,7 @@ export default function MainPage({
                 ) && { textOption: JSON.stringify(textsState) }),
                 ...(sortState > 0 && { sortOption: sortState }),
             });
-            return [
-                `/feeds?userId=${userId}${localQueryParameters}&page=${pageState}`,
-                {
-                    isFilterFavorite: favoriteState,
-                    sourceDisplayState: sourceDisplay,
-                    currentSort: sortState,
-                    searchTexts: textsState,
-                },
-            ];
+            return `/feeds?userId=${userId}${localQueryParameters}&page=${pageState}`;
         },
         [
             currentPage,
@@ -249,6 +234,32 @@ export default function MainPage({
             sourceDisplayState,
             userId,
         ]
+    );
+    const generateQueryKey = useCallback(
+        ({
+            favoriteState = isFilterFavorite,
+            sourceDisplay = sourceDisplayState,
+            sortState = currentSort,
+            textsState = searchTexts,
+            queryUrl,
+        }: {
+            favoriteState?: boolean;
+            sourceDisplay?: FilterType<boolean>;
+            sortState?: number;
+            textsState?: FilterType<string>;
+            queryUrl: string;
+        }) => {
+            return [
+                queryUrl,
+                {
+                    isFilterFavorite: favoriteState,
+                    sourceDisplayState: sourceDisplay,
+                    currentSort: sortState,
+                    searchTexts: textsState,
+                },
+            ];
+        },
+        [isFilterFavorite, sourceDisplayState, currentSort, searchTexts]
     );
 
     const updateFeedsToDisplay = useCallback(
@@ -322,8 +333,24 @@ export default function MainPage({
         (newDisplay: SourceDisplayState) => {
             const lastPage = handleSourceFilter(sourceDisplayState, newDisplay);
             setCurrentPage(lastPage);
+            const localQueryUrl = generateQueryUrl({
+                pageState: lastPage,
+                sourceDisplay: newDisplay,
+            });
+            setQueryUrl(localQueryUrl);
+            const localQueryKey = generateQueryKey({
+                sourceDisplay: newDisplay,
+                queryUrl: localQueryUrl,
+            });
+            queryClient.invalidateQueries({ queryKey: localQueryKey });
         },
-        [sourceDisplayState, handleSourceFilter]
+        [
+            sourceDisplayState,
+            handleSourceFilter,
+            generateQueryKey,
+            generateQueryUrl,
+            queryClient,
+        ]
     );
 
     const filterBySearchTexts = useCallback(
@@ -335,8 +362,31 @@ export default function MainPage({
             );
             setCurrentPage(lastPage);
             setSearchTexts(target, value);
+            const localQueryUrl = generateQueryUrl({
+                textsState: {
+                    ...searchTexts,
+                    [target]: value,
+                },
+                pageState: lastPage,
+            });
+            setQueryUrl(localQueryUrl);
+            const localQueryKey = generateQueryKey({
+                textsState: {
+                    ...searchTexts,
+                    [target]: value,
+                },
+                queryUrl: localQueryUrl,
+            });
+            queryClient.invalidateQueries({ queryKey: localQueryKey });
         },
-        [setSearchTexts, searchTexts, handleSearchTextsFilter]
+        [
+            setSearchTexts,
+            searchTexts,
+            handleSearchTextsFilter,
+            generateQueryUrl,
+            generateQueryKey,
+            queryClient,
+        ]
     );
 
     const filterBySort = useCallback(
@@ -347,28 +397,39 @@ export default function MainPage({
             );
             setCurrentPage(lastPage);
             setCurrentSort(newSort);
-            const localQueryKey = generateQueryKey({
+            const localQueryUrl = generateQueryUrl({
                 sortState: newSort,
                 pageState: lastPage,
             });
+            setQueryUrl(localQueryUrl);
+            const localQueryKey = generateQueryKey({
+                sortState: newSort,
+                queryUrl: localQueryUrl,
+            });
             queryClient.invalidateQueries({ queryKey: localQueryKey });
         },
-        [handleSortFilter, generateQueryKey, queryClient]
+        [handleSortFilter, generateQueryUrl, queryClient, generateQueryKey]
     );
 
     const filterFavorites = useCallback(() => {
         setIsFilterFavorite(!isFilterFavorite);
         const lastPage = handleFavoritesFilter(isFilterFavorite);
         setCurrentPage(lastPage);
+        const localQueryUrl = generateQueryUrl({
+            favoriteState: !isFilterFavorite,
+        });
+        setQueryUrl(localQueryUrl);
         const localQueryKey = generateQueryKey({
             favoriteState: !isFilterFavorite,
+            queryUrl: localQueryUrl,
         });
         queryClient.invalidateQueries({ queryKey: localQueryKey });
     }, [
         isFilterFavorite,
         handleFavoritesFilter,
-        generateQueryKey,
+        generateQueryUrl,
         queryClient,
+        generateQueryKey,
     ]);
 
     useEffect(() => {
@@ -386,23 +447,6 @@ export default function MainPage({
             initializeCache(indexList, data);
         }
     }, [feeds, initializeCache]);
-
-    useEffect(() => {
-        setQueryParameters(
-            generateSearchParameters({
-                ...(isFilterFavorite && {
-                    favorites: isFilterFavorite,
-                }),
-                ...(Object.values(sourceDisplayState).includes(false) && {
-                    displayOption: JSON.stringify(sourceDisplayState),
-                }),
-                ...(Object.values(searchTexts).some(
-                    (searchText: string) => searchText.length >= 2
-                ) && { textOption: JSON.stringify(searchTexts) }),
-                ...(currentSort > 0 && { sortOption: currentSort }),
-            })
-        );
-    }, [isFilterFavorite, currentSort, searchTexts, sourceDisplayState]);
 
     useEffect(() => {
         if (storedFeed?.pages) {

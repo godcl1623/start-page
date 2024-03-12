@@ -92,7 +92,6 @@ const useFeedsCaches = ({ totalFeedsCount, currentPage }: Options) => {
                                 feedsList[index]?.[dataKey]
                         )
                 );
-                console.log(feedsList, currentPageList, isListsIdentical)
                 if (!isListsIdentical) {
                     cache[pageNumber] = currentPageList
                         .slice(currentPageList.length)
