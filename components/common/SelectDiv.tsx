@@ -1,6 +1,6 @@
 import useOutsideClickClose from "hooks/useOutsideClickClose";
 import { nanoid } from "nanoid";
-import { ChangeEvent, MouseEvent, memo, useRef, useState } from "react";
+import { MouseEvent, memo, useRef, useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { FaCheck } from "react-icons/fa6";
 
@@ -11,6 +11,7 @@ interface Props {
     options?: {
         enableEdit?: boolean;
         editHandler?: () => void;
+        changeHandler?: (event: MouseEvent<HTMLButtonElement>) => void;
     };
 }
 
@@ -28,6 +29,13 @@ export default memo(function SelectDiv({
     const toggleList = () => {
         setShouldOpenList(!shouldOpenList);
     };
+
+    const handleSelectedButton = (event: MouseEvent<HTMLButtonElement>) => {
+        if (options != null && options.changeHandler) {
+            options.changeHandler(event);
+        }
+        toggleList();
+    }
 
     const handleOptionButton = (event: MouseEvent<HTMLButtonElement>) => {
         setSelectedValue(event.currentTarget.value);
@@ -91,7 +99,7 @@ export default memo(function SelectDiv({
                 type="button"
                 ref={toggleButtonRef}
                 className="relative flex items-center w-full h-full min-h-8"
-                onClick={toggleList}
+                onClick={handleSelectedButton}
                 value={selectedValue}
             >
                 {selectedValue}

@@ -85,7 +85,12 @@ const useFeedsCaches = ({ totalFeedsCount, currentPage }: Options) => {
             const currentPageList = cache[pageNumber];
             if (currentPageList?.length > 0) {
                 const isListsIdentical = currentPageList.every(
-                    (feedData, index) => feedData.id === feedsList[index]?.id
+                    (feedData, index) =>
+                        Object.keys(feedData).every(
+                            (dataKey) =>
+                                feedData[dataKey] ===
+                                feedsList[index]?.[dataKey]
+                        )
                 );
                 if (!isListsIdentical) {
                     cache[pageNumber] = currentPageList
@@ -94,18 +99,33 @@ const useFeedsCaches = ({ totalFeedsCount, currentPage }: Options) => {
                 }
             } else {
                 cache[pageNumber] = currentPageList
-                    .slice(currentPageList.length)
+                    ?.slice(currentPageList.length)
                     .concat(feedsList);
             }
         },
         [currentPage]
     );
 
+    const patchCachedData = useCallback((newData: ParsedFeedsDataType) => {
+        const { id, isRead, isFavorite } = newData;
+        Object.values(caches.current).forEach((caches) =>
+            Object.values(caches.cache).forEach((cachedFeedList) =>
+                cachedFeedList.forEach((cachedFeed: ParsedFeedsDataType) => {
+                    if (cachedFeed.id === id) {
+                        cachedFeed.isRead = isRead;
+                        cachedFeed.isFavorite = isFavorite;
+                    }
+                })
+            )
+        );
+    }, []);
+
     return {
         cacheContainer: caches.current,
         initializeCache,
         initializeFilteredCache,
         updateFeedsCache,
+        patchCachedData
     };
 };
 
@@ -113,7 +133,7 @@ export default useFeedsCaches;
 
 export const getLastPageOfConsecutiveList = (cacheData: FeedsCache) => {
     const firstEmptyPage = Object.entries(cacheData).find(
-        ([_, cachedList]) => cachedList.length === 0
+        ([_, cachedList]) => cachedList?.length === 0
     )?.[0];
     return !Number.isNaN(firstEmptyPage) && Number(firstEmptyPage) > 1
         ? Number(firstEmptyPage) - 1

@@ -4,6 +4,7 @@ import { memo, useMemo } from "react";
 import { ModalKeys } from "../MainView";
 import SubscriptionOptions from "./SubscriptionOptions";
 import SelectDiv from "components/common/SelectDiv";
+import { FilterType } from 'hooks/useFilters';
 
 interface Props {
     handleClick: (target: ModalKeys) => () => void;
@@ -14,6 +15,7 @@ interface Props {
     isFilterSources: boolean;
     isFilterTexts: boolean;
     isFilterSorts: boolean;
+    searchTexts: FilterType<string>;
 }
 
 export default memo(function PostHandleOptions({
@@ -25,6 +27,7 @@ export default memo(function PostHandleOptions({
     isFilterSources,
     isFilterSorts,
     isFilterTexts,
+    searchTexts
 }: Props) {
     const subscriptionOptions = useMemo(
         () => (
@@ -42,9 +45,10 @@ export default memo(function PostHandleOptions({
             <FilterByText
                 setTextFilter={filterBySearchTexts}
                 customStyle={`${isFilterTexts ? "" : ""}`}
+                searchTexts={searchTexts}
             />
         ),
-        [filterBySearchTexts, isFilterTexts]
+        [filterBySearchTexts, isFilterTexts, searchTexts]
     );
     const selectBox = useMemo(
         () => (

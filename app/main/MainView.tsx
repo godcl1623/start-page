@@ -33,7 +33,7 @@ import Button from "components/common/Button";
 interface Props {
     feedsFromServer: ParsedFeedsDataType[];
     currentPage: number;
-    setCurrentPage: (value: number | ((value: number) => number)) => void;
+    setCurrentPage: (value: number) => void;
     filterBySort: (stateString: string) => void;
     totalCount: number;
     isMobileLayout: boolean;
@@ -42,7 +42,6 @@ interface Props {
     setSourceDisplayState: (target: string, value: boolean) => void;
     userId: string;
     updateObserverElement: (element: HTMLDivElement) => void;
-    refetchStoredFeeds: () => void;
     filterBySearchTexts: (target: string, value: string) => void;
     filterFavorites: () => void;
     renewState: string;
@@ -52,6 +51,8 @@ interface Props {
     filterBySources: (newDisplayState: SourceDisplayState) => void;
     isFilterBySorts: boolean;
     isFilterByTexts: boolean;
+    searchTexts: FilterType<string>;
+    patchCachedData: (newData: ParsedFeedsDataType) => void;
 }
 
 export type ModalKeys =
@@ -81,7 +82,6 @@ export default memo(function MainView({
     setSourceDisplayState,
     userId,
     updateObserverElement,
-    refetchStoredFeeds,
     filterBySearchTexts,
     filterFavorites,
     renewState,
@@ -91,6 +91,8 @@ export default memo(function MainView({
     filterBySources,
     isFilterBySorts,
     isFilterByTexts,
+    searchTexts,
+    patchCachedData
 }: Props) {
     const [modalState, setModalState] = useState<ModalStateType>({
         addSubscription: false,
@@ -132,13 +134,13 @@ export default memo(function MainView({
 
     const moveToPreviousPage = () => {
         if (currentPage !== 1) {
-            setCurrentPage((previousValue) => previousValue - 1);
+            setCurrentPage(currentPage - 1);
         }
     };
 
     const moveToNextPage = () => {
         if (Math.ceil(totalCount / 10) !== currentPage) {
-            setCurrentPage((previousValue) => previousValue + 1);
+            setCurrentPage(currentPage + 1);
         }
     };
 
@@ -249,14 +251,15 @@ export default memo(function MainView({
                                 isFilterSources={isFilterSources}
                                 isFilterSorts={isFilterBySorts}
                                 isFilterTexts={isFilterByTexts}
+                                searchTexts={searchTexts}
                             />
                             {sourcesList.length > 0 ? (
                                 <FeedsList
                                     feedsFromServer={feedsFromServer}
-                                    refetchFeeds={refetchStoredFeeds}
                                     userId={userId}
                                     isFilterFavorite={isFilterFavorite}
                                     isFilterSources={isFilterSources}
+                                    patchCachedData={patchCachedData}
                                 />
                             ) : (
                                 <></>
