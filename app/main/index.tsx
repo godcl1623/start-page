@@ -1,16 +1,26 @@
 "use client";
 
 import MainView from "./MainView";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import useFilters from "hooks/useFilters";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+    useQuery,
+    useInfiniteQuery,
+    useQueryClient,
+    QueryKey,
+} from "@tanstack/react-query";
+import useFilters, { FilterType } from "hooks/useFilters";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import { SORT_STANDARD } from "common/constants";
-import { setCookie } from "cookies-next";
 import RequestControllers from "controllers/requestControllers";
 import { generateSearchParameters } from "controllers/utils";
 import { SearchEnginesData } from "controllers/searchEngines";
 import useResizeEvent from "hooks/useResizeEvent";
+import {
+    FeedsCache,
+    getLastPageOfConsecutiveList,
+} from "./hooks/useFeedsCaches";
+import useObserveElement from "./hooks/useObserveElement";
+import useFilteredFeeds from "./hooks/useFilteredFeeds";
 
 export interface ParsedFeedsDataType {
     id: string;
@@ -46,13 +56,13 @@ interface PageParamData {
     updated: number;
 }
 
-interface FeedsCache {
-    [key: number]: ParsedFeedsDataType[];
-}
-
 export interface ErrorResponse {
     error: string;
     status: number;
+}
+
+export interface SourceDisplayState {
+    [key: string]: boolean;
 }
 
 export const STATE_MESSAGE_STRINGS: { [key: string]: string } = {
@@ -87,18 +97,35 @@ export default function MainPage({
     isLocal,
 }: Readonly<MainProps>) {
     const { getDataFrom } = new RequestControllers();
+
     const [currentSort, setCurrentSort] = useState(0);
     const [isFilterFavorite, setIsFilterFavorite] = useState<boolean>(false);
-    const [observerElement, setObserverElement] =
-        useState<HTMLDivElement | null>(null);
     const [totalCount, setTotalCount] = useState<number>(0);
     const [isMobileLayout, setIsMobileLayout] = useState<boolean>(false);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [formerFeedsList, setFormerFeedsList] = useState<FeedsCache>({});
     const [renewState, setRenewState] = useState<string>(
         STATE_MESSAGE_STRINGS.start
     );
+    const [feedsToDisplay, setFeedsToDisplay] = useState<ParsedFeedsDataType[]>(
+        []
+    );
+    const [queryUrl, setQueryUrl] = useState(`/feeds?userId=${userId}&page=1`);
+
     const abortControllerRef = useRef<AbortController | null>(null);
+
+    const {
+        getCachedFeedsToDisplay,
+        handleFavoritesFilter,
+        handleSearchTextsFilter,
+        handleSortFilter,
+        handleSourceFilter,
+        initializeCache,
+        patchCachedData
+    } = useFilteredFeeds({
+        totalFeedsCount: totalCount,
+        currentPage,
+        commonFlagToChangeLogic: isMobileLayout,
+    });
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
         true
@@ -107,6 +134,19 @@ export default function MainPage({
         JSON.stringify(Object.values(SEARCH_OPTIONS)),
         ""
     );
+
+    const detectIfMobileLayout = useCallback(() => {
+        if (document.documentElement.offsetWidth >= 768) {
+            setIsMobileLayout(false);
+        } else {
+            setIsMobileLayout(true);
+        }
+    }, []);
+
+    useResizeEvent(detectIfMobileLayout, true, [detectIfMobileLayout]);
+
+    const queryClient = useQueryClient();
+
     const { data: searchEnginesList } = useQuery({
         queryKey: [`/search_engines?userId=${userId}`],
         queryFn: () =>
@@ -116,38 +156,30 @@ export default function MainPage({
                       `/search_engines?userId=${userId}`
                   ),
     });
-    const {
-        data: storedFeed,
-        refetch: refetchStoredFeeds,
-        fetchNextPage,
-        hasNextPage,
-    } = useInfiniteQuery({
-        queryKey: [
-            `/feeds?userId=${userId}`,
-            { isMobileLayout, currentPage, sourceDisplayState },
+
+    const queryKey = useMemo(
+        () => [
+            queryUrl,
+            { isFilterFavorite, sourceDisplayState, currentSort, searchTexts },
         ],
+        [
+            searchTexts,
+            currentSort,
+            isFilterFavorite,
+            sourceDisplayState,
+            queryUrl,
+        ]
+    );
+    const queryFn = useCallback(
+        () => (isLocal ? null : getDataFrom<string>(queryUrl)),
+        [getDataFrom, queryUrl, isLocal]
+    );
+    const { data: storedFeed, hasNextPage } = useInfiniteQuery({
+        queryKey,
         initialPageParam: currentPage,
-        queryFn: ({ pageParam }) =>
-            isLocal
-                ? "{}"
-                : getDataFrom<string>(
-                      `/feeds?userId=${userId}${generateSearchParameters({
-                          ...(isFilterFavorite && {
-                              favorites: isFilterFavorite,
-                          }),
-                          ...(Object.values(sourceDisplayState).includes(
-                              false
-                          ) && {
-                              displayOption: JSON.stringify(sourceDisplayState),
-                          }),
-                          ...(Object.values(searchTexts).some(
-                              (searchText: string) => searchText.length >= 2
-                          ) && { textOption: JSON.stringify(searchTexts) }),
-                          ...(currentSort > 0 && { sortOption: currentSort }),
-                          page: pageParam,
-                      })}`
-                  ),
-        getNextPageParam: (lastPage: string) => {
+        queryFn,
+        getNextPageParam: (lastPage) => {
+            if (lastPage == null) return;
             if (lastPage === "" || !JSON.parse(lastPage).data) return 1;
             const totalCount = JSON.parse(lastPage)?.count;
             if (currentPage >= Math.ceil(totalCount / 10)) return;
@@ -158,13 +190,114 @@ export default function MainPage({
             return currentPage - 1;
         },
     });
-    const feedsFromServer = isMobileLayout
-        ? (Object.values(formerFeedsList) as any[])
-              .filter((feedListPerPage: any[]) => feedListPerPage?.length > 0)
-              .reduce((acc, x) => acc?.concat(x), [])
-        : formerFeedsList[currentPage];
+    const { updateObserverElement } = useObserveElement({
+        callbackCondition: hasNextPage,
+        callback: () => setCurrentPage((oldPage) => oldPage + 1),
+    });
 
-    const checkAndUpdateNewFeeds = async () => {
+    const generateQueryUrl = useCallback(
+        ({
+            favoriteState = isFilterFavorite,
+            sourceDisplay = sourceDisplayState,
+            sortState = currentSort,
+            textsState = searchTexts,
+            pageState = currentPage,
+        }: {
+            favoriteState?: boolean;
+            sourceDisplay?: FilterType<boolean>;
+            sortState?: number;
+            textsState?: FilterType<string>;
+            pageState?: number;
+        }) => {
+            const localQueryParameters = generateSearchParameters({
+                ...(favoriteState && {
+                    favorites: favoriteState,
+                }),
+                ...(Object.values(sourceDisplay).includes(false) && {
+                    displayOption: JSON.stringify(sourceDisplay),
+                }),
+                ...(Object.values(textsState).some(
+                    (searchText: string) => searchText.length >= 2
+                ) && { textOption: JSON.stringify(textsState) }),
+                ...(sortState > 0 && { sortOption: sortState }),
+            });
+            return `/feeds?userId=${userId}${localQueryParameters}&page=${pageState}`;
+        },
+        [
+            currentPage,
+            currentSort,
+            isFilterFavorite,
+            searchTexts,
+            sourceDisplayState,
+            userId,
+        ]
+    );
+    const generateQueryKey = useCallback(
+        ({
+            favoriteState = isFilterFavorite,
+            sourceDisplay = sourceDisplayState,
+            sortState = currentSort,
+            textsState = searchTexts,
+            queryUrl,
+        }: {
+            favoriteState?: boolean;
+            sourceDisplay?: FilterType<boolean>;
+            sortState?: number;
+            textsState?: FilterType<string>;
+            queryUrl: string;
+        }) => {
+            return [
+                queryUrl,
+                {
+                    isFilterFavorite: favoriteState,
+                    sourceDisplayState: sourceDisplay,
+                    currentSort: sortState,
+                    searchTexts: textsState,
+                },
+            ];
+        },
+        [isFilterFavorite, sourceDisplayState, currentSort, searchTexts]
+    );
+
+    const updateCurrentPage = useCallback(
+        (value: number) => {
+            setCurrentPage(value);
+            const localQueryUrl =
+                queryUrl.split("&page=")[0] + `&page=${value}`;
+            setQueryUrl(localQueryUrl);
+            const localQueryKey = generateQueryKey({ queryUrl: localQueryUrl });
+            queryClient.invalidateQueries({ queryKey: localQueryKey });
+        },
+        [generateQueryKey, queryClient, queryUrl]
+    );
+
+    const updateFeedsToDisplay = useCallback(
+        (cache: FeedsCache) => {
+            if (isMobileLayout) {
+                const lastFilledPage = getLastPageOfConsecutiveList(cache);
+                const joinedList = Object.values(cache)
+                    .slice(0, lastFilledPage + 1)
+                    .filter(
+                        (feedListPerPage: any[]) => feedListPerPage?.length > 0
+                    )
+                    .reduce((acc, x) => acc?.concat(x), []);
+                setFeedsToDisplay(joinedList);
+            } else {
+                setFeedsToDisplay(cache[currentPage]);
+            }
+        },
+        [isMobileLayout, currentPage]
+    );
+
+    const handleFeedsAndCache = useCallback(
+        (feedsList: ParsedFeedsDataType[]) => {
+            const cache = getCachedFeedsToDisplay(feedsList);
+            updateFeedsToDisplay(cache);
+        },
+        [updateFeedsToDisplay, getCachedFeedsToDisplay]
+    );
+
+    const checkAndUpdateNewFeeds = useCallback(async () => {
         try {
             setRenewState(STATE_MESSAGE_STRINGS.proceed);
             abortControllerRef.current = new AbortController();
@@ -186,7 +319,7 @@ export default function MainPage({
                         } else {
                             setRenewState(STATE_MESSAGE_STRINGS.end);
                         }
-                        updateFormerFeedsList(data);
+                        handleFeedsAndCache(data);
                         break;
                     case "error" in newFeedsRequestResult:
                         setRenewState(
@@ -203,71 +336,111 @@ export default function MainPage({
         } catch (error) {
             console.error(error);
         }
-    };
+    }, [getDataFrom, handleFeedsAndCache, totalCount, userId]);
 
-    const updateFormerFeedsList = (feedsList: ParsedFeedsDataType[]) => {
-        setFormerFeedsList(
-            (previousObject: { [key in number]: ParsedFeedsDataType[] }) => {
-                if (previousObject[currentPage] != null) {
-                    if (
-                        currentPage > 1 &&
-                        previousObject[currentPage - 1].length > 0 &&
-                        previousObject[currentPage - 1].every(
-                            (feed: ParsedFeedsDataType, index: number) =>
-                                feed.id === feedsList[index]?.id
-                        )
-                    ) {
-                        return previousObject;
-                    }
-                    return {
-                        ...previousObject,
-                        [currentPage]: previousObject[currentPage]
-                            ?.slice(previousObject[currentPage].length)
-                            .concat(feedsList),
-                    };
-                } else {
-                    return {
-                        [currentPage]: feedsList,
-                    };
-                }
-            }
-        );
-    };
-
-    const setSortState = useCallback(
-        (stateStringArray: string[]) => (stateString: string) => {
-            if (stateStringArray.includes(stateString)) {
-                setCurrentSort(stateStringArray.indexOf(stateString));
-            } else {
-                setCurrentSort(0);
-            }
+    const filterBySources = useCallback(
+        (newDisplay: SourceDisplayState) => {
+            const lastPage = handleSourceFilter(sourceDisplayState, newDisplay);
+            setCurrentPage(lastPage);
+            const localQueryUrl = generateQueryUrl({
+                pageState: lastPage,
+                sourceDisplay: newDisplay,
+            });
+            setQueryUrl(localQueryUrl);
+            const localQueryKey = generateQueryKey({
+                sourceDisplay: newDisplay,
+                queryUrl: localQueryUrl,
+            });
+            queryClient.invalidateQueries({ queryKey: localQueryKey });
         },
-        []
+        [
+            sourceDisplayState,
+            handleSourceFilter,
+            generateQueryKey,
+            generateQueryUrl,
+            queryClient,
+        ]
     );
 
-    const filterFavorites = () => {
+    const filterBySearchTexts = useCallback(
+        (target: string, value: string) => {
+            const lastPage = handleSearchTextsFilter(
+                searchTexts,
+                target,
+                value
+            );
+            setCurrentPage(lastPage);
+            setSearchTexts(target, value);
+            const localQueryUrl = generateQueryUrl({
+                textsState: {
+                    ...searchTexts,
+                    [target]: value,
+                },
+                pageState: lastPage,
+            });
+            setQueryUrl(localQueryUrl);
+            const localQueryKey = generateQueryKey({
+                textsState: {
+                    ...searchTexts,
+                    [target]: value,
+                },
+                queryUrl: localQueryUrl,
+            });
+            queryClient.invalidateQueries({ queryKey: localQueryKey });
+        },
+        [
+            setSearchTexts,
+            searchTexts,
+            handleSearchTextsFilter,
+            generateQueryUrl,
+            generateQueryKey,
+            queryClient,
+        ]
+    );
+
+    const filterBySort = useCallback(
+        (stateStringArray: string[]) => (stateString: string) => {
+            const { lastPage, newSort } = handleSortFilter(
+                stateStringArray,
+                stateString
+            );
+            setCurrentPage(lastPage);
+            setCurrentSort(newSort);
+            const localQueryUrl = generateQueryUrl({
+                sortState: newSort,
+                pageState: lastPage,
+            });
+            setQueryUrl(localQueryUrl);
+            const localQueryKey = generateQueryKey({
+                sortState: newSort,
+                queryUrl: localQueryUrl,
+            });
+            queryClient.invalidateQueries({ queryKey: localQueryKey });
+        },
+        [handleSortFilter, generateQueryUrl, queryClient, generateQueryKey]
+    );
+
+    const filterFavorites = useCallback(() => {
         setIsFilterFavorite(!isFilterFavorite);
-        setCurrentPage(1);
-        refetchStoredFeeds();
-    };
-
-    const updateObserverElement = (element: HTMLDivElement) => {
-        setObserverElement(element);
-    };
-
-    const updateCurrentPage = (value: number | ((value: number) => number)) => {
-        setCurrentPage(value);
-    };
-
-    const detectIfMobileLayout = useCallback(() => {
-        if (document.documentElement.offsetWidth >= 768) {
-            setIsMobileLayout(false);
-        } else {
-            setIsMobileLayout(true);
-        }
-    }, []);
-
-    useResizeEvent(detectIfMobileLayout, true, [detectIfMobileLayout]);
+        const lastPage = handleFavoritesFilter(isFilterFavorite);
+        setCurrentPage(lastPage);
+        const localQueryUrl = generateQueryUrl({
+            favoriteState: !isFilterFavorite,
+            pageState: lastPage,
+        });
+        setQueryUrl(localQueryUrl);
+        const localQueryKey = generateQueryKey({
+            favoriteState: !isFilterFavorite,
+            queryUrl: localQueryUrl,
+        });
+        queryClient.invalidateQueries({ queryKey: localQueryKey });
+    }, [
+        isFilterFavorite,
+        handleFavoritesFilter,
+        generateQueryUrl,
+        queryClient,
+        generateQueryKey,
+    ]);
 
     useEffect(() => {
         if (feeds) {
@@ -277,93 +450,25 @@ export default function MainPage({
             }: { data: ParsedFeedsDataType[]; count: number } =
                 JSON.parse(feeds);
             setTotalCount(count);
-            Array.from({ length: Math.ceil(count / 10) }, (v, k) =>
-                setFormerFeedsList((previousObject: any) => ({
-                    ...previousObject,
-                    [k + 1]: [],
-                }))
+            const indexList = Array.from(
+                { length: Math.ceil(count / 10) },
+                (_, k) => k + 1
             );
-            updateFormerFeedsList(data);
+            initializeCache(indexList, data);
         }
-    }, [feeds]);
+    }, [feeds, initializeCache]);
 
     useEffect(() => {
         if (storedFeed?.pages) {
             const { data, count } = JSON.parse(
-                storedFeed.pages[storedFeed.pages.length - 1]
+                storedFeed.pages[storedFeed.pages.length - 1] ?? "{}"
             );
             if (count != null) setTotalCount(count);
-            if (data != null) updateFormerFeedsList(data);
+            if (data != null) {
+                handleFeedsAndCache(data);
+            }
         }
-    }, [storedFeed, isMobileLayout]);
-
-    useEffect(() => {
-        if (!isMobileLayout) {
-            refetchStoredFeeds();
-        }
-    }, [
-        isFilterFavorite,
-        searchTexts,
-        currentPage,
-        isMobileLayout,
-        currentSort,
-    ]);
-
-    useEffect(() => {
-        if (isMobileLayout) {
-            const firstEmptyPageIndex = (
-                Object.values(formerFeedsList) as any[]
-            ).findIndex((value: any[]) => value?.length === 0);
-            setCurrentPage(firstEmptyPageIndex);
-            Object.keys(formerFeedsList).forEach((key: string, index) => {
-                if (index > firstEmptyPageIndex) {
-                    setFormerFeedsList((previousObject: any) => ({
-                        ...previousObject,
-                        [key]: [],
-                    }));
-                }
-            });
-        } else {
-            const fetchedPages = (
-                Object.values(formerFeedsList) as any[]
-            ).reduce(
-                (totalNumber: number, currentDataArray: any[]) =>
-                    currentDataArray?.length > 0
-                        ? (totalNumber += 1)
-                        : totalNumber,
-                0
-            );
-            setCurrentPage(fetchedPages > 0 ? fetchedPages : 1);
-        }
-    }, [isMobileLayout]);
-
-    useEffect(() => {
-        if (typeof window !== "undefined" && observerElement != null) {
-            const observerOption: IntersectionObserverInit = {
-                threshold: 0.5,
-            };
-            const observerCallback: IntersectionObserverCallback = (
-                entries: IntersectionObserverEntry[]
-            ) => {
-                entries.forEach((entry: IntersectionObserverEntry) => {
-                    if (entry.isIntersecting) {
-                        if (hasNextPage) {
-                            fetchNextPage();
-                            setCurrentPage(
-                                (previousValue) => previousValue + 1
-                            );
-                        }
-                    }
-                });
-            };
-            const observer = new IntersectionObserver(
-                observerCallback,
-                observerOption
-            );
-            observer.observe(observerElement);
-            return () => observer.unobserve(observerElement);
-        }
-    }, [observerElement, hasNextPage]);
+    }, [storedFeed, isMobileLayout, handleFeedsAndCache]);
 
     useEffect(() => {
         if (abortControllerRef.current) {
@@ -376,10 +481,10 @@ export default function MainPage({
 
     return (
         <MainView
-            feedsFromServer={feedsFromServer}
+            feedsFromServer={feedsToDisplay}
             currentPage={currentPage}
             setCurrentPage={updateCurrentPage}
-            setSortState={setSortState(SORT_STANDARD)}
+            filterBySort={filterBySort(SORT_STANDARD)}
             totalCount={totalCount}
             isMobileLayout={isMobileLayout}
             sources={sources}
@@ -387,13 +492,19 @@ export default function MainPage({
             setSourceDisplayState={setSourceDisplayState}
             userId={userId}
             updateObserverElement={updateObserverElement}
-            refetchStoredFeeds={refetchStoredFeeds}
-            setSearchTexts={setSearchTexts}
+            filterBySearchTexts={filterBySearchTexts}
             filterFavorites={filterFavorites}
             renewState={renewState}
             isFilterFavorite={isFilterFavorite}
             searchEnginesList={searchEnginesList}
             checkAndUpdateNewFeeds={checkAndUpdateNewFeeds}
+            filterBySources={filterBySources}
+            isFilterBySorts={currentSort > 0}
+            isFilterByTexts={Object.values(searchTexts).some(
+                (searchText: string) => searchText.length >= 2
+            )}
+            searchTexts={searchTexts}
+            patchCachedData={patchCachedData}
         />
     );
 }
