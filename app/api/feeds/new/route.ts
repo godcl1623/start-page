@@ -64,8 +64,8 @@ export async function GET(req: NextRequest) {
                 const result = await fetch(
                     `${process.env.NEXT_PUBLIC_REQUEST_API}/sources?userId=${rawId}`,
                     {
-                        method: 'PUT',
-                        body: JSON.stringify(newSourceList)
+                        method: "PUT",
+                        body: JSON.stringify(newSourceList),
                     }
                 );
             }
@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
                         `${process.env.NEXT_PUBLIC_REQUEST_API}/feeds/new?userId=${rawId}`,
                         {
                             body: JSON.stringify(updatedFeedSets),
-                            method: "POST",
+                            method: "PUT",
                         }
                     )
                 ).json();
@@ -132,6 +132,33 @@ export async function POST(req: NextRequest) {
         const dataToWrite: ParseResultType[] = await req.json();
         const updateResult = await Feeds?.updateOne(
             { _uuid: userId },
+            { $push: { data: dataToWrite } }
+        );
+        if (updateResult?.acknowledged) {
+            return NextResponse.json("success");
+        } else {
+            return NextResponse.json(
+                { error: "update failed", status: 400 },
+                { status: 400 }
+            );
+        }
+    } catch (error) {
+        console.error(error);
+        return NextResponse.json(
+            { error: "err_renew_req_failed", status: 400 },
+            { status: 400 }
+        );
+    }
+}
+
+export async function PUT(req: NextRequest) {
+    try {
+        const [userId] = newExtractUserIdFrom(req);
+        if (userId == null) throw NextResponse.error();
+        const { Schema: Feeds } = await initializeMongoDBWith(userId, "feeds");
+        const dataToWrite: ParseResultType[] = await req.json();
+        const updateResult = await Feeds?.updateOne(
+            { _uuid: userId },
             { $set: { data: dataToWrite } }
         );
         if (updateResult?.acknowledged) {
@@ -155,8 +182,4 @@ function forbiddenRequest() {
     return NextResponse.json({ status: 405, cause: "Method Not Allowed" });
 }
 
-export {
-    forbiddenRequest as PUT,
-    forbiddenRequest as PATCH,
-    forbiddenRequest as DELETE,
-};
+export { forbiddenRequest as PATCH, forbiddenRequest as DELETE };
