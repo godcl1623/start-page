@@ -320,7 +320,7 @@ export default function MainPage({
                             setRenewState(STATE_MESSAGE_STRINGS.end);
                         }
                         handleFeedsAndCache(data);
-                        return 'success';
+                        break;
                     case "error" in newFeedsRequestResult:
                         setRenewState(
                             STATE_MESSAGE_STRINGS[newFeedsRequestResult.error]
@@ -328,7 +328,7 @@ export default function MainPage({
                         break;
                     default:
                         setRenewState(STATE_MESSAGE_STRINGS.no_change);
-                        return 'success';
+                        break;
                 }
             } else {
                 throw new Error("피드 갱신에 실패했습니다.");

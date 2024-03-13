@@ -1,13 +1,11 @@
 import { extractInputValue, checkIfStringPassesRule } from "../utils/helpers";
 import RequestControllers from "controllers/requestControllers";
 import SubscriptionForm from "./SubscriptionForm";
-import { parseCookie } from "controllers/utils";
-import { setCookie } from "cookies-next";
+import { parseCookie } from 'controllers/utils';
+import { setCookie } from 'cookies-next';
 
 interface Props {
     userId: string;
-    activateInitialUpdate: () => void;
-    closeModal: () => void;
 }
 
 interface CheckResult {
@@ -16,11 +14,7 @@ interface CheckResult {
     rssUrl: string | null;
 }
 
-export default function SubscribeNew({
-    userId,
-    activateInitialUpdate,
-    closeModal,
-}: Props) {
+export default function SubscribeNew({ userId }: Props) {
     const { getDataFrom, postDataTo } = new RequestControllers();
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -39,20 +33,16 @@ export default function SubscribeNew({
             return;
         }
 
-        const {
-            result: urlCheckResult,
-            data: fetchData,
-            rssUrl,
-        } = await postDataTo<CheckResult>("/sources/check", { url });
+        const { result: urlCheckResult, data: fetchData, rssUrl } =
+            await postDataTo<CheckResult>("/sources/check", { url });
         if (!urlCheckResult || fetchData == null || rssUrl == null) {
             alert("유효하지 않은 주소입니다.");
             return;
         }
 
-        if (userId === "") {
-            userId = (await getDataFrom<{ userCookie: string }>("/register"))
-                .userCookie;
-            setCookie("mw", userId, { maxAge: 60 * 60 * 24 * 30 });
+        if (userId === '') {
+            userId = (await getDataFrom<{ userCookie: string }>('/register')).userCookie
+            setCookie('mw', userId, { maxAge: 60 * 60 * 24 * 30 });
         }
 
         const parser = new DOMParser();
@@ -76,9 +66,7 @@ export default function SubscribeNew({
             switch (postResult.status) {
                 case 201:
                     alert("저장되었습니다.");
-                    // location.reload();
-                    closeModal();
-                    activateInitialUpdate();
+                    location.reload();
                     return;
                 case 400:
                     alert("업데이트에 실패했습니다.");
