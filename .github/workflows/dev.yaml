@@ -55,6 +55,7 @@ jobs:
                   echo KAKAO_OAUTH_CLIENT_SECRET=${{ secrets.KAKAO_OAUTH_CLIENT_SECRET }} >> .env
                   echo NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }} >> .env
                   echo NEXT_PUBLIC_SUPPORT_EMAIL=${{ secrets.NEXT_PUBLIC_SUPPORT_EMAIL }} >> .env
+                  echo NEXT_PUBLIC_USAGE_GUIDE=${{ secrets.NEXT_PUBLIC_USAGE_GUIDE }} >> .env
                   cat .env
 
             - name: Build, Tag, Push the Docker Image
