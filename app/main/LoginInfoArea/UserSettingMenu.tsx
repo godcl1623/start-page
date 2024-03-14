@@ -3,6 +3,7 @@ import { ChangeEvent } from "react";
 import { MdDarkMode, MdFormatColorReset, MdLightMode } from "react-icons/md";
 import { Theme } from ".";
 import { nanoid } from "nanoid";
+import { useRouter } from 'next/navigation';
 
 interface Props {
     toggleButtonRef: HTMLButtonElement | null;
@@ -27,30 +28,39 @@ export default function UserSettingMenu({
     uploadUserData,
     handleUserData,
     handleTheme,
-    mailTo
+    mailTo,
 }: Readonly<Props>) {
+    const router = useRouter();
+    const commonButtonStyle =
+        "w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300";
     const buttonsData = [
         {
             text: "사용자 데이터 내보내기",
-            style: "w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300",
+            style: commonButtonStyle,
             clickHandler: getTotalData,
         },
         {
             text: "사용자 데이터 불러오기",
-            style: "w-44 px-4 py-2 rounded-md bg-neutral-500 text-center text-sm text-neutral-100 cursor-pointer dark:text-gray-300",
+            style: `${commonButtonStyle} text-center cursor-pointer`,
             clickHandler: uploadUserData,
         },
         {
             text: "데이터 이전",
-            style: "w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300",
+            style: commonButtonStyle,
             clickHandler: handleUserData,
         },
         {
+            text: '이용 가이드',
+            style: commonButtonStyle,
+            clickHandler: () => router.push(process.env.NEXT_PUBLIC_USAGE_GUIDE ?? '/')
+        },
+        {
             text: "문의하기",
-            style: "w-44 px-4 py-2 rounded-md bg-neutral-500 text-sm text-neutral-100 dark:text-gray-300",
+            style: commonButtonStyle,
             clickHandler: mailTo,
         },
     ];
+
     const buttonsList = buttonsData.map((buttonData, index, arraySelf) => {
         if (index === 1) {
             return (
