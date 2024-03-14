@@ -97,7 +97,7 @@ export default function UserSettingMenu({
     return (
         <div
             ref={updateUserMenu}
-            className={`absolute top-0 z-10 w-full md:top-20 md:w-max`}
+            className={`absolute top-0 z-20 w-full md:top-20 md:w-max`}
             style={{
                 right:
                     toggleButtonRef &&
