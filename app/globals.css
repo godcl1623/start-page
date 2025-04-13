@@ -1,28 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@font-face {
-    font-family: "Pretendard";
-    font-weight: 700;
-    font-display: swap;
-    src: local("Pretendard Bold"),
-        url(/public/fonts/Pretendard-Bold.subset.woff2) format("woff2"),
-        url(/public/fonts/Pretendard-Bold.subset.woff) format("woff");
-}
-
-@font-face {
-    font-family: "Pretendard";
-    font-weight: 400;
-    font-display: swap;
-    src: local("Pretendard Regular"),
-        url(/public/fonts/Pretendard-Regular.subset.woff2) format("woff2"),
-        url(/public/fonts/Pretendard-Regular.subset.woff) format("woff");
-}
+@import "tailwindcss";
 
 @layer base {
-    html, body {
-        font-family: 'Pretendard', 'Noto Sans KR', 'AppleSDGothicNeo', sans-serif;
+    html,
+    body {
+        font-family: "Pretendard", "Noto Sans KR", "AppleSDGothicNeo",
+            sans-serif;
     }
 
     html,

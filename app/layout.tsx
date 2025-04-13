@@ -1,11 +1,11 @@
 import { ReactNode } from "react";
 import { Metadata } from "next";
 import Providers from "./root/providers";
-import "tailwindcss/tailwind.css";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]/setting";
 import { cookies } from "next/headers";
 import localFont from "next/font/local";
+import "app/globals.css";
 
 const pretendard = localFont({
     src: [
@@ -42,7 +42,7 @@ export default async function RootLayout({
     readonly children: ReactNode;
 }) {
     const session = await getServerSession(authOptions);
-    const theme = cookies().get("theme");
+    const theme = (await cookies()).get("theme");
     const setInitialTheme = `(function () {
         const theme = document.cookie.split('; ').find((cookie) => cookie.includes('theme'));
         if (theme == null) {

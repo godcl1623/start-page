@@ -231,7 +231,7 @@
  ┣ 📜next-env.d.ts <br />
  ┣ 📜next.config.js <br />
  ┣ 📜package.json <br />
- ┣ 📜postcss.config.js <br />
+ ┣ 📜postcss.config.mjs <br />
  ┣ 📜tailwind.config.js <br />
  ┣ 📜tsconfig.json <br />
  ┗ 📜yarn.lock <br />
@@ -368,7 +368,7 @@
     - 연습 목적이 아니더라도 SSR을 통해 SPA 특유의 빈 화면을 처리할 수 있다는 점, React.js와 달리 라이브러리 없이도 일부 기능들이 빌트인으로 통합되어 있다는 점 등의 장점을 고려하면 채택할 가치가 있다고 판단했습니다.
     - 최초에는 전 회사에서 사용하던 Next.js 12버전의 pages 라우터로 개발되었으나, 중간부터 Next.js 14버전의 app 라우터로 전환했습니다.
 - TypeScript
-    - 일부 라이브러리의 설정 파일(e.g. next.config.js, postcss.config.js 등)을 제외하고 모든 코드는 TypeScript로 작성되었습니다.
+    - 일부 라이브러리의 설정 파일(e.g. next.config.js, postcss.config.mjs 등)을 제외하고 모든 코드는 TypeScript로 작성되었습니다.
 - @tanstack/React-Query
     - 모바일 레이아웃의 무한 스크롤, 데스크톱 레이아웃의 페이지네이션 등의 로직에 사용됐습니다.
     - 기존에는 GET 요청을 useQuery 훅으로 처리하였으나, Next.js 14 버전 이후부터는 대부분 Next.js에 내장된 fetch API를 이용했습니다.
