@@ -84,7 +84,7 @@ export default function LoginInfoAreaView({
 
     return (
         <section className="w-full">
-            <div className="flex justify-center md:items-center xs:justify-end">
+            <div className="flex justify-center xs:items-center md:justify-end">
                 <UserInfo
                     ref={buttonRef}
                     userEmail={session?.user?.email}
@@ -98,7 +98,7 @@ export default function LoginInfoAreaView({
                                 callbackUrl: process.env.NEXTAUTH_URL,
                             })
                         }
-                        customStyle="w-32 rounded-l-none bg-red-400 font-bold text-sm text-neutral-100  dark:bg-red-700 dark:text-gray-300"
+                        customStyle="w-32 rounded-l-none bg-red-400 font-bold text-sm text-neutral-100 dark:bg-red-700 dark:text-gray-300"
                     >
                         Logout
                     </Button>

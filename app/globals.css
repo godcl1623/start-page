@@ -43,3 +43,8 @@
         align-items: center;
     }
 }
+
+@theme {
+    --breakpoint-xs: 360px;
+    --breakpoint-fhd: 1920px;
+}
