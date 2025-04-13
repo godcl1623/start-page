@@ -42,7 +42,7 @@ export default async function RootLayout({
     readonly children: ReactNode;
 }) {
     const session = await getServerSession(authOptions);
-    const theme = (await cookies()).get("theme");
+    const theme = (await cookies()).get("theme")?.value ?? "";
     const setInitialTheme = `(function () {
         const theme = document.cookie.split('; ').find((cookie) => cookie.includes('theme'));
         if (theme == null) {
@@ -57,7 +57,7 @@ export default async function RootLayout({
     return (
         <html
             lang="ko"
-            className={`${theme?.value === "dark" ? "dark" : ""} ${
+            className={`${theme !== "" ? theme + " " : theme}${
                 pretendard.variable
             } font-sans`}
         >

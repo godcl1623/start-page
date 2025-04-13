@@ -25,8 +25,8 @@ export default async function Main() {
 
         if (loginInfo != null) {
             userId = encryptCookie({ userId: loginInfo.user.email });
-        } else if (cookies().get("mw") != null) {
-            userId = (cookies().get("mw") as RequestCookie).value;
+        } else if ((await cookies()).get("mw") != null) {
+            userId = ((await cookies()).get("mw") as RequestCookie).value;
         }
 
         const feedsResponse =
