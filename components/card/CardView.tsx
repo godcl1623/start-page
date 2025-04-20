@@ -71,7 +71,7 @@ export default memo(function CardView({
 
     return (
         <button
-            className={`flex min-w-full min-h-[7.75rem] rounded-md shadow-lg mb-8 px-6 py-4 bg-neutral-100 text-justify text-neutral-700 cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${returnReadStyle(
+            className={`flex min-w-full min-h-[9rem] rounded-md shadow-lg px-6 py-4 bg-neutral-100 text-justify text-neutral-700 cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${returnReadStyle(
                 readState
             )}`}
             onClick={handleCard(favoriteState)}
