@@ -42,7 +42,7 @@ export default memo(function FeedsList({
     }, [feedsFromServer, isFilterFavorite, isFilterSources, defaultFeedsList]);
 
     return (
-        <menu className="w-full h-full">
+        <ul className="w-full h-full">
             {feedsToDisplay.map((feed: ParsedFeedsDataType) => (
                 <li key={`${feed.id}+${nanoid()}`}>
                     <Card
@@ -52,6 +52,6 @@ export default memo(function FeedsList({
                     />
                 </li>
             ))}
-        </menu>
+        </ul>
     );
 });
