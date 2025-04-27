@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { DEFAULT_CARD_DATA, ParsedFeedsDataType } from "app/main";
 import Card from "components/card";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 interface Props {
     feedsFromServer: ParsedFeedsDataType[] | undefined;
@@ -24,6 +24,11 @@ export default memo(function FeedsList({
     );
     const [feedsToDisplay, setFeedsToDisplay] =
         useState<ParsedFeedsDataType[]>(defaultFeedsList);
+    const [currentTopIndex, setCurrentTopIndex] = useState<number>(0);
+    const [perItemHeight, setPerItemHeight] = useState<number>(0);
+    const [maxItemsPerPage, setMaxItemsPerPage] = useState<number>(6);
+
+    const listContainerRef = useRef<HTMLUListElement | null>(null);
 
     const updateFeedsToDisplay = (dataList: ParsedFeedsDataType[]) => {
         setFeedsToDisplay((oldState) =>
@@ -41,17 +46,58 @@ export default memo(function FeedsList({
         }
     }, [feedsFromServer, isFilterFavorite, isFilterSources, defaultFeedsList]);
 
+    useEffect(() => {
+        if (feedsFromServer == null) return;
+
+        const listContainer = listContainerRef.current;
+        if (listContainer == null) return;
+
+        const containerTop = listContainer.offsetTop;
+        const perItemHeight = listContainer.children[1].clientHeight + 32;
+        setPerItemHeight(perItemHeight);
+        setMaxItemsPerPage(Math.ceil(window.innerHeight / perItemHeight) + 1);
+        const handleScroll = () => {
+            const scrollTop = window.scrollY;
+            const revisedTop = scrollTop - containerTop;
+            const currentTop = Math.floor(revisedTop / perItemHeight);
+            if (currentTop < 0) {
+                setCurrentTopIndex(0);
+            } else {
+                setCurrentTopIndex(currentTop);
+            }
+        };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [feedsFromServer]);
+
     return (
-        <menu className="w-full h-full">
-            {feedsToDisplay.map((feed: ParsedFeedsDataType) => (
-                <li key={`${feed.id}+${nanoid()}`}>
-                    <Card
-                        cardData={feed}
-                        userId={userId}
-                        patchCachedData={patchCachedData}
-                    />
-                </li>
-            ))}
-        </menu>
+        <ul className="w-full h-full" ref={listContainerRef}>
+            <li style={{ height: `${perItemHeight * currentTopIndex}px` }} />
+            {feedsToDisplay.map((feed: ParsedFeedsDataType, index) => {
+                if (
+                    index < currentTopIndex ||
+                    index > currentTopIndex + maxItemsPerPage
+                )
+                    return null;
+                return (
+                    <li key={`${feed.id}+${nanoid()}`} className={"mb-8"}>
+                        <Card
+                            cardData={feed}
+                            userId={userId}
+                            patchCachedData={patchCachedData}
+                        />
+                    </li>
+                );
+            })}
+            <li
+                style={{
+                    height: `${
+                        perItemHeight *
+                        (feedsToDisplay.length -
+                            (currentTopIndex + maxItemsPerPage - 1))
+                    }px`,
+                }}
+            />
+        </ul>
     );
 });
