@@ -27,7 +27,6 @@ export default memo(function FeedsList({
     const [currentTopIndex, setCurrentTopIndex] = useState<number>(0);
     const [perItemHeight, setPerItemHeight] = useState<number>(0);
     const [maxItemsPerPage, setMaxItemsPerPage] = useState<number>(6);
-    const [initialVisibleItems, setInitialVisibleItems] = useState<number>(10);
 
     const listContainerRef = useRef<HTMLUListElement | null>(null);
 
@@ -57,7 +56,6 @@ export default memo(function FeedsList({
         const perItemHeight = listContainer.children[1].clientHeight + 32;
         setPerItemHeight(perItemHeight);
         setMaxItemsPerPage(Math.ceil(window.innerHeight / perItemHeight) + 1);
-        setInitialVisibleItems(Math.ceil((window.innerHeight - containerTop) / perItemHeight));
         const handleScroll = () => {
             const scrollTop = window.scrollY;
             const revisedTop = scrollTop - containerTop;
@@ -71,24 +69,35 @@ export default memo(function FeedsList({
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, [feedsFromServer]);
-    console.log(initialVisibleItems);
 
     return (
         <ul className="w-full h-full" ref={listContainerRef}>
             <li style={{ height: `${perItemHeight * currentTopIndex}px` }} />
             {feedsToDisplay.map((feed: ParsedFeedsDataType, index) => {
-                if (index < currentTopIndex || index > currentTopIndex + maxItemsPerPage) return null;
+                if (
+                    index < currentTopIndex ||
+                    index > currentTopIndex + maxItemsPerPage
+                )
+                    return null;
                 return (
-                  <li key={`${feed.id}+${nanoid()}`} className={"mb-8"}>
-                      <Card
-                        cardData={feed}
-                        userId={userId}
-                        patchCachedData={patchCachedData}
-                      />
-                  </li>
+                    <li key={`${feed.id}+${nanoid()}`} className={"mb-8"}>
+                        <Card
+                            cardData={feed}
+                            userId={userId}
+                            patchCachedData={patchCachedData}
+                        />
+                    </li>
                 );
             })}
-            <li style={{ height: `${perItemHeight * (feedsToDisplay.length - (currentTopIndex + maxItemsPerPage - 1))}px` }} />
+            <li
+                style={{
+                    height: `${
+                        perItemHeight *
+                        (feedsToDisplay.length -
+                            (currentTopIndex + maxItemsPerPage - 1))
+                    }px`,
+                }}
+            />
         </ul>
     );
 });
