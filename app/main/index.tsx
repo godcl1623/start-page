@@ -120,7 +120,7 @@ export default function MainPage({
         handleSortFilter,
         handleSourceFilter,
         initializeCache,
-        patchCachedData
+        patchCachedData,
     } = useFilteredFeeds({
         totalFeedsCount: totalCount,
         currentPage,
@@ -192,7 +192,13 @@ export default function MainPage({
     });
     const { updateObserverElement } = useObserveElement({
         callbackCondition: hasNextPage,
-        callback: () => setCurrentPage((oldPage) => oldPage + 1),
+        callback: () => {
+            setCurrentPage((oldPage) => oldPage + 1);
+            // FIXME: 전체 페이지네이션+무한스크롤 로직 단순화
+            setQueryUrl(
+                queryUrl.split("&page=")[0] + `&page=${currentPage + 1}`
+            );
+        },
     });
 
     const generateQueryUrl = useCallback(
