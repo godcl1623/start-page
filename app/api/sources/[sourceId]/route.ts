@@ -4,7 +4,6 @@ import {
 } from "controllers/common";
 import RequestControllers from "controllers/requestControllers";
 import { SourceData, checkIfDataExists } from "controllers/sources/helpers";
-import { parseCookie } from "controllers/utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export interface RouteContext {
@@ -13,7 +12,7 @@ export interface RouteContext {
     };
 }
 
-export async function DELETE(req: NextRequest, context: RouteContext) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ sourceId: string }> }) {
     const { deleteDataOf } = new RequestControllers();
     try {
         const [userId, rawId] = newExtractUserIdFrom(req);
@@ -21,7 +20,7 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
         const { remoteData: sources, Schema: Sources } =
             await initializeMongoDBWith(userId, "sources");
         const idList = sources?.map((sourceData: SourceData) => sourceData.id);
-        const { sourceId } = context.params;
+        const { sourceId } = await params;
 
         if (!checkIfDataExists(idList, Number(sourceId))) {
             return NextResponse.json(

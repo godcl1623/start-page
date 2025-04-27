@@ -1,4 +1,3 @@
-import { RouteContext } from "app/api/sources/[sourceId]/route";
 import { ParseResultType } from "app/main";
 import {
     initializeMongoDBWith,
@@ -8,7 +7,8 @@ import { extractStoredFeedsFromRemote } from "controllers/feeds/new";
 import { checkIfDataExists } from "controllers/sources/helpers";
 import { NextResponse, NextRequest } from "next/server";
 
-export async function DELETE(req: NextRequest, context: RouteContext) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ feedsSetId: string }> }
+) {
     try {
         const [userId] = newExtractUserIdFrom(req);
         if (userId == null) return NextResponse.error();
@@ -16,7 +16,7 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
             userId,
             "feeds"
         );
-        const { feedsSetId } = context.params;
+        const { feedsSetId } = await params;
         const data = extractStoredFeedsFromRemote(remoteData);
         const idList = data.map((feedsSet: ParseResultType) => feedsSet.id);
 
