@@ -71,13 +71,13 @@ export default memo(function CardView({
 
     return (
         <button
-            className={`flex min-w-full min-h-[9rem] rounded-md shadow-lg px-6 py-4 bg-neutral-100 text-justify text-neutral-700 cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${returnReadStyle(
+            className={`relative flex min-w-full min-h-[10rem] rounded-md shadow-lg px-6 py-4 bg-neutral-100 text-justify text-neutral-700 cursor-pointer select-none dark:shadow-zinc-600 dark:bg-neutral-700 dark:text-neutral-200 transition-all hover:scale-105 ${returnReadStyle(
                 readState
             )}`}
             onClick={handleCard(favoriteState)}
         >
             {cardData == null || cardData.id === "" ? (
-                <div className="flex justify-center items-center min-w-full w-full h-[5.75rem]">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                     <SvgSpinners90RingWithBg className="w-6 h-6 fill-neutral-700 dark:fill-neutral-100" />
                 </div>
             ) : (
@@ -101,7 +101,7 @@ export default memo(function CardView({
                     </div>
                     <div className="w-full">
                         <div className="flex justify-between w-full">
-                            <h2 className="mr-4 text-sm whitespace-pre-normal xs:text-base sm:text-lg">
+                            <h2 className="mr-4 text-sm whitespace-pre-normal line-clamp-1 xs:text-base sm:text-lg">
                                 <b>{title}</b>
                             </h2>
                             <Checkbox
@@ -115,7 +115,7 @@ export default memo(function CardView({
                                 )}
                             />
                         </div>
-                        <p className="my-3 text-xs xs:text-sm">
+                        <p className="h-[40px] my-3 text-xs line-clamp-2 xs:text-sm">
                             {feedDescription}
                         </p>
                         <div className="flex flex-col justify-between w-full text-xs xs:text-sm sm:flex-row">
