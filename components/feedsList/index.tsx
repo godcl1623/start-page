@@ -1,4 +1,3 @@
-import { nanoid } from "nanoid";
 import { DEFAULT_CARD_DATA, ParsedFeedsDataType } from "app/main";
 import Card from "components/card";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
@@ -20,7 +19,7 @@ export default memo(function FeedsList({
 }: Readonly<Props>) {
     const defaultFeedsList = useMemo(
         () => Array.from({ length: 10 }, () => DEFAULT_CARD_DATA),
-        []
+        [],
     );
     const [feedsToDisplay, setFeedsToDisplay] =
         useState<ParsedFeedsDataType[]>(defaultFeedsList);
@@ -32,7 +31,7 @@ export default memo(function FeedsList({
 
     const updateFeedsToDisplay = (dataList: ParsedFeedsDataType[]) => {
         setFeedsToDisplay((oldState) =>
-            oldState.slice(oldState.length).concat(dataList)
+            oldState.slice(oldState.length).concat(dataList),
         );
     };
 
@@ -72,7 +71,7 @@ export default memo(function FeedsList({
 
     return (
         <ul className="w-full h-full" ref={listContainerRef}>
-            <li style={{ height: `${perItemHeight * currentTopIndex}px` }} />
+            <li style={{ height: `${perItemHeight * currentTopIndex}px` }}/>
             {feedsToDisplay.map((feed: ParsedFeedsDataType, index) => {
                 if (
                     index < currentTopIndex ||
@@ -80,7 +79,7 @@ export default memo(function FeedsList({
                 )
                     return null;
                 return (
-                    <li key={`${feed.id}+${nanoid()}`} className={"mb-8"}>
+                    <li key={`${feed.id}_${index}`} className={"mb-8"}>
                         <Card
                             cardData={feed}
                             userId={userId}
