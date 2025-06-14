@@ -329,7 +329,7 @@ export default function MainPage({
                         break;
                     case "error" in newFeedsRequestResult:
                         setRenewState(
-                            STATE_MESSAGE_STRINGS[newFeedsRequestResult.error]
+                            STATE_MESSAGE_STRINGS[(newFeedsRequestResult as ErrorResponse).error]
                         );
                         break;
                     default:

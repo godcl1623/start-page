@@ -100,7 +100,7 @@ const useFeedsCaches = ({ totalFeedsCount, currentPage }: Options) => {
             } else {
                 cache[pageNumber] = currentPageList
                     ?.slice(currentPageList.length)
-                    .concat(feedsList);
+                    .concat(feedsList) ?? [];
             }
         },
         [currentPage]

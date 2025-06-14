@@ -2,7 +2,6 @@ import { useMutation } from "@tanstack/react-query";
 import Button from "components/common/Button";
 import RequestControllers from "controllers/requestControllers";
 import { SearchEnginesData } from "controllers/searchEngines";
-import { nanoid } from "nanoid";
 import { FormEvent, memo, useEffect, useRef, useState } from "react";
 import { extractFormValues } from "../search/utils/helpers";
 import EngineDataEditor from "./EngineDataEditor";
@@ -37,7 +36,7 @@ export default memo(function EditSearchEngines({
     }) =>
         postDataTo<string>(
             `/search_engines?userId=${userId}`,
-            searchEnginesList
+            searchEnginesList,
         );
     const { mutateAsync } = useMutation({ mutationFn });
 
@@ -45,7 +44,7 @@ export default memo(function EditSearchEngines({
         event.preventDefault();
         const [name, url] = extractFormValues(event);
         const newData: SearchEnginesData = {
-            id: `engine_data_${nanoid()}`,
+            id: `engine_data_${name}`,
             name,
             url,
         };
@@ -69,7 +68,7 @@ export default memo(function EditSearchEngines({
                 return engineData;
             });
             setSearchEnginesList((oldList) =>
-                oldList.slice(oldList.length).concat(newList)
+                oldList.slice(oldList.length).concat(newList),
             );
             setIsEditingData(false);
         };
@@ -77,7 +76,7 @@ export default memo(function EditSearchEngines({
     const deleteDataFromList = (targetIndex: number) => () => {
         if (targetIndex > searchEnginesList.length || targetIndex < 0) return;
         setSearchEnginesList((oldList) =>
-            oldList.filter((engineData, index) => index !== targetIndex)
+            oldList.filter((engineData, index) => index !== targetIndex),
         );
     };
 
@@ -91,7 +90,7 @@ export default memo(function EditSearchEngines({
             }
 
             const mutateResult = JSON.parse(
-                await mutateAsync({ userId, searchEnginesList })
+                await mutateAsync({ userId, searchEnginesList }),
             );
             if ("error" in mutateResult) throw new Error();
             await alert("저장되었습니다.");
@@ -105,7 +104,7 @@ export default memo(function EditSearchEngines({
     useEffect(() => {
         if (serverSearchEnginesList != null) {
             setSearchEnginesList((oldList) =>
-                oldList.slice(oldList.length).concat(serverSearchEnginesList)
+                oldList.slice(oldList.length).concat(serverSearchEnginesList),
             );
         }
     }, [serverSearchEnginesList]);
@@ -113,7 +112,7 @@ export default memo(function EditSearchEngines({
     const searchEngines = searchEnginesList.map((engineData, index) =>
         typeof isEditingData !== "boolean" && isEditingData === index ? (
             <EngineDataEditor
-                key={`enginesList_${engineData.name}_${nanoid()}`}
+                key={`enginesList_${engineData.name}_${index}`}
                 addNewDataToList={updateDataOfList(index)}
                 cancelAdd={() => setIsEditingData(false)}
                 defaultName={engineData.name}
@@ -121,13 +120,13 @@ export default memo(function EditSearchEngines({
             />
         ) : (
             <TableRow
-                key={`enginesList_${engineData.name}_${nanoid()}`}
+                key={`enginesList_${engineData.name}_${index}`}
                 engineName={engineData.name}
                 engineUrl={engineData.url}
                 editEngineData={() => setIsEditingData(index)}
                 deleteEngineData={deleteDataFromList(index)}
             />
-        )
+        ),
     );
 
     if (document.documentElement.offsetWidth < 640) {
@@ -146,23 +145,23 @@ export default memo(function EditSearchEngines({
                     className="h-full w-full border border-b-0 border-neutral-500 dark:border-neutral-200"
                 >
                     <thead>
-                        <tr className="flex w-full border-b border-neutral-500 dark:border-neutral-200">
-                            <th className="w-1/5 border-r border-neutral-500 dark:border-neutral-200">
-                                사이트명
-                            </th>
-                            <th className="w-4/5">쿼리문 주소</th>
-                        </tr>
+                    <tr className="flex w-full border-b border-neutral-500 dark:border-neutral-200">
+                        <th className="w-1/5 border-r border-neutral-500 dark:border-neutral-200">
+                            사이트명
+                        </th>
+                        <th className="w-4/5">쿼리문 주소</th>
+                    </tr>
                     </thead>
                     <tbody>{searchEngines}</tbody>
                     <tfoot>
-                        {isAppendingNewData ? (
-                            <EngineDataEditor
-                                addNewDataToList={addNewDataToList}
-                                cancelAdd={() => setIsAppendingNewData(false)}
-                            />
-                        ) : (
-                            <></>
-                        )}
+                    {isAppendingNewData ? (
+                        <EngineDataEditor
+                            addNewDataToList={addNewDataToList}
+                            cancelAdd={() => setIsAppendingNewData(false)}
+                        />
+                    ) : (
+                        <></>
+                    )}
                     </tfoot>
                 </table>
                 <Button

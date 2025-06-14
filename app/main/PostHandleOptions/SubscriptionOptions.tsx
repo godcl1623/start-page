@@ -1,6 +1,5 @@
 import Button from "components/common/Button";
 import { ModalKeys } from "../MainView";
-import { nanoid } from "nanoid";
 
 interface Props {
     handleClick: (target: ModalKeys) => () => void;
@@ -35,20 +34,22 @@ export default function SubscriptionOptions({
         },
     };
     const optionButtonsList = Object.entries(buttonData).map(
-        (buttonData: [string, ButtonData]) => {
+        (buttonData: [string, ButtonData], index) => {
             const [buttonText, { clickHandler, isFiltering }] = buttonData;
             return (
-                <li key={`${buttonText}_${nanoid()}`} className="w-full">
+                <li key={`${buttonText}_${index}`} className="w-full">
                     <Button
                         type="button"
-                        customStyle={`w-full bg-neutral-500 text-xs text-neutral-100 dark:bg-neutral-500 ${isFiltering ? 'brightness-75' : ''}`}
+                        customStyle={`w-full bg-neutral-500 text-xs text-neutral-100 dark:bg-neutral-500 ${isFiltering
+                            ? "brightness-75"
+                            : ""}`}
                         clickHandler={clickHandler}
                     >
                         {buttonText}
                     </Button>
                 </li>
             );
-        }
+        },
     );
 
     return (
