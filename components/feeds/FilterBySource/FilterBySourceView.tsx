@@ -3,14 +3,13 @@ import Button from "../../common/Button";
 import ModalTemplate from "../common/ModalTemplate";
 import SubscriptionOption from "./SubscriptionOption";
 import { useEffect, useState } from "react";
-import { nanoid } from "nanoid";
 
 interface Props {
     displayState: FilterType<boolean>;
     changeDisplayFlag: (target: string, value: boolean) => void;
     closeModal: () => void;
     enableDisplayFilter: (
-        returnNewDisplayState?: () => [string, boolean][]
+        returnNewDisplayState?: () => [string, boolean][],
     ) => () => void;
 }
 
@@ -67,7 +66,7 @@ export default function FilterBySourceView({
                     changeDisplayFlag={updateVisibleState}
                 />
             );
-        }
+        },
     );
 
     const buttonsData: ButtonsData = {
@@ -88,12 +87,12 @@ export default function FilterBySourceView({
         },
     };
     const filterHandlersList = Object.entries(buttonsData).map(
-        (buttonData: [string, ButtonsDataValue]) => {
+        (buttonData: [string, ButtonsDataValue], index) => {
             const [buttonText, buttonDataValue] = buttonData;
             const { customStyle, clickHandler } = buttonDataValue;
             return (
                 <Button
-                    key={`${buttonText}_${nanoid()}`}
+                    key={`${buttonText}_${index}`}
                     type="button"
                     customStyle={customStyle}
                     clickHandler={clickHandler}
@@ -101,7 +100,7 @@ export default function FilterBySourceView({
                     {buttonText}
                 </Button>
             );
-        }
+        },
     );
 
     return (

@@ -2,8 +2,7 @@ import Button from "components/common/Button";
 import { ChangeEvent } from "react";
 import { MdDarkMode, MdFormatColorReset, MdLightMode } from "react-icons/md";
 import { Theme } from ".";
-import { nanoid } from "nanoid";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 interface Props {
     toggleButtonRef: HTMLButtonElement | null;
@@ -50,9 +49,9 @@ export default function UserSettingMenu({
             clickHandler: handleUserData,
         },
         {
-            text: '이용 가이드',
+            text: "이용 가이드",
             style: commonButtonStyle,
-            clickHandler: () => router.push(process.env.NEXT_PUBLIC_USAGE_GUIDE ?? '/')
+            clickHandler: () => router.push(process.env.NEXT_PUBLIC_USAGE_GUIDE ?? "/"),
         },
         {
             text: "문의하기",
@@ -66,7 +65,7 @@ export default function UserSettingMenu({
             return (
                 <label
                     className={buttonData.style}
-                    key={`${buttonData.text}_${nanoid()}`}
+                    key={`${buttonData.text}_${index}`}
                 >
                     {buttonData.text}
                     <input
@@ -75,7 +74,7 @@ export default function UserSettingMenu({
                         className="hidden"
                         onChange={
                             buttonData.clickHandler as (
-                                event: ChangeEvent<HTMLInputElement>
+                                event: ChangeEvent<HTMLInputElement>,
                             ) => void
                         }
                     />
@@ -87,7 +86,7 @@ export default function UserSettingMenu({
                     type="button"
                     customStyle={buttonData.style}
                     clickHandler={buttonData.clickHandler as () => void}
-                    key={`${buttonData.text}_${nanoid()}`}
+                    key={`${buttonData.text}_${index}`}
                 >
                     {buttonData.text}
                 </Button>
@@ -106,7 +105,8 @@ export default function UserSettingMenu({
                         : 0,
             }}
         >
-            <div className="flex flex-col gap-4 justify-center items-center w-full p-4 rounded-md shadow-lg bg-neutral-100 dark:bg-neutral-700 dark:shadow-zinc-600 md:gap-6 md:w-80">
+            <div
+                className="flex flex-col gap-4 justify-center items-center w-full p-4 rounded-md shadow-lg bg-neutral-100 dark:bg-neutral-700 dark:shadow-zinc-600 md:gap-6 md:w-80">
                 {document.documentElement.offsetWidth < 768 ? (
                     <button
                         type="button"
