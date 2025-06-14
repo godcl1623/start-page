@@ -1,6 +1,5 @@
 import useOutsideClickClose from "hooks/useOutsideClickClose";
-import { nanoid } from "nanoid";
-import { MouseEvent, memo, useRef, useState } from "react";
+import { memo, MouseEvent, useRef, useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { FaCheck } from "react-icons/fa6";
 
@@ -35,7 +34,7 @@ export default memo(function SelectDiv({
             options.changeHandler(event);
         }
         toggleList();
-    }
+    };
 
     const handleOptionButton = (event: MouseEvent<HTMLButtonElement>) => {
         setSelectedValue(event.currentTarget.value);
@@ -61,15 +60,15 @@ export default memo(function SelectDiv({
     const selectOptions = Array.isArray(optionValues) ? (
         optionValues?.map((optionValue: string, index: number, arraySelf) => (
             <li
-                key={`${optionValue}_${nanoid()}`}
+                key={`${optionValue}_${index}`}
                 className={`${
                     index === 0
                         ? "rounded-t-md"
                         : index === arraySelf.length - 1
-                        ? options != null && options.enableEdit
-                            ? ""
-                            : "rounded-b-md"
-                        : ""
+                            ? options != null && options.enableEdit
+                                ? ""
+                                : "rounded-b-md"
+                            : ""
                 } text-neutral-700 dark:text-gray-300 hover:bg-sky-400 hover:text-neutral-100 hover:dark:bg-sky-800`}
             >
                 <button
@@ -79,7 +78,7 @@ export default memo(function SelectDiv({
                     value={optionValue}
                 >
                     {selectedValue === optionValue ? (
-                        <FaCheck className="mr-1" />
+                        <FaCheck className="mr-1"/>
                     ) : (
                         <></>
                     )}
@@ -103,7 +102,7 @@ export default memo(function SelectDiv({
                 value={selectedValue}
             >
                 {selectedValue}
-                <IoIosArrowDown className="absolute right-0" />
+                <IoIosArrowDown className="absolute right-0"/>
             </button>
             {shouldOpenList ? (
                 <ul

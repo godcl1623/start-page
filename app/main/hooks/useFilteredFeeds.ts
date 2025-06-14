@@ -37,7 +37,7 @@ const useFilteredFeeds = ({
 
             if (enabledFilters.current.length > 0) {
                 cache = cacheContainer.filtered.cache;
-                lastPage = cacheContainer.filtered.lastPage;
+                // lastPage = cacheContainer.filtered.lastPage;
             } else {
                 cache = cacheContainer.default.cache;
                 lastPage = cacheContainer.default.lastPage;
