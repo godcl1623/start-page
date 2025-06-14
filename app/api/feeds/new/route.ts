@@ -1,9 +1,5 @@
-import {
-    initializeMongoDBWith,
-    newExtractUserIdFrom,
-} from "controllers/common";
+import { getUserId, initializeMongoDBWith } from "controllers/common";
 import { getPaginationIndexes } from "controllers/feeds";
-import { parseCookie } from "controllers/utils";
 import { NextRequest, NextResponse } from "next/server";
 import { SourceData } from "controllers/sources/helpers";
 import { getRssResponses } from "controllers/feeds/new/utils";
@@ -16,19 +12,21 @@ import {
     updateFeedSetsDataBy,
 } from "controllers/feeds/new";
 import { ParseResultType } from "app/main";
+import { decryptCookie } from "../../../../controllers/utils";
 
 export async function GET(req: NextRequest) {
     try {
-        const [userId, rawId] = newExtractUserIdFrom(req);
+        const userId = await getUserId();
+        const rawId = decryptCookie(userId);
         if (userId == null) throw NextResponse.error();
         const { remoteData } = await initializeMongoDBWith(userId, "feeds");
 
         const [paginationStartIndex, paginationEndIndex] = getPaginationIndexes(
             "1",
-            "10"
+            "10",
         );
         const sourceResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_REQUEST_API}/sources?userId=${rawId}`
+            `${process.env.NEXT_PUBLIC_REQUEST_API}/sources?userId=${rawId}`,
         );
 
         const sources: SourceData[] = JSON.parse(await sourceResponse.json());
@@ -54,7 +52,7 @@ export async function GET(req: NextRequest) {
             const sourceNameList = sources.map((sources) => sources.name);
             const parsedNameList = parseResult.map((data) => data.originName);
             const areNamesSame = sourceNameList.every((sourceName) =>
-                parsedNameList.includes(sourceName)
+                parsedNameList.includes(sourceName),
             );
             if (!areNamesSame) {
                 const newSourceList = sources.map((sourceData, index) => ({
@@ -66,26 +64,26 @@ export async function GET(req: NextRequest) {
                     {
                         method: "PUT",
                         body: JSON.stringify(newSourceList),
-                    }
+                    },
                 );
             }
 
             const updatedFeedSets = updateFeedSetsDataBy(
                 parseResult,
-                storedFeeds
+                storedFeeds,
             );
 
             const totalFeedsList = makeUpdatedFeedsLists(updatedFeedSets);
 
             const differentiateResult = differentiateArrays(
                 updatedFeedSets,
-                storedFeeds
+                storedFeeds,
             );
 
             const responseBody = {
                 data: totalFeedsList.slice(
                     paginationStartIndex,
-                    paginationEndIndex
+                    paginationEndIndex,
                 ),
                 count: totalFeedsList.length,
                 updated: differentiateResult,
@@ -98,7 +96,7 @@ export async function GET(req: NextRequest) {
                         {
                             body: JSON.stringify(updatedFeedSets),
                             method: "PUT",
-                        }
+                        },
                     )
                 ).json();
                 if (postResult === "success") {
@@ -112,68 +110,68 @@ export async function GET(req: NextRequest) {
         } else {
             return NextResponse.json(
                 { error: "err_no_source", status: 400 },
-                { status: 400 }
+                { status: 400 },
             );
         }
     } catch (error) {
         console.error(error);
         return NextResponse.json(
             { error: "err_renew_req_failed", status: 400 },
-            { status: 400 }
+            { status: 400 },
         );
     }
 }
 
 export async function POST(req: NextRequest) {
     try {
-        const [userId] = newExtractUserIdFrom(req);
+        const userId = await getUserId();
         if (userId == null) throw NextResponse.error();
         const { Schema: Feeds } = await initializeMongoDBWith(userId, "feeds");
         const dataToWrite: ParseResultType[] = await req.json();
         const updateResult = await Feeds?.updateOne(
             { _uuid: userId },
-            { $push: { data: dataToWrite } }
+            { $push: { data: dataToWrite } },
         );
         if (updateResult?.acknowledged) {
             return NextResponse.json("success");
         } else {
             return NextResponse.json(
                 { error: "update failed", status: 400 },
-                { status: 400 }
+                { status: 400 },
             );
         }
     } catch (error) {
         console.error(error);
         return NextResponse.json(
             { error: "err_renew_req_failed", status: 400 },
-            { status: 400 }
+            { status: 400 },
         );
     }
 }
 
 export async function PUT(req: NextRequest) {
     try {
-        const [userId] = newExtractUserIdFrom(req);
+        const userId = await getUserId();
         if (userId == null) throw NextResponse.error();
         const { Schema: Feeds } = await initializeMongoDBWith(userId, "feeds");
         const dataToWrite: ParseResultType[] = await req.json();
         const updateResult = await Feeds?.updateOne(
             { _uuid: userId },
-            { $set: { data: dataToWrite } }
+            { $set: { data: dataToWrite } },
         );
         if (updateResult?.acknowledged) {
             return NextResponse.json("success");
         } else {
             return NextResponse.json(
                 { error: "update failed", status: 400 },
-                { status: 400 }
+                { status: 400 },
             );
         }
     } catch (error) {
         console.error(error);
         return NextResponse.json(
             { error: "err_renew_req_failed", status: 400 },
-            { status: 400 }
+            { status: 400 },
         );
     }
 }

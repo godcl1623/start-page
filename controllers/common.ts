@@ -1,22 +1,48 @@
 import { Model } from "mongoose";
-import { NextApiRequest } from "next";
 import { ParseResultType } from "app/main";
 import MongoDB from "./mongodb";
 import { SourceData } from "./sources/helpers";
-import { parseCookie } from "./utils";
-import { NextRequest } from "next/server";
+import { encryptCookie, parseCookie } from "./utils";
 import { SearchEnginesData } from "./searchEngines";
+import { authOptions } from "../app/api/auth/[...nextauth]/setting";
+import { getServerSession } from "next-auth";
+import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
+import { cookies } from "next/headers";
 
-export const extractUserIdFrom = (request: NextApiRequest) => {
-    const { userId } = request.query;
-    return [parseCookie(userId), userId];
-};
+// export const extractUserIdFrom = (request: NextApiRequest) => {
+//     const { userId } = request.query;
+//     return [parseCookie(userId), userId];
+// };
+//
+// export const newExtractUserIdFrom = (request: NextRequest) => {
+//     const userId = request.nextUrl.searchParams
+//         .get("userId")
+//         ?.replace(/\s/g, "+");
+//     return [parseCookie(userId), userId];
+// };
 
-export const newExtractUserIdFrom = (request: NextRequest) => {
-    const userId = request.nextUrl.searchParams
-        .get("userId")
-        ?.replace(/\s/g, "+");
-    return [parseCookie(userId), userId];
+interface LoginInfo {
+    user: UserInfo;
+}
+
+interface UserInfo {
+    name: string;
+    email: string;
+    image: string;
+}
+
+export const getUserId = async () => {
+    try {
+        const loginInfo: LoginInfo | null = await getServerSession(authOptions);
+
+        if (loginInfo != null) return parseCookie(encryptCookie({ userId: loginInfo.user.email }).replace(/\s/g, "+"));
+        console.log("foo");
+
+        return ((await cookies()).get("mw") as RequestCookie)?.value;
+    } catch (error) {
+        console.error(error);
+        return "";
+    }
 };
 
 interface InitializeMongoDBWithReturn<RemoteDataType> {
@@ -38,12 +64,13 @@ type InitializeMongoDBWith = {
 
 export const initializeMongoDBWith: InitializeMongoDBWith = async (
     userId: any,
-    schema: any
+    schema: any,
 ): Promise<any> => {
     if (userId == null) return { remoteData: [], Schema: undefined };
     let remoteData: ParseResultType[] | SourceData[] = [];
     let Schema;
     if (schema === "feeds") {
+        console.log(userId);
         Schema = MongoDB.getFeedsModel();
         remoteData = (await Schema.find({ _uuid: userId }).lean())[0]?.data;
     } else if (schema === "sources") {

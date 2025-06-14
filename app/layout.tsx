@@ -57,15 +57,16 @@ export default async function RootLayout({
     return (
         <html
             lang="ko"
-            className={`${theme !== "" ? theme + " " : theme}${
-                pretendard.variable
-            } font-sans`}
+            // className={`${theme !== "" ? theme + " " : theme}${
+            //     pretendard.variable
+            // } font-sans`}
+            className={`${pretendard.variable} font-sans dark`}
         >
-            <body className="bg-stone-200 dark:bg-neutral-800">
-                <Providers session={session}>{children}</Providers>
-                <div id="modal_root" />
-                <script dangerouslySetInnerHTML={{ __html: setInitialTheme }} />
-            </body>
+        <body className="bg-stone-200 dark:bg-neutral-800">
+        <Providers session={session}>{children}</Providers>
+        <div id="modal_root"/>
+        <script dangerouslySetInnerHTML={{ __html: setInitialTheme }}/>
+        </body>
         </html>
     );
 }

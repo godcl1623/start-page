@@ -1,18 +1,10 @@
-import {
-    defendDataEmptyException,
-    initializeMongoDBWith,
-    newExtractUserIdFrom,
-} from "controllers/common";
-import {
-    SourceData,
-    SourceDataInput,
-    checkIfDataExists,
-} from "controllers/sources/helpers";
+import { defendDataEmptyException, getUserId, initializeMongoDBWith } from "controllers/common";
+import { checkIfDataExists, SourceData, SourceDataInput } from "controllers/sources/helpers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
     try {
-        const [userId] = newExtractUserIdFrom(req);
+        const userId = await getUserId();
         if (userId == null) throw NextResponse.error();
         const { remoteData: sources, Schema: Sources } =
             await initializeMongoDBWith(userId, "sources");
@@ -25,7 +17,7 @@ export async function GET(req: NextRequest) {
         });
 
         return NextResponse.json(
-            sources != null ? JSON.stringify(sources) : "[]"
+            sources != null ? JSON.stringify(sources) : "[]",
         );
     } catch (error) {
         return NextResponse.error();
@@ -34,13 +26,13 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const [userId] = newExtractUserIdFrom(req);
+        const userId = await getUserId();
         if (userId == null) throw NextResponse.error();
         const { remoteData: sources, Schema: Sources } =
             await initializeMongoDBWith(userId, "sources");
         const sourceDataInput: SourceDataInput = await req.json();
         const urlsList = sources.map(
-            (sourceData: SourceData) => sourceData.url
+            (sourceData: SourceData) => sourceData.url,
         );
         if (checkIfDataExists(urlsList, sourceDataInput.url)) {
             return NextResponse.json(
@@ -51,18 +43,18 @@ export async function POST(req: NextRequest) {
                 {
                     statusText: "source already exists.",
                     status: 409,
-                }
+                },
             );
         }
 
         const updateResult = await Sources.updateOne(
             { _uuid: userId },
-            { $push: { sources: sourceDataInput } }
+            { $push: { sources: sourceDataInput } },
         );
         if (updateResult.acknowledged) {
             return NextResponse.json(
                 JSON.stringify({ message: "success", status: 201 }),
-                { status: 201 }
+                { status: 201 },
             );
         } else {
             return NextResponse.json(
@@ -73,7 +65,7 @@ export async function POST(req: NextRequest) {
                 {
                     statusText: "update failed",
                     status: 400,
-                }
+                },
             );
         }
     } catch (error) {
@@ -83,28 +75,28 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
     try {
-        const [userId] = newExtractUserIdFrom(req);
+        const userId = await getUserId();
         if (userId == null) {
             return NextResponse.json(
                 { error: "사용자 정보를 찾을 수 없습니다." },
-                { status: 404 }
+                { status: 404 },
             );
         }
         const { remoteData: sourceData, Schema: Sources } = await initializeMongoDBWith(
             userId,
-            "sources"
+            "sources",
         );
         const sourceDataInput: SourceDataInput = await req.json();
         const sourceUpdateResult = await Sources.updateOne(
             { _uuid: userId },
-            { $set: { sources: sourceDataInput } }
+            { $set: { sources: sourceDataInput } },
         );
         if (sourceUpdateResult.acknowledged) {
             return NextResponse.json(
                 {
                     result: "success",
                 },
-                { status: 201 }
+                { status: 201 },
             );
         } else {
             return NextResponse.json(
@@ -115,7 +107,7 @@ export async function PUT(req: NextRequest) {
                 {
                     statusText: "update failed",
                     status: 400,
-                }
+                },
             );
         }
     } catch (error) {
@@ -127,7 +119,7 @@ export async function PUT(req: NextRequest) {
             {
                 statusText: "update failed",
                 status: 400,
-            }
+            },
         );
     }
 }

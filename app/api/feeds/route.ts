@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-    defendDataEmptyException,
-    initializeMongoDBWith,
-    newExtractUserIdFrom,
-} from "controllers/common";
+import { defendDataEmptyException, getUserId, initializeMongoDBWith } from "controllers/common";
 import { ParseResultType } from "app/main";
 import {
     filterByTexts,
@@ -15,14 +11,17 @@ import {
 } from "controllers/feeds";
 import { checkShouldSortByReverse, handleSort } from "common/helpers";
 import { SORT_STANDARD_STATE } from "common/constants";
+import { authOptions } from "../auth/[...nextauth]/setting";
+import { getServerSession } from "next-auth/next";
 
 export async function GET(req: NextRequest) {
     try {
-        const [userId] = newExtractUserIdFrom(req);
+        const userId = await getUserId();
+        console.log("bar: ", await getServerSession(authOptions));
         if (userId == null) throw NextResponse.error();
         const { remoteData, Schema } = await initializeMongoDBWith(
             userId,
-            "feeds"
+            "feeds",
         );
 
         defendDataEmptyException({
@@ -48,7 +47,7 @@ export async function GET(req: NextRequest) {
             getPaginationIndexes(
                 params.page,
                 params.per_page,
-                params.sortOption
+                params.sortOption,
             );
 
         let filteredContents: ParseResultType[] = parsedContents;
@@ -58,7 +57,7 @@ export async function GET(req: NextRequest) {
         if (isFavoriteFilterNeeded) {
             filteredContents = replaceOriginalWith(
                 filteredContents,
-                filterFavorites(filteredContents)
+                filterFavorites(filteredContents),
             );
         }
 
@@ -69,11 +68,11 @@ export async function GET(req: NextRequest) {
                 : null;
         if (displayState != null && Object.keys(displayState).length > 0) {
             const feedsToDisplay = Object.keys(displayState).filter(
-                (feedSource: string) => displayState[feedSource]
+                (feedSource: string) => displayState[feedSource],
             );
             filteredContents = replaceOriginalWith(
                 filteredContents,
-                filterSpecificSources(filteredContents, feedsToDisplay)
+                filterSpecificSources(filteredContents, feedsToDisplay),
             );
         }
 
@@ -83,13 +82,13 @@ export async function GET(req: NextRequest) {
                 : null;
         if (textState != null && Object.keys(textState).length > 0) {
             const dataSet = Object.entries<string>(textState).filter(
-                (dataSet: string | unknown[]) => dataSet[1] !== ""
+                (dataSet: string | unknown[]) => dataSet[1] !== "",
             )[0];
             if (dataSet != null) {
                 const [standard, value] = dataSet;
                 filteredContents = replaceOriginalWith(
                     filteredContents,
-                    filterByTexts(filteredContents, standard, value)
+                    filterByTexts(filteredContents, standard, value),
                 );
             }
         }
@@ -100,8 +99,8 @@ export async function GET(req: NextRequest) {
                 ?.sort(
                     handleSort(
                         SORT_STANDARD_STATE[sortIndex],
-                        checkShouldSortByReverse(sortIndex)
-                    )
+                        checkShouldSortByReverse(sortIndex),
+                    ),
                 )
                 .slice(paginationStartIndex, paginationEndIndex),
             count: totalFeedsList?.length,
@@ -110,10 +109,11 @@ export async function GET(req: NextRequest) {
         return NextResponse.json(JSON.stringify(responseBody));
     } catch (error) {
         console.error(error);
-        return NextResponse.json(
-            { error: "err_feeds_req_failed", status: 400 },
-            { status: 400 }
-        );
+        // return NextResponse.json(
+        //     { error: "err_feeds_req_failed", status: 400 },
+        //     { status: 400 },
+        // );
+        return NextResponse.json(JSON.stringify({ data: [], count: 0 }));
     }
 }
 

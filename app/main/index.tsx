@@ -2,12 +2,7 @@
 
 import MainView from "./MainView";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-    useQuery,
-    useInfiniteQuery,
-    useQueryClient,
-    QueryKey,
-} from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import useFilters, { FilterType } from "hooks/useFilters";
 import { SEARCH_OPTIONS } from "components/feeds/FilterByText";
 import { SORT_STANDARD } from "common/constants";
@@ -15,10 +10,7 @@ import RequestControllers from "controllers/requestControllers";
 import { generateSearchParameters } from "controllers/utils";
 import { SearchEnginesData } from "controllers/searchEngines";
 import useResizeEvent from "hooks/useResizeEvent";
-import {
-    FeedsCache,
-    getLastPageOfConsecutiveList,
-} from "./hooks/useFeedsCaches";
+import { FeedsCache, getLastPageOfConsecutiveList } from "./hooks/useFeedsCaches";
 import useObserveElement from "./hooks/useObserveElement";
 import useFilteredFeeds from "./hooks/useFilteredFeeds";
 
@@ -31,6 +23,7 @@ export interface ParsedFeedsDataType {
     origin: string | null;
     isRead: boolean | null;
     isFavorite: boolean | null;
+
     [key: string]: number | string | boolean | null;
 }
 
@@ -104,12 +97,12 @@ export default function MainPage({
     const [isMobileLayout, setIsMobileLayout] = useState<boolean>(false);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [renewState, setRenewState] = useState<string>(
-        STATE_MESSAGE_STRINGS.start
+        STATE_MESSAGE_STRINGS.start,
     );
     const [feedsToDisplay, setFeedsToDisplay] = useState<ParsedFeedsDataType[]>(
-        []
+        [],
     );
-    const [queryUrl, setQueryUrl] = useState(`/feeds?userId=${userId}&page=1`);
+    const [queryUrl, setQueryUrl] = useState(`/feeds?page=1`);
 
     const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -128,11 +121,11 @@ export default function MainPage({
     });
     const [sourceDisplayState, setSourceDisplayState] = useFilters(
         sources,
-        true
+        true,
     );
     const [searchTexts, setSearchTexts] = useFilters(
         JSON.stringify(Object.values(SEARCH_OPTIONS)),
-        ""
+        "",
     );
 
     const detectIfMobileLayout = useCallback(() => {
@@ -148,13 +141,13 @@ export default function MainPage({
     const queryClient = useQueryClient();
 
     const { data: searchEnginesList } = useQuery({
-        queryKey: [`/search_engines?userId=${userId}`],
+        queryKey: [`/search_engines`],
         queryFn: () =>
             isLocal
                 ? null
                 : getDataFrom<SearchEnginesData[] | ErrorResponse>(
-                      `/search_engines?userId=${userId}`
-                  ),
+                    `/search_engines`,
+                ),
     });
 
     const queryKey = useMemo(
@@ -168,11 +161,11 @@ export default function MainPage({
             isFilterFavorite,
             sourceDisplayState,
             queryUrl,
-        ]
+        ],
     );
     const queryFn = useCallback(
         () => (isLocal ? null : getDataFrom<string>(queryUrl)),
-        [getDataFrom, queryUrl, isLocal]
+        [getDataFrom, queryUrl, isLocal],
     );
     const { data: storedFeed, hasNextPage } = useInfiniteQuery({
         queryKey,
@@ -196,7 +189,7 @@ export default function MainPage({
             setCurrentPage((oldPage) => oldPage + 1);
             // FIXME: 전체 페이지네이션+무한스크롤 로직 단순화
             setQueryUrl(
-                queryUrl.split("&page=")[0] + `&page=${currentPage + 1}`
+                queryUrl.split("&page=")[0] + `&page=${currentPage + 1}`,
             );
         },
     });
@@ -223,11 +216,11 @@ export default function MainPage({
                     displayOption: JSON.stringify(sourceDisplay),
                 }),
                 ...(Object.values(textsState).some(
-                    (searchText: string) => searchText.length >= 2
+                    (searchText: string) => searchText.length >= 2,
                 ) && { textOption: JSON.stringify(textsState) }),
                 ...(sortState > 0 && { sortOption: sortState }),
             });
-            return `/feeds?userId=${userId}${localQueryParameters}&page=${pageState}`;
+            return `/feeds?page=${pageState}${localQueryParameters}`;
         },
         [
             currentPage,
@@ -235,8 +228,7 @@ export default function MainPage({
             isFilterFavorite,
             searchTexts,
             sourceDisplayState,
-            userId,
-        ]
+        ],
     );
     const generateQueryKey = useCallback(
         ({
@@ -262,7 +254,7 @@ export default function MainPage({
                 },
             ];
         },
-        [isFilterFavorite, sourceDisplayState, currentSort, searchTexts]
+        [isFilterFavorite, sourceDisplayState, currentSort, searchTexts],
     );
 
     const updateCurrentPage = useCallback(
@@ -274,7 +266,7 @@ export default function MainPage({
             const localQueryKey = generateQueryKey({ queryUrl: localQueryUrl });
             queryClient.invalidateQueries({ queryKey: localQueryKey });
         },
-        [generateQueryKey, queryClient, queryUrl]
+        [generateQueryKey, queryClient, queryUrl],
     );
 
     const updateFeedsToDisplay = useCallback(
@@ -284,7 +276,7 @@ export default function MainPage({
                 const joinedList = Object.values(cache)
                     .slice(0, lastFilledPage + 1)
                     .filter(
-                        (feedListPerPage: any[]) => feedListPerPage?.length > 0
+                        (feedListPerPage: any[]) => feedListPerPage?.length > 0,
                     )
                     .reduce((acc, x) => acc?.concat(x), []);
                 setFeedsToDisplay(joinedList);
@@ -292,7 +284,7 @@ export default function MainPage({
                 setFeedsToDisplay(cache[currentPage]);
             }
         },
-        [isMobileLayout, currentPage]
+        [isMobileLayout, currentPage],
     );
 
     const handleFeedsAndCache = useCallback(
@@ -300,7 +292,7 @@ export default function MainPage({
             const cache = getCachedFeedsToDisplay(feedsList);
             updateFeedsToDisplay(cache);
         },
-        [updateFeedsToDisplay, getCachedFeedsToDisplay]
+        [updateFeedsToDisplay, getCachedFeedsToDisplay],
     );
 
     const checkAndUpdateNewFeeds = useCallback(async () => {
@@ -310,7 +302,7 @@ export default function MainPage({
             const signal = abortControllerRef.current.signal;
             const newFeedsRequestResult = await getDataFrom<
                 PageParamData | ErrorResponse
-            >(`/feeds/new?userId=${userId}`, { signal });
+            >(`/feeds/new`, { signal });
             if (newFeedsRequestResult != null) {
                 switch (true) {
                     case "data" in newFeedsRequestResult:
@@ -320,7 +312,7 @@ export default function MainPage({
                         }
                         if (updated !== 0) {
                             setRenewState(
-                                updated + STATE_MESSAGE_STRINGS.added
+                                updated + STATE_MESSAGE_STRINGS.added,
                             );
                         } else {
                             setRenewState(STATE_MESSAGE_STRINGS.end);
@@ -329,7 +321,7 @@ export default function MainPage({
                         break;
                     case "error" in newFeedsRequestResult:
                         setRenewState(
-                            STATE_MESSAGE_STRINGS[(newFeedsRequestResult as ErrorResponse).error]
+                            STATE_MESSAGE_STRINGS[(newFeedsRequestResult as ErrorResponse).error],
                         );
                         break;
                     default:
@@ -342,7 +334,7 @@ export default function MainPage({
         } catch (error) {
             console.error(error);
         }
-    }, [getDataFrom, handleFeedsAndCache, totalCount, userId]);
+    }, [getDataFrom, handleFeedsAndCache, totalCount]);
 
     const filterBySources = useCallback(
         (newDisplay: SourceDisplayState) => {
@@ -365,7 +357,7 @@ export default function MainPage({
             generateQueryKey,
             generateQueryUrl,
             queryClient,
-        ]
+        ],
     );
 
     const filterBySearchTexts = useCallback(
@@ -373,7 +365,7 @@ export default function MainPage({
             const lastPage = handleSearchTextsFilter(
                 searchTexts,
                 target,
-                value
+                value,
             );
             setCurrentPage(lastPage);
             setSearchTexts(target, value);
@@ -401,14 +393,14 @@ export default function MainPage({
             generateQueryUrl,
             generateQueryKey,
             queryClient,
-        ]
+        ],
     );
 
     const filterBySort = useCallback(
         (stateStringArray: string[]) => (stateString: string) => {
             const { lastPage, newSort } = handleSortFilter(
                 stateStringArray,
-                stateString
+                stateString,
             );
             setCurrentPage(lastPage);
             setCurrentSort(newSort);
@@ -423,7 +415,7 @@ export default function MainPage({
             });
             queryClient.invalidateQueries({ queryKey: localQueryKey });
         },
-        [handleSortFilter, generateQueryUrl, queryClient, generateQueryKey]
+        [handleSortFilter, generateQueryUrl, queryClient, generateQueryKey],
     );
 
     const filterFavorites = useCallback(() => {
@@ -458,7 +450,7 @@ export default function MainPage({
             setTotalCount(count);
             const indexList = Array.from(
                 { length: Math.ceil(count / 10) },
-                (_, k) => k + 1
+                (_, k) => k + 1,
             );
             initializeCache(indexList, data);
         }
@@ -467,7 +459,7 @@ export default function MainPage({
     useEffect(() => {
         if (storedFeed?.pages) {
             const { data, count } = JSON.parse(
-                storedFeed.pages[storedFeed.pages.length - 1] ?? "{}"
+                storedFeed.pages[storedFeed.pages.length - 1] ?? "{}",
             );
             if (count != null) setTotalCount(count);
             if (data != null) {
@@ -507,7 +499,7 @@ export default function MainPage({
             filterBySources={filterBySources}
             isFilterBySorts={currentSort > 0}
             isFilterByTexts={Object.values(searchTexts).some(
-                (searchText: string) => searchText.length >= 2
+                (searchText: string) => searchText.length >= 2,
             )}
             searchTexts={searchTexts}
             patchCachedData={patchCachedData}

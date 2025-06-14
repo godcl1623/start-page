@@ -1,42 +1,22 @@
-import MainPage, { ParsedFeedsDataType } from "./main";
-import { authOptions } from "./api/auth/[...nextauth]/setting";
-import { getServerSession } from "next-auth";
-import { encryptCookie, getNewUserId, parseCookie } from "controllers/utils";
-import { cookies } from "next/headers";
-import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
+import MainPage from "./main";
 import RequestControllers from "controllers/requestControllers";
-
-interface LoginInfo {
-    user: UserInfo;
-}
-
-interface UserInfo {
-    name: string;
-    email: string;
-    image: string;
-}
+import { getUserId } from "../controllers/common";
 
 export default async function Main() {
     const { getDataFrom } = new RequestControllers();
     let userId: string = "";
 
     try {
-        const loginInfo: LoginInfo | null = await getServerSession(authOptions);
-
-        if (loginInfo != null) {
-            userId = encryptCookie({ userId: loginInfo.user.email });
-        } else if ((await cookies()).get("mw") != null) {
-            userId = ((await cookies()).get("mw") as RequestCookie).value;
-        }
+        userId = await getUserId();
 
         const feedsResponse =
-            userId === ""
+            userId === "" || userId == null
                 ? ""
-                : await getDataFrom<string>(`/feeds?userId=${userId}`);
+                : await getDataFrom<string>(`/feeds?page=1`);
         const sourcesResponse =
-            userId === ""
+            userId === "" || userId == null
                 ? ""
-                : await getDataFrom<string>(`/sources?userId=${userId}`);
+                : await getDataFrom<string>(`/sources`);
 
         return (
             <MainPage
@@ -49,6 +29,6 @@ export default async function Main() {
     } catch (error) {
         console.error(error);
         // TODO: Error 페이지로 수정
-        return <MainPage feeds={""} sources={""} userId={userId} isLocal />;
+        return <MainPage feeds={""} sources={""} userId={userId} isLocal/>;
     }
 }

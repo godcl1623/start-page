@@ -1,9 +1,5 @@
 import { ParseResultType } from "app/main";
-import {
-    defendDataEmptyException,
-    initializeMongoDBWith,
-    newExtractUserIdFrom,
-} from "controllers/common";
+import { defendDataEmptyException, getUserId, initializeMongoDBWith } from "controllers/common";
 import { SearchEnginesData } from "controllers/searchEngines";
 import { SourceData } from "controllers/sources/helpers";
 import { NextRequest, NextResponse } from "next/server";
@@ -16,11 +12,11 @@ export interface UploadFileType {
 
 export async function PUT(req: NextRequest) {
     try {
-        const [userId] = newExtractUserIdFrom(req);
+        const userId = await getUserId();
         if (userId == null) {
             return NextResponse.json(
                 { error: "사용자 정보를 찾을 수 없습니다." },
-                { status: 404 }
+                { status: 404 },
             );
         }
         const uploadedFile: UploadFileType = await req.json();
@@ -33,7 +29,7 @@ export async function PUT(req: NextRequest) {
                 {
                     error: "올바르지 않은 파일입니다.",
                 },
-                { status: 400 }
+                { status: 400 },
             );
         }
 
@@ -58,7 +54,7 @@ export async function PUT(req: NextRequest) {
             userIdUploadForm,
             sourceData == null
                 ? { $push: sourceUploadForm }
-                : { $set: sourceUploadForm }
+                : { $set: sourceUploadForm },
         );
 
         if (feedsData == null) {
@@ -74,7 +70,7 @@ export async function PUT(req: NextRequest) {
             userIdUploadForm,
             feedsData == null
                 ? { $push: feedsUploadForm }
-                : { $set: feedsUploadForm }
+                : { $set: feedsUploadForm },
         );
 
         if (enginesData == null) {
@@ -90,7 +86,7 @@ export async function PUT(req: NextRequest) {
             userIdUploadForm,
             enginesData == null
                 ? { $push: enginesUpdateForm }
-                : { $set: enginesUpdateForm }
+                : { $set: enginesUpdateForm },
         );
 
         if (
@@ -100,14 +96,14 @@ export async function PUT(req: NextRequest) {
         ) {
             return NextResponse.json(
                 { result: "파일을 성공적으로 불러왔습니다." },
-                { status: 201 }
+                { status: 201 },
             );
         } else {
             return NextResponse.json(
                 {
                     error: `파일 업로드에 실패했습니다. (출처: ${sourceUpdateResult.acknowledged}, 피드: ${feedsUpdateResult.acknowledged}, 검색엔진: ${enginesUpdateResult.acknowledged})`,
                 },
-                { status: 400 }
+                { status: 400 },
             );
         }
     } catch (error) {
@@ -117,7 +113,7 @@ export async function PUT(req: NextRequest) {
             },
             {
                 status: 400,
-            }
+            },
         );
     }
 }

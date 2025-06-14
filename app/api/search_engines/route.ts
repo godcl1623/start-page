@@ -1,18 +1,14 @@
-import {
-    defendDataEmptyException,
-    initializeMongoDBWith,
-    newExtractUserIdFrom,
-} from "controllers/common";
+import { defendDataEmptyException, getUserId, initializeMongoDBWith } from "controllers/common";
 import { SearchEnginesData } from "controllers/searchEngines";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
     try {
-        const [userId] = newExtractUserIdFrom(req);
+        const userId = await getUserId();
         if (userId == null) throw NextResponse.error();
         const { remoteData, Schema } = await initializeMongoDBWith(
             userId,
-            "searchEngines"
+            "searchEngines",
         );
 
         defendDataEmptyException({
@@ -27,14 +23,14 @@ export async function GET(req: NextRequest) {
         console.error(error);
         return NextResponse.json(
             { error: "err_search_engines_req_failed", status: 400 },
-            { status: 400 }
+            { status: 400 },
         );
     }
 }
 
 export async function POST(req: NextRequest) {
     try {
-        const [userId] = newExtractUserIdFrom(req);
+        const userId = await getUserId();
         if (userId == null) throw NextResponse.error();
         const { remoteData, Schema: SearchEngines } =
             await initializeMongoDBWith(userId, "searchEngines");
@@ -58,7 +54,7 @@ export async function POST(req: NextRequest) {
         ) {
             return NextResponse.json(
                 { error: "err_search_engines_wrong_data_input", status: 400 },
-                { status: 400 }
+                { status: 400 },
             );
         }
 
@@ -66,24 +62,24 @@ export async function POST(req: NextRequest) {
             { _uuid: userId },
             remoteData == null
                 ? { $push: { engines_list: searchEnginesInput } }
-                : { $set: { engines_list: searchEnginesInput } }
+                : { $set: { engines_list: searchEnginesInput } },
         );
         if (updateResult.acknowledged) {
             return NextResponse.json(
                 JSON.stringify({ message: "success", status: 201 }),
-                { status: 201 }
+                { status: 201 },
             );
         } else {
             return NextResponse.json(
                 { error: "update failed", status: 400 },
-                { status: 400 }
+                { status: 400 },
             );
         }
     } catch (error) {
         console.error(error);
         return NextResponse.json(
             { error: "update failed", status: 400 },
-            { status: 400 }
+            { status: 400 },
         );
     }
 }
